@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "net-worth",
+    "name": "NetWorth",
     "slug": "net-worth",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,6 +11,7 @@
       "icon": "./assets/expo.icon"
     },
     "android": {
+      "package": "com.networthethiopia.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -37,6 +38,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4e98d508-15c1-4366-9172-1a1bf30c5749"
+      }
+    },
+    "owner": "yishaqs-team"
   }
 }
