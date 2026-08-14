@@ -1,20 +1,34 @@
 # NetWorth Ethiopia
 
-An offline-first Android expense tracker with automatic SMS transaction detection, cloud synchronization, and intelligent bookkeeping.
+An offline-first Android expense tracker that automatically extracts transaction data from SMS messages, stores data locally for offline access, and synchronizes data with a cloud database.
 
 ---
 
-## Tech Stack
+## Overview
+
+NetWorth Ethiopia is designed to help users manage their finances through:
+
+- Expense tracking
+- Automatic SMS transaction detection
+- Offline bookkeeping
+- Cloud synchronization
+- Financial reporting
+- Budget management
+- Transaction categorization
+
+---
+
+# Technology Stack
 
 | Technology | Purpose |
 | --- | --- |
-| Expo SDK 57 | Mobile application framework |
-| React Native | Cross-platform mobile development |
-| TypeScript | Type-safe development |
-| Expo Router | File-based routing |
+| Expo SDK 57 | Mobile development |
+| React Native | Cross-platform UI |
+| TypeScript | Type safety |
+| Expo Router | Navigation |
 | SQLite | Local offline database |
-| Cloud Database | Remote data storage |
-| EAS | Cloud builds |
+| Cloud Database | Data synchronization |
+| EAS | Android builds |
 | Git | Version control |
 | GitHub | Team collaboration |
 
@@ -24,7 +38,7 @@ An offline-first Android expense tracker with automatic SMS transaction detectio
 
 Before running the project, install the following tools.
 
-## 1. Install Git
+## Git
 
 Verify the installation:
 
@@ -32,51 +46,28 @@ Verify the installation:
 git --version
 ```
 
-Expected output:
-
-```text
-git version 2.x.x
-```
-
 ---
 
-## 2. Install Node.js
+## Node.js
 
 Recommended version:
 
 ```text
-Node.js 22 LTS
+Node.js 22 LTS or later
 ```
 
-Verify the installation:
+Verify:
 
 ```bash
 node -v
 npm -v
 ```
 
-Expected output:
-
-```text
-v22.x.x
-10.x.x
-```
-
 ---
 
-## 3. Install Expo CLI
+## EAS CLI
 
-Verify:
-
-```bash
-npx expo --version
-```
-
----
-
-## 4. Install EAS CLI
-
-Install globally:
+Install EAS globally:
 
 ```bash
 npm install -g eas-cli
@@ -90,47 +81,37 @@ eas --version
 
 ---
 
-## 5. Create an Expo Account
+## Expo Account
 
-Create an account:
+Create an Expo account if you don't already have one.
 
-```text
-https://expo.dev
-```
-
-Login:
+Log in:
 
 ```bash
 eas login
 ```
 
-Verify:
+---
+
+# Project Setup
+
+## Clone the repository
 
 ```bash
-eas whoami
+git clone <repository-url>
 ```
 
 ---
 
-# Clone the Repository
-
-Clone the repository:
+## Navigate to the project directory
 
 ```bash
-git clone https://github.com/yishaq-official/Net_Worth_Ethiopia.git
-```
-
-Move into the project directory:
-
-```bash
-cd Net_Worth_Ethiopia
+cd <project-folder>
 ```
 
 ---
 
-# Install Dependencies
-
-Install all required packages:
+## Install dependencies
 
 ```bash
 npm install
@@ -138,9 +119,7 @@ npm install
 
 ---
 
-# Verify the Environment
-
-Check the Expo SDK version:
+## Verify the Expo SDK version
 
 ```bash
 npx expo config --json | grep -o '"sdkVersion":"[^"]*"'
@@ -154,40 +133,9 @@ Expected output:
 
 ---
 
-# Project Configuration
+# Running the Project
 
-## Expo Configuration
-
-The project uses:
-
-```text
-Name: NetWorth
-Slug: net-worth
-Owner: yishaqs-team
-Android Package: com.networthethiopia.app
-```
-
----
-
-## EAS Configuration
-
-Verify that the project is linked:
-
-```bash
-eas whoami
-```
-
-Expected output:
-
-```text
-yishaq
-```
-
----
-
-# Running the Application
-
-## Start the Development Server
+## Start the development server
 
 ```bash
 npx expo start
@@ -195,77 +143,17 @@ npx expo start
 
 ---
 
-## Create an Android Development Build
+## Create an Android development build
 
 ```bash
 eas build --profile development --platform android
 ```
 
-After the build is complete:
+After the build is completed:
 
-1. Open the generated build URL.
+1. Open the generated build link.
 2. Download the APK.
-3. Install it on your Android device.
-
----
-
-# Git Workflow
-
-## Update Your Local Repository
-
-```bash
-git pull origin main
-```
-
----
-
-## Create a New Branch
-
-Never work directly on the `main` branch.
-
-Create a feature branch:
-
-```bash
-git checkout -b feature/auth
-```
-
-Examples:
-
-```text
-feature/auth
-feature/sms
-feature/dashboard
-feature/offline-sync
-feature/reports
-```
-
----
-
-## Commit Changes
-
-Check changes:
-
-```bash
-git status
-```
-
-Stage changes:
-
-```bash
-git add .
-```
-
-Commit:
-
-```bash
-git commit -m "feat: implement login screen"
-```
-
-Push:
-
-```bash
-git push origin feature/auth
-```
+3. Install it on an Android device.
 
 ---
 
@@ -276,34 +164,27 @@ net-worth/
 ├── assets/
 │
 ├── src/
-│   ├── app/                 # Expo Router pages
-│   │
-│   ├── components/          # Reusable UI components
-│   │
+│   ├── app/
+│   ├── components/
 │   ├── features/
 │   │   ├── auth/
+│   │   ├── dashboard/
 │   │   ├── transactions/
 │   │   ├── categories/
 │   │   ├── budgets/
 │   │   ├── reports/
-│   │   ├── dashboard/
 │   │   ├── sms/
 │   │   └── settings/
 │   │
-│   ├── database/            # SQLite
-│   │
-│   ├── services/            # API services
-│   │
-│   ├── store/               # Global state
-│   │
-│   ├── hooks/               # Custom hooks
-│   │
-│   ├── lib/                 # Third-party configurations
-│   │
-│   ├── types/               # TypeScript types
-│   │
-│   └── utils/               # Helper functions
+│   ├── database/
+│   ├── services/
+│   ├── store/
+│   ├── hooks/
+│   ├── lib/
+│   ├── types/
+│   └── utils/
 │
+├── assets/
 ├── app.json
 ├── eas.json
 ├── package.json
@@ -314,35 +195,73 @@ net-worth/
 
 # Development Workflow
 
-```text
-Developer
-     ↓
-Feature Branch
-     ↓
-Code Changes
-     ↓
-Commit
-     ↓
-Push
-     ↓
-Pull Request
-     ↓
-Code Review
-     ↓
-Merge Into Main
+## Pull the latest changes
+
+```bash
+git pull
 ```
 
 ---
 
-# Important Notes
+## Create a feature branch
 
-- Do not modify `app.json` without team approval.
-- Do not modify `eas.json` without team approval.
-- Do not commit directly to `main`.
-- Always pull the latest changes before starting development.
-- Use feature branches for all tasks.
-- Use EAS for Android builds.
-- Use the development build instead of Expo Go.
+```bash
+git checkout -b feature/<feature-name>
+```
+
+Examples:
+
+```text
+feature/auth
+feature/dashboard
+feature/sms
+feature/offline-sync
+feature/reports
+```
+
+---
+
+## Check modified files
+
+```bash
+git status
+```
+
+---
+
+## Stage changes
+
+```bash
+git add .
+```
+
+---
+
+## Commit changes
+
+```bash
+git commit -m "feat: add authentication screen"
+```
+
+---
+
+## Push the branch
+
+```bash
+git push origin <branch-name>
+```
+
+---
+
+# Important Rules
+
+- Never commit directly to the main branch.
+- Always create a feature branch.
+- Pull the latest changes before starting work.
+- Keep commits small and focused.
+- Test changes before pushing.
+- Review code before merging.
+- Do not modify project configuration files without team approval.
 
 ---
 
@@ -352,7 +271,7 @@ Merge Into Main
 # Install dependencies
 npm install
 
-# Start the project
+# Start the development server
 npx expo start
 
 # Check Expo configuration
@@ -362,14 +281,11 @@ npx expo config --type public
 git status
 
 # Pull the latest changes
-git pull origin main
+git pull
 
-# Create a branch
-git checkout -b feature/your-feature
+# Create a new branch
+git checkout -b feature/<feature-name>
 
-# Push a branch
-git push origin feature/your-feature
-
-# Create an Android development build
+# Build an Android development version
 eas build --profile development --platform android
 ```
