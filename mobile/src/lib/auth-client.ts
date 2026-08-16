@@ -4,7 +4,7 @@ import * as storage from "./storage";
 import { Platform } from "react-native";
 
 // In development, Android emulator needs 10.0.2.2 to access host localhost
-const baseURL = Platform.OS === "android" 
+export const baseURL = Platform.OS === "android" 
   ? "http://10.0.2.2:3000" 
   : "http://localhost:3000";
 
