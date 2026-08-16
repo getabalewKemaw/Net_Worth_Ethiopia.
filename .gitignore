@@ -33,3 +33,6 @@ npm-debug.log*
 # Better Auth
 **/.auth/
 docs
+
+# drizzle
+backend/drizzle/*
