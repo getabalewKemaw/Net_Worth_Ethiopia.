@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { expo } from "@better-auth/expo";
-import { db } from "./db.js";
+import { db } from "./db";
 
 const frontendUrl = process.env.FRONTEND_URL || "http://localhost:8081";
 
