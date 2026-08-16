@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
-import { business } from "./business-branch-management.js";
+import { business } from "./business-branch-management";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -95,4 +95,4 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }));
 
-export * from "./business-branch-management.js";
+export * from "./business-branch-management";
