@@ -32,7 +32,7 @@ export const BranchesUI: React.FC<BranchesUIProps> = ({ hookProps }) => {
         </Pressable>
         <View style={styles.titleRow}>
           <View>
-            <ThemedText type="title">Business & Branches</ThemedText>
+            <ThemedText type="title" style={styles.titleText}>Business & Branches</ThemedText>
             <ThemedText style={styles.subtitle}>
               Active: {activeBusiness?.name || "No Business"}
             </ThemedText>
@@ -173,6 +173,10 @@ const styles = StyleSheet.create({
   backBtn: {
     alignSelf: "flex-start",
     marginBottom: 8,
+  },
+  titleText: {
+    fontSize: 24,
+    fontWeight: "800",
   },
   titleRow: {
     flexDirection: "row",

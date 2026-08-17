@@ -44,7 +44,7 @@ export const EditBranchUI: React.FC<EditBranchUIProps> = ({ hookProps }) => {
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
             <ThemedText style={{ color: theme.primary, fontWeight: "600" }}>← Back</ThemedText>
           </Pressable>
-          <ThemedText type="title">Edit Branch</ThemedText>
+          <ThemedText type="title" style={styles.titleText}>Edit Branch</ThemedText>
           <ThemedText style={{ color: theme.textSecondary }}>
             Update operating location and payment configurations.
           </ThemedText>
@@ -143,6 +143,10 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 8,
     gap: 8,
+  },
+  titleText: {
+    fontSize: 28,
+    fontWeight: "800",
   },
   backBtn: {
     alignSelf: "flex-start",

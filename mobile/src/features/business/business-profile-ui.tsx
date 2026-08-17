@@ -55,7 +55,7 @@ export const BusinessProfileUI: React.FC<BusinessProfileUIProps> = ({ hookProps 
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
             <ThemedText style={{ color: theme.primary, fontWeight: "600" }}>← Back</ThemedText>
           </Pressable>
-          <ThemedText type="title">Business Profile</ThemedText>
+          <ThemedText type="title" style={styles.titleText}>Business Profile</ThemedText>
           <ThemedText style={{ color: theme.textSecondary }}>
             View and manage your core business registration details.
           </ThemedText>
@@ -210,6 +210,10 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 8,
     gap: 8,
+  },
+  titleText: {
+    fontSize: 28,
+    fontWeight: "800",
   },
   backBtn: {
     alignSelf: "flex-start",

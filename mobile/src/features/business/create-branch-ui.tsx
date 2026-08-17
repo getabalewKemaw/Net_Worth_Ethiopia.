@@ -45,7 +45,7 @@ export const CreateBranchUI: React.FC<CreateBranchUIProps> = ({ hookProps }) => 
           <Pressable style={styles.backBtn} onPress={() => router.back()}>
             <ThemedText style={{ color: theme.primary, fontWeight: "600" }}>← Back</ThemedText>
           </Pressable>
-          <ThemedText type="title">Add Branch</ThemedText>
+          <ThemedText type="title" style={styles.titleText}>Add Branch</ThemedText>
           <ThemedText style={styles.subtitle}>
             Register a new operating location for {activeBusiness?.name || "your business"}.
           </ThemedText>
@@ -153,6 +153,10 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 8,
     gap: 8,
+  },
+  titleText: {
+    fontSize: 28,
+    fontWeight: "800",
   },
   backBtn: {
     alignSelf: "flex-start",
