@@ -63,7 +63,14 @@ export default function HomeScreen() {
               style={[styles.actionButton, { backgroundColor: colors.primary }]}
               onPress={() => router.push('/(business)/branches')}
             >
-              <ThemedText style={styles.actionButtonText}>Switch / Manage Branches</ThemedText>
+              <ThemedText style={styles.actionButtonText}>Switch Business / Branches</ThemedText>
+            </Pressable>
+
+            <Pressable
+              style={[styles.outlineButton, { borderColor: colors.primary }]}
+              onPress={() => router.push('/(business)/business-profile')}
+            >
+              <ThemedText style={[styles.outlineButtonText, { color: colors.primary }]}>Business Profile Settings</ThemedText>
             </Pressable>
           </View>
         )}
@@ -136,6 +143,17 @@ const styles = StyleSheet.create({
   },
   actionButtonText: {
     color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  outlineButton: {
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+  },
+  outlineButtonText: {
     fontWeight: '600',
     fontSize: 16,
   },
