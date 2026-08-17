@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
+import { business } from "./business-branch-management";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -77,6 +78,7 @@ export const verification = pgTable(
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  businesses: many(business),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -92,3 +94,5 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export * from "./business-branch-management";
