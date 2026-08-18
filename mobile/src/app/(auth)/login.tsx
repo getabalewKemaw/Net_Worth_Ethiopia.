@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
@@ -42,35 +42,35 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-200">
       <BackgroundGrid />
       
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.contentWrapper}>
-          <View style={styles.headerContent}>
-            <View style={[styles.logoContainer, { backgroundColor: '#FFFFFF' }]}>
+      <SafeAreaView className="flex-1 z-[2]">
+        <View className="flex-1 px-5 pt-20 items-center">
+          <View className="items-center mb-5">
+            <View className="py-2.5 px-5 rounded-2xl mb-4 bg-white shadow-md shadow-black/10">
               <Image 
                 source={require('@/assets/images/logo.png')} 
-                style={styles.logoImg}
+                className="h-10 w-[150px]"
                 contentFit="contain"
               />
             </View>
-            <ThemedText type="title" style={styles.title}>Welcome Back</ThemedText>
-            <ThemedText style={styles.subtitle}>Log in to continue to NetWorth</ThemedText>
+            <ThemedText type="title" className="text-white text-2xl mb-1.5 text-center">Welcome Back</ThemedText>
+            <ThemedText className="text-white/90 text-sm text-center">Log in to continue to NetWorth</ThemedText>
           </View>
 
           <AuthCard>
             <GoogleButton 
               title="Log in with Google" 
               onPress={handleGoogleLogin} 
-              style={styles.button}
+              className="mb-5"
             />
 
-            <View style={styles.footer}>
-              <ThemedText style={styles.footerText}>Don't have an account? </ThemedText>
+            <View className="flex-row justify-center items-center mt-2.5">
+              <ThemedText className="text-sm">Don't have an account? </ThemedText>
               <Link href="/(auth)/signup" asChild>
                 <TouchableOpacity>
-                  <ThemedText style={[styles.linkText, { color: theme.primary }]}>Sign up</ThemedText>
+                  <ThemedText className="text-sm font-bold" style={{ color: theme.primary }}>Sign up</ThemedText>
                 </TouchableOpacity>
               </Link>
             </View>
@@ -80,66 +80,3 @@ export default function LoginScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#E5E7EB', // Using the hardcoded body background from HTML for consistency
-  },
-  safeArea: {
-    flex: 1,
-    zIndex: 2, // Above the grid
-  },
-  contentWrapper: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 80, // To match HTML design spacing
-    alignItems: 'center',
-  },
-  headerContent: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  logoContainer: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    elevation: 3,
-  },
-  logoImg: {
-    height: 40,
-    width: 150, // Added estimated width for logo
-  },
-  title: {
-    color: '#fff',
-    fontSize: 26,
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  subtitle: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  button: {
-    marginBottom: 20,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  footerText: {
-    fontSize: 14,
-  },
-  linkText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-});
