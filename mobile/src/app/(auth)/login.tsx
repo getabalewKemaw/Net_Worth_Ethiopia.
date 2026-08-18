@@ -1,4 +1,4 @@
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
@@ -7,7 +7,6 @@ import * as Linking from 'expo-linking';
 import { BackgroundGrid } from '@/components/auth/BackgroundGrid';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { GoogleButton } from '@/components/auth/GoogleButton';
-import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 import { authClient } from '@/lib/auth-client';
 
@@ -47,16 +46,16 @@ export default function LoginScreen() {
       
       <SafeAreaView className="flex-1 z-[2]">
         <View className="flex-1 px-5 pt-20 items-center">
-          <View className="items-center mb-5">
-            <View className="py-2.5 px-5 rounded-2xl mb-4 bg-white shadow-md shadow-black/10">
+          <View className="items-center mb-8">
+            <View className="py-3 px-6 rounded-2xl mb-5 bg-white shadow-lg shadow-black/10">
               <Image 
                 source={require('@/assets/images/logo.png')} 
-                className="h-10 w-[150px]"
+                className="h-12 w-[160px]"
                 contentFit="contain"
               />
             </View>
-            <ThemedText type="title" className="text-white text-2xl mb-1.5 text-center">Welcome Back</ThemedText>
-            <ThemedText className="text-white/90 text-sm text-center">Log in to continue to NetWorth</ThemedText>
+            <Text className="text-white text-3xl font-extrabold mb-2 text-center tracking-tight">Welcome Back</Text>
+            <Text className="text-white/95 text-base font-medium text-center px-4">Log in to continue to NetWorth</Text>
           </View>
 
           <AuthCard>
@@ -66,11 +65,11 @@ export default function LoginScreen() {
               className="mb-5"
             />
 
-            <View className="flex-row justify-center items-center mt-2.5">
-              <ThemedText className="text-sm">Don't have an account? </ThemedText>
+            <View className="flex-row justify-center items-center mt-4 mb-2">
+              <Text className="text-sm text-gray-600 font-medium">Don't have an account? </Text>
               <Link href="/(auth)/signup" asChild>
                 <TouchableOpacity>
-                  <ThemedText className="text-sm font-bold" style={{ color: theme.primary }}>Sign up</ThemedText>
+                  <Text className="text-sm font-bold ml-1" style={{ color: theme.primary }}>Sign up</Text>
                 </TouchableOpacity>
               </Link>
             </View>

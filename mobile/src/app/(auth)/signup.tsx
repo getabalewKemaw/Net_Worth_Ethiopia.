@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router, useLocalSearchParams } from 'expo-router';
@@ -9,7 +9,6 @@ import Checkbox from 'expo-checkbox';
 import { BackgroundGrid } from '@/components/auth/BackgroundGrid';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { GoogleButton } from '@/components/auth/GoogleButton';
-import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 import { authClient } from '@/lib/auth-client';
 
@@ -57,36 +56,38 @@ export default function SignupScreen() {
       <BackgroundGrid />
       
       <SafeAreaView className="flex-1 z-[2]">
-        <View className="flex-1 px-5 pt-20 items-center">
-          <View className="items-center mb-5">
-            <View className="py-2.5 px-5 rounded-2xl mb-4 bg-white shadow-md shadow-black/10">
+        <View className="flex-1 px-5 pt-16 items-center">
+          <View className="items-center mb-6">
+            <View className="py-3 px-6 rounded-2xl mb-4 bg-white shadow-lg shadow-black/10">
               <Image 
                 source={require('@/assets/images/logo.png')} 
-                className="h-10 w-[150px]"
+                className="h-12 w-[160px]"
                 contentFit="contain"
               />
             </View>
-            <ThemedText type="title" className="text-white text-2xl mb-1.5 text-center">Create Account</ThemedText>
-            <ThemedText className="text-white/90 text-sm text-center">Sign up to start tracking your net worth</ThemedText>
+            <Text className="text-white text-3xl font-extrabold mb-2 text-center tracking-tight">Create Account</Text>
+            <Text className="text-white/95 text-base font-medium text-center px-4">Sign up to start tracking your net worth</Text>
           </View>
 
-          <AuthCard>
-            <View className="bg-white/90 rounded-2xl px-4 py-3.5 mb-4.5 border border-gray-900/10">
-              <ThemedText className="text-[11px] tracking-wider uppercase font-bold text-gray-500 mb-1">Registration required</ThemedText>
-              <ThemedText className="text-[15px] leading-5 font-bold mb-1.5 text-gray-900">Google account not registered yet</ThemedText>
-              <ThemedText className="text-[13px] leading-[18px] text-gray-700">
+          <AuthCard className="pt-6">
+            <View className="bg-amber-50 rounded-xl px-5 py-4 mb-6 border border-amber-200">
+              <Text className="text-[11px] tracking-widest uppercase font-bold text-amber-700 mb-1">Registration Notice</Text>
+              <Text className="text-sm font-semibold text-amber-900 leading-tight mb-2">Google account not registered</Text>
+              <Text className="text-[13px] leading-5 text-amber-800">
                 {notice}
-              </ThemedText>
+              </Text>
             </View>
 
-            <View className="flex-row items-center mb-5 px-1">
+            <View className="flex-row items-center mb-6 px-2 bg-gray-50 py-3 rounded-lg border border-gray-100">
               <Checkbox
-                className="mr-3"
+                className="mr-3 h-5 w-5"
                 value={isChecked}
                 onValueChange={setChecked}
                 color={isChecked ? theme.primary : undefined}
               />
-              <ThemedText className="text-[13px] flex-1">I agree to the Terms of Service and Privacy Policy</ThemedText>
+              <Text className="text-sm text-gray-700 flex-1 font-medium leading-tight">
+                I agree to the Terms of Service and Privacy Policy
+              </Text>
             </View>
             
             <View className={!isChecked ? "opacity-50" : ""}>
@@ -94,14 +95,15 @@ export default function SignupScreen() {
                 title="Sign up with Google" 
                 onPress={handleGoogleSignup} 
                 className="mb-5"
+                disabled={!isChecked}
               />
             </View>
 
-            <View className="flex-row justify-center items-center mt-2.5">
-              <ThemedText className="text-sm">Already have an account? </ThemedText>
+            <View className="flex-row justify-center items-center mt-2 mb-2">
+              <Text className="text-sm text-gray-600 font-medium">Already have an account? </Text>
               <Link href="/(auth)/login" asChild>
                 <TouchableOpacity>
-                  <ThemedText className="text-sm font-bold" style={{ color: theme.primary }}>Log in</ThemedText>
+                  <Text className="text-sm font-bold ml-1" style={{ color: theme.primary }}>Log in</Text>
                 </TouchableOpacity>
               </Link>
             </View>
