@@ -1,1 +1,68 @@
-node_modules
+﻿# Expo
+.expo/
+dist/
+node_modules/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+.DS_Store
+*.log
+.env
+*.env.local
+*.env.development
+*.env.production
+*.env.test
+
+# TypeScript
+*.tsbuildinfo
+expo-env.d.ts
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Build outputs
+build/
+android/
+ios/
+
+# Package managers
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Backend
+backend/dist/
+backend/node_modules/
+backend/*.log
+
+# Mobile
+mobile/dist/
+mobile/node_modules/
+mobile/*.log
+
+# Environment files
+*.env
+*.env.local
+*.env.development
+*.env.production
+*.env.test
+
+# Temporary/Test files
+src/app/about.tsx
+src/app/login.tsx
+
+# Nested folders (accidental)
+Net_Worth_Ethiopia/
