@@ -36,3 +36,5 @@ npm-debug.log*
 
 # drizzle
 backend/drizzle/*
+
+docs/design/*
