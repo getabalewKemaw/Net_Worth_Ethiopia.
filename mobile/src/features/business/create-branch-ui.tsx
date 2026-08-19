@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, ScrollView, Pressable } from "react-native";
+import { View, ScrollView, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
@@ -39,21 +39,21 @@ export const CreateBranchUI: React.FC<CreateBranchUIProps> = ({ hookProps }) => 
   } = hookProps;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
-        <View style={styles.header}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
+      <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 40, gap: 16 }} keyboardShouldPersistTaps="handled">
+        <View className="mb-2 gap-2">
+          <Pressable className="self-start mb-2 active:opacity-70" onPress={() => router.back()}>
             <ThemedText style={{ color: theme.primary, fontWeight: "600" }}>← Back</ThemedText>
           </Pressable>
-          <ThemedText type="title" style={styles.titleText}>Add Branch</ThemedText>
-          <ThemedText style={styles.subtitle}>
+          <ThemedText type="title" className="text-[28px] font-extrabold">Add Branch</ThemedText>
+          <ThemedText className="text-sm leading-5" style={{ color: theme.textSecondary }}>
             Register a new operating location for {activeBusiness?.name || "your business"}.
           </ThemedText>
         </View>
 
         {apiError ? (
-          <View style={styles.apiErrorBox}>
-            <ThemedText style={styles.errorText}>{apiError}</ThemedText>
+          <View className="bg-red-100 p-3 rounded-lg">
+            <ThemedText className="text-red-600 text-xs">{apiError}</ThemedText>
           </View>
         ) : null}
 
@@ -104,9 +104,9 @@ export const CreateBranchUI: React.FC<CreateBranchUIProps> = ({ hookProps }) => 
         />
 
         {/* Payment Configurations */}
-        <View style={styles.sectionHeader}>
-          <ThemedText style={styles.sectionTitle}>Payment Configuration (Optional)</ThemedText>
-          <ThemedText style={styles.sectionSubtitle}>
+        <View className="mt-2 gap-1">
+          <ThemedText className="text-base font-semibold">Payment Configuration (Optional)</ThemedText>
+          <ThemedText className="text-xs text-[#60646C]">
             Setup Telebirr or CBE Birr merchant IDs to configure payouts.
           </ThemedText>
         </View>
@@ -134,60 +134,9 @@ export const CreateBranchUI: React.FC<CreateBranchUIProps> = ({ hookProps }) => 
           title="Add Branch"
           loading={isSubmitting}
           onPress={handleSubmit}
-          style={styles.submitBtn}
+          className="mt-4"
         />
       </ScrollView>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContainer: {
-    padding: 24,
-    paddingBottom: 40,
-    gap: 16,
-  },
-  header: {
-    marginBottom: 8,
-    gap: 8,
-  },
-  titleText: {
-    fontSize: 28,
-    fontWeight: "800",
-  },
-  backBtn: {
-    alignSelf: "flex-start",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  apiErrorBox: {
-    backgroundColor: "#FEE2E2",
-    padding: 12,
-    borderRadius: 8,
-  },
-  sectionHeader: {
-    marginTop: 8,
-    gap: 4,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  sectionSubtitle: {
-    fontSize: 12,
-    color: "#60646C",
-  },
-  submitBtn: {
-    marginTop: 16,
-  },
-  errorText: {
-    color: "#DC2626",
-    fontSize: 12,
-  },
-});
