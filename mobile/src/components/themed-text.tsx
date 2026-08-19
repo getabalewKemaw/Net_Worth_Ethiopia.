@@ -28,13 +28,25 @@ export function ThemedText({ style, type = 'default', themeColor, className, ...
     return Fonts.sans;
   };
 
+  // Check if custom text color is supplied via className (e.g. text-white, text-brand, text-red-600, etc.)
+  const hasTextColorClass = Boolean(
+    className &&
+    /\btext-(?!(xs|sm|base|lg|xl|2xl|3xl|4xl|5xl|left|center|right|justify|wrap|nowrap|\[?\d+px\]?)\b)[a-zA-Z0-9_#\[\]-]+/.test(className)
+  );
+
+  const styleObject = typeof style === 'object' && style !== null && !Array.isArray(style) ? style : {};
+  const hasStyleColor = 'color' in styleObject || (Array.isArray(style) && style.some((s) => s && typeof s === 'object' && 'color' in s));
+
+  const applyDefaultColor = !themeColor && !hasTextColorClass && !hasStyleColor;
+
   return (
     <Text
       style={[
-        { 
-          color: theme[themeColor ?? 'text'],
+        {
           fontFamily: getFontFamily(type),
         },
+        themeColor ? { color: theme[themeColor] } : undefined,
+        applyDefaultColor ? { color: theme.text } : undefined,
         type === 'code' && Platform.OS === 'android' ? { fontWeight: 'bold' } : undefined,
         style,
       ]}
