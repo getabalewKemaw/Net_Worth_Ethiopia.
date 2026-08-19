@@ -1,42 +1,55 @@
 import { useState, useEffect } from "react";
 import { router, useLocalSearchParams } from "expo-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useBusinessStore } from "@/store/business-store";
 import { branchSchema } from "@/validations/branch";
+
+type BranchFormInput = z.input<typeof branchSchema>;
+type BranchFormOutput = z.output<typeof branchSchema>;
 
 export function useEditBranch() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const branches = useBusinessStore((state) => state.branches);
   const editBranch = useBusinessStore((state) => state.editBranch);
-
-  // Form State
-  const [name, setName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-  const [subCityWoreda, setSubCityWoreda] = useState("");
-  const [telebirrMerchantId, setTelebirrMerchantId] = useState("");
-  const [cbeBirrMerchantId, setCbeBirrMerchantId] = useState("");
-
-  // UI State
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+
+  const {
+    watch,
+    setValue,
+    reset,
+    handleSubmit: rhfHandleSubmit,
+    formState: { errors: rhfErrors, isSubmitting },
+  } = useForm<BranchFormInput, any, BranchFormOutput>({
+    resolver: zodResolver(branchSchema),
+    defaultValues: {
+      name: "",
+      phoneNumber: "",
+      address: "",
+      city: "",
+      subCityWoreda: "",
+      telebirrMerchantId: "",
+      cbeBirrMerchantId: "",
+    },
+  });
 
   useEffect(() => {
     const branch = branches.find((b) => b.id === id);
     if (branch) {
-      setName(branch.name || "");
-      setPhoneNumber(branch.phoneNumber || "");
-      setAddress(branch.address || "");
-      setCity(branch.city || "");
-      setSubCityWoreda(branch.subCityWoreda || "");
-      setTelebirrMerchantId(branch.telebirrMerchantId || "");
-      setCbeBirrMerchantId(branch.cbeBirrMerchantId || "");
+      reset({
+        name: branch.name || "",
+        phoneNumber: branch.phoneNumber || "",
+        address: branch.address || "",
+        city: branch.city || "",
+        subCityWoreda: branch.subCityWoreda || "",
+        telebirrMerchantId: branch.telebirrMerchantId || "",
+        cbeBirrMerchantId: branch.cbeBirrMerchantId || "",
+      });
     }
-  }, [id, branches]);
+  }, [id, branches, reset]);
 
-  const handleSubmit = async () => {
-    setErrors({});
+  const onSubmit = async (data: BranchFormOutput) => {
     setApiError(null);
 
     if (!id) {
@@ -44,61 +57,42 @@ export function useEditBranch() {
       return;
     }
 
-    setIsSubmitting(true);
-
-    const payload = {
-      name,
-      phoneNumber: phoneNumber || null,
-      address,
-      city,
-      subCityWoreda: subCityWoreda || null,
-      telebirrMerchantId: telebirrMerchantId || null,
-      cbeBirrMerchantId: cbeBirrMerchantId || null,
-    };
-
-    // Client-side Zod validation
-    const parsed = branchSchema.safeParse(payload);
-    if (!parsed.success) {
-      const formattedErrors: Record<string, string> = {};
-      parsed.error.issues.forEach((err: any) => {
-        if (err.path[0]) {
-          formattedErrors[err.path[0] as string] = err.message;
-        }
-      });
-      setErrors(formattedErrors);
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
-      await editBranch(id, parsed.data);
+      await editBranch(id, data);
       router.back();
     } catch (err: any) {
       setApiError(err.message || "Failed to update branch");
-      setIsSubmitting(false);
     }
   };
 
+  const formattedErrors: Record<string, string> = {};
+  (Object.keys(rhfErrors) as Array<keyof BranchFormInput>).forEach((key) => {
+    const err = rhfErrors[key];
+    if (err?.message) {
+      formattedErrors[key] = err.message as string;
+    }
+  });
+
   return {
     id,
-    name,
-    setName,
-    phoneNumber,
-    setPhoneNumber,
-    address,
-    setAddress,
-    city,
-    setCity,
-    subCityWoreda,
-    setSubCityWoreda,
-    telebirrMerchantId,
-    setTelebirrMerchantId,
-    cbeBirrMerchantId,
-    setCbeBirrMerchantId,
-    errors,
+    name: watch("name") || "",
+    setName: (val: string) => setValue("name", val, { shouldValidate: true }),
+    phoneNumber: watch("phoneNumber") || "",
+    setPhoneNumber: (val: string) => setValue("phoneNumber", val, { shouldValidate: true }),
+    address: watch("address") || "",
+    setAddress: (val: string) => setValue("address", val, { shouldValidate: true }),
+    city: watch("city") || "",
+    setCity: (val: string) => setValue("city", val, { shouldValidate: true }),
+    subCityWoreda: watch("subCityWoreda") || "",
+    setSubCityWoreda: (val: string) => setValue("subCityWoreda", val, { shouldValidate: true }),
+    telebirrMerchantId: watch("telebirrMerchantId") || "",
+    setTelebirrMerchantId: (val: string) => setValue("telebirrMerchantId", val, { shouldValidate: true }),
+    cbeBirrMerchantId: watch("cbeBirrMerchantId") || "",
+    setCbeBirrMerchantId: (val: string) => setValue("cbeBirrMerchantId", val, { shouldValidate: true }),
+    errors: formattedErrors,
     isSubmitting,
     apiError,
-    handleSubmit,
+    handleSubmit: rhfHandleSubmit(onSubmit),
   };
 }
 export type UseEditBranchReturn = ReturnType<typeof useEditBranch>;

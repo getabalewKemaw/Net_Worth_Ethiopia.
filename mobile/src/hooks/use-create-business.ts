@@ -1,73 +1,65 @@
 import { useState } from "react";
 import { router } from "expo-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useSharedValue, withSpring } from "react-native-reanimated";
 import { useBusinessStore } from "@/store/business-store";
 import { businessSchema } from "@/validations/business";
 import { BUSINESS_TYPES } from "@/constants/business";
 
-const step1Schema = businessSchema.pick({
-  name: true,
-  type: true,
-  phoneNumber: true,
-  address: true,
-  city: true,
-});
+type BusinessFormInput = z.input<typeof businessSchema>;
+type BusinessFormOutput = z.output<typeof businessSchema>;
+
+const step1Fields: Array<keyof BusinessFormInput> = [
+  "name",
+  "type",
+  "phoneNumber",
+  "address",
+  "city",
+];
 
 export function useCreateBusiness() {
   const registerBusiness = useBusinessStore((state) => state.registerBusiness);
 
   // Wizard Step
   const [step, setStep] = useState<1 | 2>(1);
-
-  // Form State - Step 1 (Required)
-  const [name, setName] = useState("");
-  const [type, setType] = useState<typeof BUSINESS_TYPES[number]["value"] | "">("");
-  const [phoneNumber, setPhoneNumber] = useState("");
-  const [address, setAddress] = useState("");
-  const [city, setCity] = useState("");
-
-  // Form State - Step 2 (Optional)
-  const [email, setEmail] = useState("");
-  const [subCityWoreda, setSubCityWoreda] = useState("");
-  const [description, setDescription] = useState("");
-  const [tin, setTin] = useState("");
-  const [commercialRegistrationNo, setCommercialRegistrationNo] = useState("");
-  const [tradeLicenseNo, setTradeLicenseNo] = useState("");
-
-  // UI State
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
   // Reanimated values for progress bar
   const stepProgress = useSharedValue(0.5);
 
-  const handleNext = () => {
-    setErrors({});
+  const {
+    watch,
+    setValue,
+    trigger,
+    getValues,
+    handleSubmit: rhfHandleSubmit,
+    formState: { errors: rhfErrors, isSubmitting },
+  } = useForm<BusinessFormInput, any, BusinessFormOutput>({
+    resolver: zodResolver(businessSchema),
+    defaultValues: {
+      name: "",
+      type: "" as any,
+      phoneNumber: "",
+      address: "",
+      city: "",
+      email: "",
+      subCityWoreda: "",
+      description: "",
+      tin: "",
+      commercialRegistrationNo: "",
+      tradeLicenseNo: "",
+    },
+  });
+
+  const handleNext = async () => {
     setApiError(null);
-
-    const payload = {
-      name,
-      type: type as any,
-      phoneNumber,
-      address,
-      city,
-    };
-
-    const parsed = step1Schema.safeParse(payload);
-    if (!parsed.success) {
-      const formattedErrors: Record<string, string> = {};
-      parsed.error.issues.forEach((err) => {
-        if (err.path[0]) {
-          formattedErrors[err.path[0] as string] = err.message;
-        }
-      });
-      setErrors(formattedErrors);
-      return;
+    const isStep1Valid = await trigger(step1Fields);
+    if (isStep1Valid) {
+      stepProgress.value = withSpring(1, { damping: 15 });
+      setStep(2);
     }
-
-    stepProgress.value = withSpring(1, { damping: 15 });
-    setStep(2);
   };
 
   const handleBack = () => {
@@ -75,60 +67,30 @@ export function useCreateBusiness() {
     setStep(1);
   };
 
-  const performRegistration = async (finalData: any) => {
-    setIsSubmitting(true);
+  const performRegistration = async (finalData: BusinessFormOutput) => {
     setApiError(null);
-
     try {
       await registerBusiness(finalData);
       router.replace("/");
     } catch (err: any) {
       setApiError(err.message || "Failed to create business");
-      setIsSubmitting(false);
     }
   };
 
-  const handleSubmitAll = async () => {
-    setErrors({});
-    setApiError(null);
-
-    const payload = {
-      name,
-      type: type as any,
-      phoneNumber,
-      email: email || null,
-      address,
-      city,
-      subCityWoreda: subCityWoreda || null,
-      description: description || null,
-      tin: tin || null,
-      commercialRegistrationNo: commercialRegistrationNo || null,
-      tradeLicenseNo: tradeLicenseNo || null,
-    };
-
-    const parsed = businessSchema.safeParse(payload);
-    if (!parsed.success) {
-      const formattedErrors: Record<string, string> = {};
-      parsed.error.issues.forEach((err) => {
-        if (err.path[0]) {
-          formattedErrors[err.path[0] as string] = err.message;
-        }
-      });
-      setErrors(formattedErrors);
-      return;
-    }
-
-    await performRegistration(parsed.data);
-  };
+  const handleSubmitAll = rhfHandleSubmit(performRegistration);
 
   const handleSkipAndRegister = async () => {
-    const payload = {
-      name,
-      type: type as any,
-      phoneNumber,
+    const isStep1Valid = await trigger(step1Fields);
+    if (!isStep1Valid) return;
+
+    const values = getValues();
+    const payload: BusinessFormOutput = {
+      name: values.name,
+      type: values.type as any,
+      phoneNumber: values.phoneNumber,
+      address: values.address,
+      city: values.city,
       email: null,
-      address,
-      city,
       subCityWoreda: null,
       description: null,
       tin: null,
@@ -139,31 +101,39 @@ export function useCreateBusiness() {
     await performRegistration(payload);
   };
 
+  const formattedErrors: Record<string, string> = {};
+  (Object.keys(rhfErrors) as Array<keyof BusinessFormInput>).forEach((key) => {
+    const err = rhfErrors[key];
+    if (err?.message) {
+      formattedErrors[key] = err.message as string;
+    }
+  });
+
   return {
     step,
-    name,
-    setName,
-    type,
-    setType,
-    phoneNumber,
-    setPhoneNumber,
-    address,
-    setAddress,
-    city,
-    setCity,
-    email,
-    setEmail,
-    subCityWoreda,
-    setSubCityWoreda,
-    description,
-    setDescription,
-    tin,
-    setTin,
-    commercialRegistrationNo,
-    setCommercialRegistrationNo,
-    tradeLicenseNo,
-    setTradeLicenseNo,
-    errors,
+    name: watch("name") || "",
+    setName: (val: string) => setValue("name", val, { shouldValidate: true }),
+    type: watch("type") || "",
+    setType: (val: typeof BUSINESS_TYPES[number]["value"] | "") => setValue("type", val as any, { shouldValidate: true }),
+    phoneNumber: watch("phoneNumber") || "",
+    setPhoneNumber: (val: string) => setValue("phoneNumber", val, { shouldValidate: true }),
+    address: watch("address") || "",
+    setAddress: (val: string) => setValue("address", val, { shouldValidate: true }),
+    city: watch("city") || "",
+    setCity: (val: string) => setValue("city", val, { shouldValidate: true }),
+    email: watch("email") || "",
+    setEmail: (val: string) => setValue("email", val, { shouldValidate: true }),
+    subCityWoreda: watch("subCityWoreda") || "",
+    setSubCityWoreda: (val: string) => setValue("subCityWoreda", val, { shouldValidate: true }),
+    description: watch("description") || "",
+    setDescription: (val: string) => setValue("description", val, { shouldValidate: true }),
+    tin: watch("tin") || "",
+    setTin: (val: string) => setValue("tin", val, { shouldValidate: true }),
+    commercialRegistrationNo: watch("commercialRegistrationNo") || "",
+    setCommercialRegistrationNo: (val: string) => setValue("commercialRegistrationNo", val, { shouldValidate: true }),
+    tradeLicenseNo: watch("tradeLicenseNo") || "",
+    setTradeLicenseNo: (val: string) => setValue("tradeLicenseNo", val, { shouldValidate: true }),
+    errors: formattedErrors,
     isSubmitting,
     apiError,
     stepProgress,
