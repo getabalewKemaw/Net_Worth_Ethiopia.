@@ -1,4 +1,4 @@
-import { View, StyleSheet, useWindowDimensions } from 'react-native';
+import { View, useWindowDimensions } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 import Svg, { Defs, Pattern, Rect, Line } from 'react-native-svg';
 
@@ -9,7 +9,10 @@ export function BackgroundGrid() {
   const height = 300; 
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.primary, width, height }]}>
+    <View 
+      className="absolute top-0 left-0 right-0 z-[1]" 
+      style={{ backgroundColor: theme.primary, width, height }}
+    >
       <Svg height="100%" width="100%">
         <Defs>
           <Pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
@@ -22,13 +25,3 @@ export function BackgroundGrid() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-  },
-});

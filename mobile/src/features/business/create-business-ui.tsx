@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, ScrollView, Pressable } from "react-native";
+import { View, ScrollView, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInLeft, FadeInRight, Layout } from "react-native-reanimated";
 
@@ -53,12 +53,12 @@ export const CreateBusinessUI: React.FC<CreateBusinessUIProps> = ({ hookProps })
   } = hookProps;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
+      <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 40, gap: 16 }} keyboardShouldPersistTaps="handled">
         {/* Header */}
-        <View style={styles.header}>
-          <ThemedText type="title" style={styles.titleText}>Register Your Business</ThemedText>
-          <ThemedText style={[styles.subtitle, { color: theme.textSecondary }]}>
+        <View className="mb-2 gap-2">
+          <ThemedText type="title" className="text-[28px] font-extrabold">Register Your Business</ThemedText>
+          <ThemedText className="text-sm leading-5" style={{ color: theme.textSecondary }}>
             Let's set up your profile to start tracking your finances.
           </ThemedText>
         </View>
@@ -67,14 +67,14 @@ export const CreateBusinessUI: React.FC<CreateBusinessUIProps> = ({ hookProps })
         <StepIndicator step={step} stepProgress={stepProgress} onBack={handleBack} />
 
         {apiError ? (
-          <View style={styles.apiErrorBox}>
-            <ThemedText style={styles.errorText}>{apiError}</ThemedText>
+          <View className="bg-red-100 p-3 rounded-lg">
+            <ThemedText className="text-red-600 text-xs">{apiError}</ThemedText>
           </View>
         ) : null}
 
         {/* STEP 1: Core Details */}
         {step === 1 ? (
-          <Animated.View entering={FadeInLeft.duration(300)} layout={Layout.springify()} style={styles.formSection}>
+          <Animated.View entering={FadeInLeft.duration(300)} layout={Layout.springify()} className="gap-[18px]">
             <Input
               label="Business Name *"
               placeholder="e.g. Chala Retail Shop"
@@ -114,14 +114,14 @@ export const CreateBusinessUI: React.FC<CreateBusinessUIProps> = ({ hookProps })
             <Button
               title="Continue"
               onPress={handleNext}
-              style={styles.actionBtn}
+              className="mt-2"
             />
           </Animated.View>
         ) : (
           /* STEP 2: Optional Registration Details */
-          <Animated.View entering={FadeInRight.duration(300)} layout={Layout.springify()} style={styles.formSection}>
-            <View style={[styles.noticeBox, { backgroundColor: theme.backgroundSelected }]}>
-              <ThemedText style={[styles.noticeText, { color: theme.text }]}>
+          <Animated.View entering={FadeInRight.duration(300)} layout={Layout.springify()} className="gap-[18px]">
+            <View className="p-3.5 rounded-[10px] border border-[#E0E1E6]" style={{ backgroundColor: theme.backgroundSelected }}>
+              <ThemedText className="text-[13px] leading-[18px]" style={{ color: theme.text }}>
                 These legal details are optional and can be skipped if you want to set them up later.
               </ThemedText>
             </View>
@@ -149,7 +149,7 @@ export const CreateBusinessUI: React.FC<CreateBusinessUIProps> = ({ hookProps })
               placeholder="Tell us about your business operations..."
               multiline
               numberOfLines={3}
-              style={styles.textArea}
+              style={{ minHeight: 80, textAlignVertical: "top" }}
               value={description}
               onChangeText={setDescription}
               error={errors.description}
@@ -180,16 +180,18 @@ export const CreateBusinessUI: React.FC<CreateBusinessUIProps> = ({ hookProps })
               error={errors.tradeLicenseNo}
             />
 
-            <View style={styles.buttonRow}>
+            <View className="flex-row gap-3 mt-2">
               <Pressable
-                style={[styles.backBtn, { borderColor: theme.textSecondary }]}
+                className="flex-1 py-3.5 rounded-xl border-[1.5px] items-center justify-center active:opacity-70"
+                style={{ borderColor: theme.textSecondary }}
                 onPress={handleBack}
               >
                 <ThemedText style={{ color: theme.text, fontWeight: "600" }}>Back</ThemedText>
               </Pressable>
 
               <Pressable
-                style={[styles.skipBtn, { backgroundColor: theme.backgroundSelected }]}
+                className="flex-1 py-3.5 rounded-xl items-center justify-center active:opacity-70"
+                style={{ backgroundColor: theme.backgroundSelected }}
                 onPress={handleSkipAndRegister}
                 disabled={isSubmitting}
               >
@@ -201,7 +203,7 @@ export const CreateBusinessUI: React.FC<CreateBusinessUIProps> = ({ hookProps })
               title="Register Business"
               loading={isSubmitting}
               onPress={handleSubmitAll}
-              style={styles.actionBtn}
+              className="mt-2"
             />
           </Animated.View>
         )}
@@ -209,75 +211,3 @@ export const CreateBusinessUI: React.FC<CreateBusinessUIProps> = ({ hookProps })
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContainer: {
-    padding: 24,
-    paddingBottom: 40,
-    gap: 16,
-  },
-  header: {
-    marginBottom: 8,
-    gap: 8,
-  },
-  titleText: {
-    fontSize: 28,
-    fontWeight: "800",
-  },
-  subtitle: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  apiErrorBox: {
-    backgroundColor: "#FEE2E2",
-    padding: 12,
-    borderRadius: 8,
-  },
-  formSection: {
-    gap: 18,
-  },
-  textArea: {
-    minHeight: 80,
-    textAlignVertical: "top",
-  },
-  noticeBox: {
-    padding: 14,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#E0E1E6",
-  },
-  noticeText: {
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 8,
-  },
-  backBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  skipBtn: {
-    flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  actionBtn: {
-    marginTop: 8,
-  },
-  errorText: {
-    color: "#DC2626",
-    fontSize: 12,
-  },
-});

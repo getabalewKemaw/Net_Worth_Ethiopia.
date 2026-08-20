@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { Pressable, View, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -24,35 +24,35 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.content}>
-        <ThemedText type="title" style={styles.title}>Dashboard</ThemedText>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
+      <View className="flex-1 p-6 justify-center items-center gap-6">
+        <ThemedText type="title" className="mb-2">Dashboard</ThemedText>
 
         {isPending ? (
           <ActivityIndicator size="large" color={colors.primary} />
         ) : (
-          <View style={styles.cardContainer}>
+          <View className="w-full max-w-[400px] gap-4">
             {/* Active Business */}
-            <View style={[styles.infoCard, { backgroundColor: colors.backgroundElement }]}>
-              <ThemedText style={styles.cardLabel}>Active Business</ThemedText>
-              <ThemedText style={[styles.cardValue, { color: colors.text }]}>
+            <View className="p-5 rounded-[14px] gap-1.5 items-start" style={{ backgroundColor: colors.backgroundElement }}>
+              <ThemedText className="text-[12px] text-[#60646C] font-semibold uppercase">Active Business</ThemedText>
+              <ThemedText className="text-[18px] font-bold" style={{ color: colors.text }}>
                 {activeBusiness?.name || "No Business"}
               </ThemedText>
               {activeBusiness?.type && (
-                <View style={[styles.badge, { backgroundColor: colors.primary }]}>
-                  <ThemedText style={styles.badgeText}>{activeBusiness.type}</ThemedText>
+                <View className="px-2.5 py-1 rounded-[20px] mt-1" style={{ backgroundColor: colors.primary }}>
+                  <ThemedText className="text-white text-[12px] font-semibold">{activeBusiness.type}</ThemedText>
                 </View>
               )}
             </View>
 
             {/* Active Branch */}
-            <View style={[styles.infoCard, { backgroundColor: colors.backgroundElement }]}>
-              <ThemedText style={styles.cardLabel}>Operating Branch</ThemedText>
-              <ThemedText style={[styles.cardValue, { color: colors.text }]}>
+            <View className="p-5 rounded-[14px] gap-1.5 items-start" style={{ backgroundColor: colors.backgroundElement }}>
+              <ThemedText className="text-[12px] text-[#60646C] font-semibold uppercase">Operating Branch</ThemedText>
+              <ThemedText className="text-[18px] font-bold" style={{ color: colors.text }}>
                 {activeBranch?.name || "No Active Branch"}
               </ThemedText>
               {activeBranch && (
-                <ThemedText style={styles.branchCode}>
+                <ThemedText className="text-[12px] text-[#60646C] font-mono">
                   Code: {activeBranch.branchCode || "N/A"}
                 </ThemedText>
               )}
@@ -60,112 +60,27 @@ export default function HomeScreen() {
 
             {/* Actions */}
             <Pressable
-              style={[styles.actionButton, { backgroundColor: colors.primary }]}
+              className="py-3.5 rounded-xl items-center justify-center mt-2 active:opacity-80"
+              style={{ backgroundColor: colors.primary }}
               onPress={() => router.push('/(business)/branches')}
             >
-              <ThemedText style={styles.actionButtonText}>Switch Business / Branches</ThemedText>
+              <ThemedText className="text-white font-semibold text-[16px]">Switch Business / Branches</ThemedText>
             </Pressable>
 
             <Pressable
-              style={[styles.outlineButton, { borderColor: colors.primary }]}
+              className="py-3.5 rounded-xl items-center justify-center border-[1.5px] active:opacity-80"
+              style={{ borderColor: colors.primary }}
               onPress={() => router.push('/(business)/business-profile')}
             >
-              <ThemedText style={[styles.outlineButtonText, { color: colors.primary }]}>Business Profile Settings</ThemedText>
+              <ThemedText className="font-semibold text-[16px]" style={{ color: colors.primary }}>Business Profile Settings</ThemedText>
             </Pressable>
           </View>
         )}
 
-        <Pressable style={styles.logoutButton} onPress={handleLogout}>
-          <ThemedText style={styles.logoutText}>Log out</ThemedText>
+        <Pressable className="mt-3 px-5 py-3 rounded-[14px] bg-[#111827] active:opacity-80" onPress={handleLogout}>
+          <ThemedText className="text-white font-semibold">Log out</ThemedText>
         </Pressable>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    padding: 24,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 24,
-  },
-  title: {
-    marginBottom: 8,
-  },
-  cardContainer: {
-    width: '100%',
-    maxWidth: 400,
-    gap: 16,
-  },
-  infoCard: {
-    padding: 20,
-    borderRadius: 14,
-    gap: 6,
-    alignItems: 'flex-start',
-  },
-  cardLabel: {
-    fontSize: 12,
-    color: '#60646C',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  cardValue: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  branchCode: {
-    fontSize: 12,
-    color: '#60646C',
-    fontFamily: 'monospace',
-  },
-  badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    marginTop: 4,
-  },
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  actionButton: {
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 8,
-  },
-  actionButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  outlineButton: {
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-  },
-  outlineButtonText: {
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  logoutButton: {
-    marginTop: 12,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 14,
-    backgroundColor: '#111827',
-  },
-  logoutText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-  },
-});

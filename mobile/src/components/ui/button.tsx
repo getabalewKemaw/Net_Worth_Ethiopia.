@@ -1,54 +1,28 @@
 import React from "react";
-import { Pressable, StyleSheet, ActivityIndicator, type PressableProps } from "react-native";
+import { Pressable, ActivityIndicator, type PressableProps } from "react-native";
 import { ThemedText } from "../themed-text";
-import { useTheme } from "@/hooks/use-theme";
 
 interface ButtonProps extends PressableProps {
   title: string;
   loading?: boolean;
+  className?: string;
 }
 
-export const Button: React.FC<ButtonProps> = ({ title, loading, style, disabled, ...props }) => {
-  const theme = useTheme();
-
+export const Button: React.FC<ButtonProps> = ({ title, loading, style, disabled, className, ...props }) => {
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.button,
-        { backgroundColor: theme.primary },
-        (disabled || loading) ? styles.disabled : null,
-        pressed ? styles.pressed : null,
-        typeof style === "function" ? (style as any)({ pressed }) : style,
-      ]}
+      style={typeof style === "function" ? (style as any)({ pressed: false }) : style}
+      className={`bg-brand py-3.5 rounded-xl items-center justify-center w-full ${
+        disabled || loading ? "opacity-70" : "active:opacity-90"
+      } ${className || ""}`}
       disabled={disabled || loading}
       {...props}
     >
       {loading ? (
         <ActivityIndicator color="#FFFFFF" />
       ) : (
-        <ThemedText style={styles.text}>{title}</ThemedText>
+        <ThemedText className="text-white text-base font-semibold">{title}</ThemedText>
       )}
     </Pressable>
   );
 };
-
-const styles = StyleSheet.create({
-  button: {
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-  },
-  disabled: {
-    opacity: 0.7,
-  },
-  pressed: {
-    opacity: 0.9,
-  },
-  text: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});

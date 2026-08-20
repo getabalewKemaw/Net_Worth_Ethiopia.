@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 
 import { authClient } from '@/lib/auth-client';
@@ -28,22 +28,9 @@ export default function SignupSuccessScreen() {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 justify-center items-center bg-gray-200">
       <ActivityIndicator size="large" color={theme.primary} />
-      <ThemedText style={styles.text}>Finalizing your account...</ThemedText>
+      <ThemedText className="mt-5 text-base">Finalizing your account...</ThemedText>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#E5E7EB',
-  },
-  text: {
-    marginTop: 20,
-    fontSize: 16,
-  },
-});

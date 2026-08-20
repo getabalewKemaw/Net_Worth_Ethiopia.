@@ -66,3 +66,9 @@ src/app/login.tsx
 
 # Nested folders (accidental)
 Net_Worth_Ethiopia/
+
+# Drizzle
+backend/drizzle/*
+
+# Design docs
+docs/design/*

@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Pressable, ActivityIndicator, ScrollView } from "react-native";
+import { View, Pressable, ActivityIndicator, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
@@ -25,58 +25,59 @@ export const BranchesUI: React.FC<BranchesUIProps> = ({ hookProps }) => {
   } = hookProps;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={styles.header}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
+    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
+      <View className="px-6 pt-4 pb-2 gap-2">
+        <Pressable className="self-start mb-2 active:opacity-70" onPress={() => router.back()}>
           <ThemedText style={{ color: colors.primary, fontWeight: "600" }}>← Back</ThemedText>
         </Pressable>
-        <View style={styles.titleRow}>
+        <View className="flex-row items-center justify-between">
           <View>
-            <ThemedText type="title" style={styles.titleText}>Business & Branches</ThemedText>
-            <ThemedText style={styles.subtitle}>
+            <ThemedText type="title" className="text-2xl font-extrabold">Business & Branches</ThemedText>
+            <ThemedText className="text-sm text-[#60646C]">
               Active: {activeBusiness?.name || "No Business"}
             </ThemedText>
           </View>
           <Pressable
-            style={[styles.addBtn, { backgroundColor: colors.primary }]}
+            className="px-4 py-2 rounded-lg items-center justify-center active:opacity-80"
+            style={{ backgroundColor: colors.primary }}
             onPress={() => router.push("/(business)/create-branch")}
           >
-            <ThemedText style={styles.addBtnText}>+ Add Branch</ThemedText>
+            <ThemedText className="text-white font-semibold text-sm">+ Add Branch</ThemedText>
           </Pressable>
         </View>
       </View>
 
       {isPending ? (
-        <View style={styles.centered}>
+        <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
           {/* Section 1: Business List (Switching Console) */}
-          <View style={styles.section}>
-            <View style={styles.sectionHeaderRow}>
-              <ThemedText style={styles.sectionTitle}>Your Businesses</ThemedText>
+          <View className="px-6 mt-5 gap-3">
+            <View className="flex-row justify-between items-center">
+              <ThemedText className="text-[18px] font-bold">Your Businesses</ThemedText>
               <Pressable onPress={() => router.push("/(business)/create-business")}>
                 <ThemedText style={{ color: colors.primary, fontWeight: "600" }}>+ New Business</ThemedText>
               </Pressable>
             </View>
-            <View style={styles.businessGrid}>
+            <View className="flex-row flex-wrap gap-2.5">
               {businesses.map((biz) => {
                 const isActive = activeBusiness?.id === biz.id;
                 return (
                   <Pressable
                     key={biz.id}
+                    className="flex-1 min-w-[45%] p-3.5 rounded-xl gap-1 border-[1.5px] active:opacity-80"
                     style={[
-                      styles.businessCard,
-                      { backgroundColor: colors.backgroundElement },
-                      isActive && { borderColor: colors.primary, borderWidth: 1.5 },
+                      { backgroundColor: colors.backgroundElement, borderColor: "transparent" },
+                      isActive && { borderColor: colors.primary },
                     ]}
                     onPress={() => handleSwitchBusiness(biz.id)}
                   >
-                    <ThemedText style={styles.bizName}>{biz.name}</ThemedText>
-                    <View style={styles.bizMeta}>
-                      <ThemedText style={styles.bizMetaText}>{biz.type}</ThemedText>
-                      {isActive && <View style={[styles.activeDot, { backgroundColor: colors.primary }]} />}
+                    <ThemedText className="text-[15px] font-bold">{biz.name}</ThemedText>
+                    <View className="flex-row justify-between items-center">
+                      <ThemedText className="text-xs text-[#60646C]">{biz.type}</ThemedText>
+                      {isActive && <View className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.primary }} />}
                     </View>
                   </Pressable>
                 );
@@ -85,54 +86,55 @@ export const BranchesUI: React.FC<BranchesUIProps> = ({ hookProps }) => {
           </View>
 
           {/* Section 2: Branch Management */}
-          <View style={styles.section}>
-            <ThemedText style={styles.sectionTitle}>Operating Branches</ThemedText>
+          <View className="px-6 mt-5 gap-3">
+            <ThemedText className="text-[18px] font-bold">Operating Branches</ThemedText>
             {branches.length === 0 ? (
-              <View style={styles.emptyContainer}>
-                <ThemedText style={styles.emptyText}>No branches registered for this business.</ThemedText>
+              <View className="items-center py-8">
+                <ThemedText className="text-[#60646C] text-center">No branches registered for this business.</ThemedText>
                 <Pressable
-                  style={[styles.addBtn, { backgroundColor: colors.primary, marginTop: 12 }]}
+                  className="px-4 py-2 rounded-lg items-center justify-center mt-3 active:opacity-80"
+                  style={{ backgroundColor: colors.primary }}
                   onPress={() => router.push("/(business)/create-branch")}
                 >
-                  <ThemedText style={styles.addBtnText}>Add First Branch</ThemedText>
+                  <ThemedText className="text-white font-semibold text-sm">Add First Branch</ThemedText>
                 </Pressable>
               </View>
             ) : (
-              <View style={styles.branchList}>
+              <View className="gap-3">
                 {branches.map((item) => {
                   const isSelected = activeBranch?.id === item.id;
                   return (
                     <View
                       key={item.id}
+                      className="rounded-xl border-[1.5px] overflow-hidden"
                       style={[
-                        styles.card,
-                        { backgroundColor: colors.backgroundElement },
-                        isSelected && styles.cardSelected,
+                        { backgroundColor: colors.backgroundElement, borderColor: "transparent" },
+                        isSelected && { borderColor: colors.primary },
                       ]}
                     >
-                      <Pressable style={styles.cardSelectableArea} onPress={() => handleSelectBranch(item.id)}>
-                        <View style={styles.cardHeader}>
-                          <ThemedText style={styles.branchName}>{item.name}</ThemedText>
+                      <Pressable className="p-4 gap-1 active:opacity-80" onPress={() => handleSelectBranch(item.id)}>
+                        <View className="flex-row items-center justify-between">
+                          <ThemedText className="text-base font-semibold">{item.name}</ThemedText>
                           {isSelected && (
-                            <View style={[styles.badge, { backgroundColor: colors.primary }]}>
-                              <ThemedText style={styles.badgeText}>Active</ThemedText>
+                            <View className="px-2 py-0.5 rounded" style={{ backgroundColor: colors.primary }}>
+                              <ThemedText className="text-white text-[10px] font-semibold">Active</ThemedText>
                             </View>
                           )}
                         </View>
-                        <ThemedText style={styles.branchCode}>Code: {item.branchCode || "N/A"}</ThemedText>
-                        <ThemedText style={styles.branchDetails}>
+                        <ThemedText className="text-xs text-[#60646C] font-mono">Code: {item.branchCode || "N/A"}</ThemedText>
+                        <ThemedText className="text-sm text-[#60646C]">
                           {item.address}, {item.city}
                         </ThemedText>
                         {item.phoneNumber && (
-                          <ThemedText style={styles.branchDetails}>Phone: {item.phoneNumber}</ThemedText>
+                          <ThemedText className="text-sm text-[#60646C]">Phone: {item.phoneNumber}</ThemedText>
                         )}
                         {(item.telebirrMerchantId || item.cbeBirrMerchantId) && (
-                          <View style={styles.merchantIdsRow}>
+                          <View className="flex-row gap-3 mt-1.5">
                             {item.telebirrMerchantId && (
-                              <ThemedText style={styles.merchantIdText}>Telebirr: {item.telebirrMerchantId}</ThemedText>
+                              <ThemedText className="text-xs text-[#60646C] bg-[#F0F0F3] px-2 py-1 rounded-md">Telebirr: {item.telebirrMerchantId}</ThemedText>
                             )}
                             {item.cbeBirrMerchantId && (
-                              <ThemedText style={styles.merchantIdText}>CBE: {item.cbeBirrMerchantId}</ThemedText>
+                              <ThemedText className="text-xs text-[#60646C] bg-[#F0F0F3] px-2 py-1 rounded-md">CBE: {item.cbeBirrMerchantId}</ThemedText>
                             )}
                           </View>
                         )}
@@ -140,10 +142,11 @@ export const BranchesUI: React.FC<BranchesUIProps> = ({ hookProps }) => {
 
                       {/* Edit Button */}
                       <Pressable
-                        style={[styles.editBtn, { borderColor: colors.backgroundSelected }]}
+                        className="border-t border-[#E0E1E6] py-2.5 items-center justify-center active:opacity-70"
+                        style={{ borderColor: colors.backgroundSelected }}
                         onPress={() => router.push({ pathname: "/(business)/edit-branch", params: { id: item.id } })}
                       >
-                        <ThemedText style={[styles.editBtnText, { color: colors.text }]}>Manage & Edit</ThemedText>
+                        <ThemedText className="text-[13px] font-semibold" style={{ color: colors.text }}>Manage & Edit</ThemedText>
                       </Pressable>
                     </View>
                   );
@@ -156,175 +159,3 @@ export const BranchesUI: React.FC<BranchesUIProps> = ({ hookProps }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  header: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
-    gap: 8,
-  },
-  backBtn: {
-    alignSelf: "flex-start",
-    marginBottom: 8,
-  },
-  titleText: {
-    fontSize: 24,
-    fontWeight: "800",
-  },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#60646C",
-  },
-  addBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  addBtnText: {
-    color: "#FFFFFF",
-    fontWeight: "600",
-    fontSize: 14,
-  },
-  section: {
-    paddingHorizontal: 24,
-    marginTop: 20,
-    gap: 12,
-  },
-  sectionHeaderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  businessGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  businessCard: {
-    flex: 1,
-    minWidth: "45%",
-    padding: 14,
-    borderRadius: 12,
-    gap: 4,
-    borderWidth: 1.5,
-    borderColor: "transparent",
-  },
-  bizName: {
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  bizMeta: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  bizMetaText: {
-    fontSize: 12,
-    color: "#60646C",
-  },
-  activeDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  branchList: {
-    gap: 12,
-  },
-  card: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "transparent",
-    overflow: "hidden",
-  },
-  cardSelectableArea: {
-    padding: 16,
-    gap: 4,
-  },
-  cardSelected: {
-    borderColor: "#535233",
-    borderWidth: 1.5,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  branchName: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  branchCode: {
-    fontSize: 12,
-    color: "#60646C",
-    fontFamily: "monospace",
-  },
-  branchDetails: {
-    fontSize: 14,
-    color: "#60646C",
-  },
-  merchantIdsRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 6,
-  },
-  merchantIdText: {
-    fontSize: 12,
-    color: "#60646C",
-    backgroundColor: "#F0F0F3",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  badgeText: {
-    color: "#FFFFFF",
-    fontSize: 10,
-    fontWeight: "600",
-  },
-  editBtn: {
-    borderTopWidth: 1,
-    borderColor: "#E0E1E6",
-    paddingVertical: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  editBtnText: {
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  centered: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  emptyContainer: {
-    alignItems: "center",
-    paddingVertical: 30,
-  },
-  emptyText: {
-    color: "#60646C",
-    textAlign: "center",
-  },
-});

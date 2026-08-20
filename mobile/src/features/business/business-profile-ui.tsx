@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, ScrollView, Pressable } from "react-native";
+import { View, ScrollView, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
@@ -48,32 +48,32 @@ export const BusinessProfileUI: React.FC<BusinessProfileUIProps> = ({ hookProps 
   } = hookProps;
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <ScrollView contentContainerStyle={styles.scrollContainer} keyboardShouldPersistTaps="handled">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: theme.background }}>
+      <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 40, gap: 16 }} keyboardShouldPersistTaps="handled">
         {/* Header */}
-        <View style={styles.header}>
-          <Pressable style={styles.backBtn} onPress={() => router.back()}>
+        <View className="mb-2 gap-2">
+          <Pressable className="self-start mb-2 active:opacity-70" onPress={() => router.back()}>
             <ThemedText style={{ color: theme.primary, fontWeight: "600" }}>← Back</ThemedText>
           </Pressable>
-          <ThemedText type="title" style={styles.titleText}>Business Profile</ThemedText>
+          <ThemedText type="title" className="text-[28px] font-extrabold">Business Profile</ThemedText>
           <ThemedText style={{ color: theme.textSecondary }}>
             View and manage your core business registration details.
           </ThemedText>
         </View>
 
         {apiError ? (
-          <View style={styles.apiErrorBox}>
-            <ThemedText style={styles.errorText}>{apiError}</ThemedText>
+          <View className="bg-red-100 p-3 rounded-lg">
+            <ThemedText className="text-red-600 text-sm">{apiError}</ThemedText>
           </View>
         ) : null}
 
         {apiSuccess ? (
-          <View style={styles.apiSuccessBox}>
-            <ThemedText style={styles.successText}>{apiSuccess}</ThemedText>
+          <View className="bg-green-100 p-3 rounded-lg">
+            <ThemedText className="text-green-800 text-sm font-semibold">{apiSuccess}</ThemedText>
           </View>
         ) : null}
 
-        <View style={styles.formSection}>
+        <View className="gap-4">
           <Input
             label="Business Name *"
             placeholder="e.g. Chala Retail Shop"
@@ -82,29 +82,29 @@ export const BusinessProfileUI: React.FC<BusinessProfileUIProps> = ({ hookProps 
             error={errors.name}
           />
 
-          <View style={styles.typeContainer}>
-            <ThemedText style={styles.label}>Business Type *</ThemedText>
-            <View style={styles.typeSelectorGrid}>
+          <View className="gap-1.5">
+            <ThemedText className="text-sm font-semibold">Business Type *</ThemedText>
+            <View className="flex-row flex-wrap gap-2">
               {BUSINESS_TYPES.map((t) => {
                 const selected = type === t.value;
                 return (
                   <Pressable
                     key={t.value}
+                    className="px-4 py-2.5 rounded-[20px] active:opacity-80"
                     style={[
-                      styles.typeBtn,
                       { backgroundColor: theme.backgroundElement },
                       selected ? { backgroundColor: theme.primary } : null,
                     ]}
                     onPress={() => setType(t.value)}
                   >
-                    <ThemedText style={[styles.typeBtnText, selected ? { color: "#FFFFFF" } : null]}>
+                    <ThemedText className="text-sm font-medium" style={selected ? { color: "#FFFFFF" } : {}}>
                       {t.label}
                     </ThemedText>
                   </Pressable>
                 );
               })}
             </View>
-            {errors.type ? <ThemedText style={styles.errorText}>{errors.type}</ThemedText> : null}
+            {errors.type ? <ThemedText className="text-red-600 text-sm">{errors.type}</ThemedText> : null}
           </View>
 
           <Input
@@ -155,7 +155,7 @@ export const BusinessProfileUI: React.FC<BusinessProfileUIProps> = ({ hookProps 
             placeholder="Tell us about your business operations..."
             multiline
             numberOfLines={3}
-            style={styles.textArea}
+            style={{ minHeight: 80, textAlignVertical: "top" }}
             value={description}
             onChangeText={setDescription}
             error={errors.description}
@@ -190,83 +190,10 @@ export const BusinessProfileUI: React.FC<BusinessProfileUIProps> = ({ hookProps 
             title="Save Changes"
             loading={isSubmitting}
             onPress={handleSubmit}
-            style={styles.saveBtn}
+            className="mt-4"
           />
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContainer: {
-    padding: 24,
-    paddingBottom: 40,
-    gap: 16,
-  },
-  header: {
-    marginBottom: 8,
-    gap: 8,
-  },
-  titleText: {
-    fontSize: 28,
-    fontWeight: "800",
-  },
-  backBtn: {
-    alignSelf: "flex-start",
-    marginBottom: 8,
-  },
-  formSection: {
-    gap: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  typeContainer: {
-    gap: 6,
-  },
-  typeSelectorGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  typeBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  typeBtnText: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  textArea: {
-    minHeight: 80,
-    textAlignVertical: "top",
-  },
-  saveBtn: {
-    marginTop: 16,
-  },
-  apiErrorBox: {
-    backgroundColor: "#FEE2E2",
-    padding: 12,
-    borderRadius: 8,
-  },
-  errorText: {
-    color: "#DC2626",
-    fontSize: 14,
-  },
-  apiSuccessBox: {
-    backgroundColor: "#D1FAE5",
-    padding: 12,
-    borderRadius: 8,
-  },
-  successText: {
-    color: "#065F46",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-});

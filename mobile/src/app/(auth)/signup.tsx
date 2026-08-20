@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, Text } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router, useLocalSearchParams } from 'expo-router';
@@ -9,7 +9,6 @@ import Checkbox from 'expo-checkbox';
 import { BackgroundGrid } from '@/components/auth/BackgroundGrid';
 import { AuthCard } from '@/components/auth/AuthCard';
 import { GoogleButton } from '@/components/auth/GoogleButton';
-import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 import { authClient } from '@/lib/auth-client';
 
@@ -53,55 +52,58 @@ export default function SignupScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-gray-200">
       <BackgroundGrid />
       
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.contentWrapper}>
-          <View style={styles.headerContent}>
-            <View style={[styles.logoContainer, { backgroundColor: '#FFFFFF' }]}>
+      <SafeAreaView className="flex-1 z-[2]">
+        <View className="flex-1 px-5 pt-16 items-center">
+          <View className="items-center mb-6">
+            <View className="py-3 px-6 rounded-2xl mb-4 bg-white shadow-lg shadow-black/10">
               <Image 
                 source={require('@/assets/images/logo.png')} 
-                style={styles.logoImg}
+                className="h-12 w-[160px]"
                 contentFit="contain"
               />
             </View>
-            <ThemedText type="title" style={styles.title}>Create Account</ThemedText>
-            <ThemedText style={styles.subtitle}>Sign up to start tracking your net worth</ThemedText>
+            <Text className="text-white text-3xl font-extrabold mb-2 text-center tracking-tight">Create Account</Text>
+            <Text className="text-white/95 text-base font-medium text-center px-4">Sign up to start tracking your net worth</Text>
           </View>
 
-          <AuthCard>
-            <View style={styles.noticeBox}>
-              <ThemedText style={styles.noticeEyebrow}>Registration required</ThemedText>
-              <ThemedText style={styles.noticeTitle}>Google account not registered yet</ThemedText>
-              <ThemedText style={styles.noticeText}>
+          <AuthCard className="pt-6">
+            <View className="bg-amber-50 rounded-xl px-5 py-4 mb-6 border border-amber-200">
+              <Text className="text-[11px] tracking-widest uppercase font-bold text-amber-700 mb-1">Registration Notice</Text>
+              <Text className="text-sm font-semibold text-amber-900 leading-tight mb-2">Google account not registered</Text>
+              <Text className="text-[13px] leading-5 text-amber-800">
                 {notice}
-              </ThemedText>
+              </Text>
             </View>
 
-            <View style={styles.checkboxContainer}>
+            <View className="flex-row items-center mb-6 px-2 bg-gray-50 py-3 rounded-lg border border-gray-100">
               <Checkbox
-                style={styles.checkbox}
+                className="mr-3 h-5 w-5"
                 value={isChecked}
                 onValueChange={setChecked}
                 color={isChecked ? theme.primary : undefined}
               />
-              <ThemedText style={styles.checkboxLabel}>I agree to the Terms of Service and Privacy Policy</ThemedText>
+              <Text className="text-sm text-gray-700 flex-1 font-medium leading-tight">
+                I agree to the Terms of Service and Privacy Policy
+              </Text>
             </View>
             
-            <View style={!isChecked && styles.disabledContainer}>
+            <View className={!isChecked ? "opacity-50" : ""}>
               <GoogleButton 
                 title="Sign up with Google" 
                 onPress={handleGoogleSignup} 
-                style={styles.button}
+                className="mb-5"
+                disabled={!isChecked}
               />
             </View>
 
-            <View style={styles.footer}>
-              <ThemedText style={styles.footerText}>Already have an account? </ThemedText>
+            <View className="flex-row justify-center items-center mt-2 mb-2">
+              <Text className="text-sm text-gray-600 font-medium">Already have an account? </Text>
               <Link href="/(auth)/login" asChild>
                 <TouchableOpacity>
-                  <ThemedText style={[styles.linkText, { color: theme.primary }]}>Log in</ThemedText>
+                  <Text className="text-sm font-bold ml-1" style={{ color: theme.primary }}>Log in</Text>
                 </TouchableOpacity>
               </Link>
             </View>
@@ -111,111 +113,3 @@ export default function SignupScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#E5E7EB',
-  },
-  safeArea: {
-    flex: 1,
-    zIndex: 2,
-  },
-  contentWrapper: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 80,
-    alignItems: 'center',
-  },
-  headerContent: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  logoContainer: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
-    elevation: 3,
-  },
-  logoImg: {
-    height: 40,
-    width: 150,
-  },
-  title: {
-    color: '#fff',
-    fontSize: 26,
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  subtitle: {
-    color: 'rgba(255,255,255,0.9)',
-    fontSize: 14,
-    textAlign: 'center',
-  },
-  button: {
-    marginBottom: 20,
-  },
-  noticeBox: {
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(17,24,39,0.08)',
-  },
-  noticeEyebrow: {
-    fontSize: 11,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
-    fontWeight: '700',
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-  noticeTitle: {
-    fontSize: 15,
-    lineHeight: 20,
-    fontWeight: '700',
-    marginBottom: 6,
-    color: '#111827',
-  },
-  noticeText: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: '#374151',
-  },
-  checkboxContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 5,
-  },
-  checkbox: {
-    marginRight: 12,
-  },
-  checkboxLabel: {
-    fontSize: 13,
-    flex: 1,
-  },
-  disabledContainer: {
-    opacity: 0.5,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  footerText: {
-    fontSize: 14,
-  },
-  linkText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-});
