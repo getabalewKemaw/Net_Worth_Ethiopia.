@@ -7,6 +7,7 @@ import { ThemedText } from '@/components/themed-text';
 import { HamburgerHeader } from '@/components/navigation/hamburger-drawer';
 import { useBusinessStore } from '@/store/business-store';
 import { useTheme } from '@/hooks/use-theme';
+import { SalesTrendAreaChart, PaymentChannelDonutChart } from '@/components/charts/dashboard-charts';
 
 export default function HomeScreen() {
   const colors = useTheme();
@@ -225,7 +226,66 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            {/* 4. 🏬 BRANCH PERFORMANCE BREAKDOWN */}
+            {/* 4. VECTOR SVG AREA GRAPH — SALES & PROFIT TREND */}
+            <View className="p-5 rounded-3xl gap-4 border" style={{ backgroundColor: colors.backgroundElement, borderColor: 'rgba(0,0,0,0.06)' }}>
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <ThemedText className="text-[17px] font-black" style={{ color: colors.text }}>
+                    📈 Revenue & Profit Curve
+                  </ThemedText>
+                  <ThemedText className="text-[12px]" style={{ color: colors.textSecondary }}>
+                    Solid line: Sales · Dashed line: Net Profit
+                  </ThemedText>
+                </View>
+                <View className="px-3 py-1 rounded-xl bg-white/50 border border-gray-200">
+                  <ThemedText className="text-[12px] font-bold" style={{ color: colors.text }}>Last 7 Days</ThemedText>
+                </View>
+              </View>
+
+              {/* Vector SVG Area Chart Component */}
+              <SalesTrendAreaChart />
+
+              <View className="flex-row items-center justify-between pt-2 border-t border-gray-100">
+                <View className="flex-row items-center gap-4">
+                  <View className="flex-row items-center gap-1.5">
+                    <View className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+                    <ThemedText className="text-[11px] font-bold" style={{ color: colors.text }}>Gross Sales</ThemedText>
+                  </View>
+                  <View className="flex-row items-center gap-1.5">
+                    <View className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
+                    <ThemedText className="text-[11px] font-bold" style={{ color: colors.text }}>Net Profit</ThemedText>
+                  </View>
+                </View>
+
+                <Pressable onPress={() => router.push('/(business)/branches')}>
+                  <ThemedText className="text-[12px] font-black" style={{ color: colors.primary }}>
+                    Full Analytics →
+                  </ThemedText>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* 5. VECTOR SVG DONUT GRAPH — PAYMENT CHANNEL DISTRIBUTION */}
+            <View className="p-5 rounded-3xl gap-4 border" style={{ backgroundColor: colors.backgroundElement, borderColor: 'rgba(0,0,0,0.06)' }}>
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <ThemedText className="text-[17px] font-black" style={{ color: colors.text }}>
+                    💳 Payment Channel Split
+                  </ThemedText>
+                  <ThemedText className="text-[12px]" style={{ color: colors.textSecondary }}>
+                    Today's revenue by payment method
+                  </ThemedText>
+                </View>
+                <View className="px-2.5 py-1 rounded-xl bg-[#10B981]/15">
+                  <ThemedText className="text-[10px] font-black text-[#10B981]">LIVE RECONCILED</ThemedText>
+                </View>
+              </View>
+
+              {/* Donut SVG Chart Component */}
+              <PaymentChannelDonutChart />
+            </View>
+
+            {/* 6. 🏬 BRANCH PERFORMANCE BREAKDOWN */}
             <View className="p-5 rounded-3xl gap-4 border" style={{ backgroundColor: colors.backgroundElement, borderColor: 'rgba(0,0,0,0.06)' }}>
               <View className="flex-row items-center justify-between">
                 <View className="gap-0.5">
@@ -321,62 +381,7 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            {/* 5. ANALYTICS & WEEKLY SALES TREND VISUALIZER */}
-            <View className="p-5 rounded-3xl gap-4 border" style={{ backgroundColor: colors.backgroundElement, borderColor: 'rgba(0,0,0,0.06)' }}>
-              <View className="flex-row items-center justify-between">
-                <View>
-                  <ThemedText className="text-[17px] font-black" style={{ color: colors.text }}>
-                    📊 Analytics & Sales Trend
-                  </ThemedText>
-                  <ThemedText className="text-[12px]" style={{ color: colors.textSecondary }}>
-                    7-day revenue performance trajectory
-                  </ThemedText>
-                </View>
-                <View className="px-3 py-1 rounded-xl bg-white/50 border border-gray-200">
-                  <ThemedText className="text-[12px] font-bold" style={{ color: colors.text }}>This Week</ThemedText>
-                </View>
-              </View>
-
-              {/* Weekly Bar Graph Representation */}
-              <View className="flex-row items-end justify-between h-[120px] pt-5 px-2">
-                {[
-                  { day: 'Mon', val: '12k', h: '55%' },
-                  { day: 'Tue', val: '14k', h: '68%' },
-                  { day: 'Wed', val: '9k', h: '42%' },
-                  { day: 'Thu', val: '16k', h: '78%' },
-                  { day: 'Fri', val: '19k', h: '92%' },
-                  { day: 'Sat', val: '15k', h: '72%' },
-                  { day: 'Sun', val: '18.4k', h: '88%', active: true },
-                ].map((item, idx) => (
-                  <View key={idx} className="items-center gap-2 flex-1">
-                    <ThemedText className="text-[10px] font-bold text-[#60646C]">{item.val}</ThemedText>
-                    <View
-                      className="w-full max-w-[26px] rounded-t-lg shadow-sm"
-                      style={{
-                        height: item.h as any,
-                        backgroundColor: item.active ? colors.primary : 'rgba(0,0,0,0.12)',
-                      }}
-                    />
-                    <ThemedText className={`text-[11px] ${item.active ? 'font-black' : 'font-medium'}`} style={{ color: item.active ? colors.primary : colors.textSecondary }}>
-                      {item.day}
-                    </ThemedText>
-                  </View>
-                ))}
-              </View>
-
-              <View className="flex-row items-center justify-between pt-3 border-t border-gray-200">
-                <ThemedText className="text-[13px]" style={{ color: colors.textSecondary }}>
-                  Total Weekly Revenue: <ThemedText className="font-black text-[#10B981]">105,350 ETB</ThemedText>
-                </ThemedText>
-                <Pressable onPress={() => router.push('/(business)/branches')}>
-                  <ThemedText className="text-[13px] font-black" style={{ color: colors.primary }}>
-                    Full Reports →
-                  </ThemedText>
-                </Pressable>
-              </View>
-            </View>
-
-            {/* 6. LIVE TRANSACTION ACTIVITY LEDGER */}
+            {/* 7. LIVE TRANSACTION ACTIVITY LEDGER */}
             <View className="p-5 rounded-3xl gap-4 border" style={{ backgroundColor: colors.backgroundElement, borderColor: 'rgba(0,0,0,0.06)' }}>
               <View className="flex-row items-center justify-between">
                 <ThemedText className="text-[17px] font-black" style={{ color: colors.text }}>
