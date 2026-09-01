@@ -144,7 +144,66 @@ export default function HomeScreen() {
               </ScrollView>
             </View>
 
-            {/* 3. EXECUTIVE KPI CARDS (2x2 GRID) */}
+            {/* 3. VECTOR SVG AREA GRAPH — SALES & PROFIT TREND (PLACED AT TOP) */}
+            <View className="p-5 rounded-3xl gap-4 border" style={{ backgroundColor: colors.backgroundElement, borderColor: 'rgba(0,0,0,0.06)' }}>
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <ThemedText className="text-[17px] font-black" style={{ color: colors.text }}>
+                    📈 Revenue & Profit Curve
+                  </ThemedText>
+                  <ThemedText className="text-[12px]" style={{ color: colors.textSecondary }}>
+                    Solid line: Sales · Dashed line: Net Profit
+                  </ThemedText>
+                </View>
+                <View className="px-3 py-1 rounded-xl bg-white/50 border border-gray-200">
+                  <ThemedText className="text-[12px] font-bold" style={{ color: colors.text }}>Last 7 Days</ThemedText>
+                </View>
+              </View>
+
+              {/* Vector SVG Area Chart Component */}
+              <SalesTrendAreaChart />
+
+              <View className="flex-row items-center justify-between pt-2 border-t border-gray-100">
+                <View className="flex-row items-center gap-4">
+                  <View className="flex-row items-center gap-1.5">
+                    <View className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+                    <ThemedText className="text-[11px] font-bold" style={{ color: colors.text }}>Gross Sales</ThemedText>
+                  </View>
+                  <View className="flex-row items-center gap-1.5">
+                    <View className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
+                    <ThemedText className="text-[11px] font-bold" style={{ color: colors.text }}>Net Profit</ThemedText>
+                  </View>
+                </View>
+
+                <Pressable onPress={() => router.push('/(business)/branches')}>
+                  <ThemedText className="text-[12px] font-black" style={{ color: colors.primary }}>
+                    Full Analytics →
+                  </ThemedText>
+                </Pressable>
+              </View>
+            </View>
+
+            {/* 4. VECTOR SVG DONUT GRAPH — PAYMENT CHANNEL DISTRIBUTION */}
+            <View className="p-5 rounded-3xl gap-4 border" style={{ backgroundColor: colors.backgroundElement, borderColor: 'rgba(0,0,0,0.06)' }}>
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <ThemedText className="text-[17px] font-black" style={{ color: colors.text }}>
+                    💳 Payment Channel Split
+                  </ThemedText>
+                  <ThemedText className="text-[12px]" style={{ color: colors.textSecondary }}>
+                    Today's revenue by payment method
+                  </ThemedText>
+                </View>
+                <View className="px-2.5 py-1 rounded-xl bg-[#10B981]/15">
+                  <ThemedText className="text-[10px] font-black text-[#10B981]">LIVE RECONCILED</ThemedText>
+                </View>
+              </View>
+
+              {/* Donut SVG Chart Component */}
+              <PaymentChannelDonutChart />
+            </View>
+
+            {/* 5. EXECUTIVE KPI CARDS (2x2 GRID) */}
             <View className="gap-2">
               <ThemedText className="text-[12px] font-extrabold uppercase tracking-wider pl-1" style={{ color: colors.textSecondary }}>
                 Key Performance Indicators
@@ -224,65 +283,6 @@ export default function HomeScreen() {
                   </ThemedText>
                 </View>
               </View>
-            </View>
-
-            {/* 4. VECTOR SVG AREA GRAPH — SALES & PROFIT TREND */}
-            <View className="p-5 rounded-3xl gap-4 border" style={{ backgroundColor: colors.backgroundElement, borderColor: 'rgba(0,0,0,0.06)' }}>
-              <View className="flex-row items-center justify-between">
-                <View>
-                  <ThemedText className="text-[17px] font-black" style={{ color: colors.text }}>
-                    📈 Revenue & Profit Curve
-                  </ThemedText>
-                  <ThemedText className="text-[12px]" style={{ color: colors.textSecondary }}>
-                    Solid line: Sales · Dashed line: Net Profit
-                  </ThemedText>
-                </View>
-                <View className="px-3 py-1 rounded-xl bg-white/50 border border-gray-200">
-                  <ThemedText className="text-[12px] font-bold" style={{ color: colors.text }}>Last 7 Days</ThemedText>
-                </View>
-              </View>
-
-              {/* Vector SVG Area Chart Component */}
-              <SalesTrendAreaChart />
-
-              <View className="flex-row items-center justify-between pt-2 border-t border-gray-100">
-                <View className="flex-row items-center gap-4">
-                  <View className="flex-row items-center gap-1.5">
-                    <View className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
-                    <ThemedText className="text-[11px] font-bold" style={{ color: colors.text }}>Gross Sales</ThemedText>
-                  </View>
-                  <View className="flex-row items-center gap-1.5">
-                    <View className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
-                    <ThemedText className="text-[11px] font-bold" style={{ color: colors.text }}>Net Profit</ThemedText>
-                  </View>
-                </View>
-
-                <Pressable onPress={() => router.push('/(business)/branches')}>
-                  <ThemedText className="text-[12px] font-black" style={{ color: colors.primary }}>
-                    Full Analytics →
-                  </ThemedText>
-                </Pressable>
-              </View>
-            </View>
-
-            {/* 5. VECTOR SVG DONUT GRAPH — PAYMENT CHANNEL DISTRIBUTION */}
-            <View className="p-5 rounded-3xl gap-4 border" style={{ backgroundColor: colors.backgroundElement, borderColor: 'rgba(0,0,0,0.06)' }}>
-              <View className="flex-row items-center justify-between">
-                <View>
-                  <ThemedText className="text-[17px] font-black" style={{ color: colors.text }}>
-                    💳 Payment Channel Split
-                  </ThemedText>
-                  <ThemedText className="text-[12px]" style={{ color: colors.textSecondary }}>
-                    Today's revenue by payment method
-                  </ThemedText>
-                </View>
-                <View className="px-2.5 py-1 rounded-xl bg-[#10B981]/15">
-                  <ThemedText className="text-[10px] font-black text-[#10B981]">LIVE RECONCILED</ThemedText>
-                </View>
-              </View>
-
-              {/* Donut SVG Chart Component */}
-              <PaymentChannelDonutChart />
             </View>
 
             {/* 6. 🏬 BRANCH PERFORMANCE BREAKDOWN */}
