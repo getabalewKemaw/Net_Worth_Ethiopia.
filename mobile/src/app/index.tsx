@@ -11,8 +11,16 @@ export default function HomeScreen() {
   const colors = useTheme();
 
   const activeBusiness = useBusinessStore((state) => state.activeBusiness);
+  const branches = useBusinessStore((state) => state.branches);
   const activeBranch = useBusinessStore((state) => state.activeBranch);
+  const switchBranch = useBusinessStore((state) => state.switchBranch);
   const isPending = useBusinessStore((state) => state.isPending);
+
+  // Fallback multi-branch demo data when registered branches are limited
+  const displayBranches = branches.length > 0 ? branches : [
+    { id: 'b1', name: 'Main Branch', city: 'Addis Ababa', branchCode: 'BR-001', sales: '12,450 ETB', debt: '18,200 ETB', active: true },
+    { id: 'b2', name: 'Bole Flagship', city: 'Bole, Addis Ababa', branchCode: 'BR-002', sales: '6,000 ETB', debt: '14,600 ETB', active: false },
+  ];
 
   return (
     <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
@@ -33,7 +41,7 @@ export default function HomeScreen() {
                   Good morning 👋
                 </ThemedText>
                 <ThemedText className="text-[13px] mt-0.5 font-medium" style={{ color: colors.textSecondary }}>
-                  {activeBranch?.name ? `${activeBranch.name} · Today's Summary` : "Today's Merchant Summary"}
+                  {activeBranch?.name ? `${activeBranch.name} · Executive Dashboard` : "Today's Merchant Summary"}
                 </ThemedText>
               </View>
             </View>
@@ -73,7 +81,7 @@ export default function HomeScreen() {
               {/* Today's Sales */}
               <View className="flex-1 min-w-[150px] p-4 rounded-2xl gap-1 border border-gray-100" style={{ backgroundColor: colors.backgroundElement }}>
                 <ThemedText className="text-[12px] font-semibold uppercase" style={{ color: colors.textSecondary }}>
-                  Today's Sales
+                  Today's Total Sales
                 </ThemedText>
                 <ThemedText className="text-[20px] font-black" style={{ color: colors.text }}>
                   18,450 ETB
@@ -120,6 +128,87 @@ export default function HomeScreen() {
                 <ThemedText className="text-[12px] font-bold text-[#2E7D32]">
                   ✓ High Loan Eligibility
                 </ThemedText>
+              </View>
+            </View>
+
+            {/* 🏬 BRANCH PERFORMANCE SUMMARY SECTION */}
+            <View className="p-4 rounded-2xl gap-3 border border-gray-100" style={{ backgroundColor: colors.backgroundElement }}>
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <ThemedText className="text-[16px] font-bold" style={{ color: colors.text }}>
+                    🏬 Branch Performance Summary
+                  </ThemedText>
+                  <ThemedText className="text-[12px]" style={{ color: colors.textSecondary }}>
+                    Sales & debt breakdown across operating locations
+                  </ThemedText>
+                </View>
+                <Pressable
+                  className="px-3 py-1.5 rounded-lg active:opacity-80"
+                  style={{ backgroundColor: colors.primary }}
+                  onPress={() => router.push('/(business)/branches')}
+                >
+                  <ThemedText className="text-white text-[12px] font-semibold">Manage Branches</ThemedText>
+                </Pressable>
+              </View>
+
+              <View className="gap-3 mt-1">
+                {displayBranches.map((br: any, idx: number) => {
+                  const isSelected = activeBranch?.id === br.id || br.active;
+                  const branchSales = br.sales || (idx === 0 ? '12,450 ETB' : '6,000 ETB');
+                  const branchDebt = br.debt || (idx === 0 ? '18,200 ETB' : '14,600 ETB');
+
+                  return (
+                    <View
+                      key={br.id || idx}
+                      className="p-3.5 rounded-xl border flex-row items-center justify-between"
+                      style={{
+                        backgroundColor: colors.background,
+                        borderColor: isSelected ? colors.primary : 'rgba(0,0,0,0.08)',
+                      }}
+                    >
+                      <View className="flex-1 gap-1">
+                        <View className="flex-row items-center gap-2">
+                          <ThemedText className="text-[15px] font-bold" style={{ color: colors.text }}>
+                            {br.name}
+                          </ThemedText>
+                          {isSelected && (
+                            <View className="px-2 py-0.5 rounded-full" style={{ backgroundColor: 'rgba(46, 125, 50, 0.12)' }}>
+                              <ThemedText className="text-[10px] font-bold text-[#2E7D32]">Active Branch</ThemedText>
+                            </View>
+                          )}
+                        </View>
+
+                        <ThemedText className="text-[12px]" style={{ color: colors.textSecondary }}>
+                          📍 {br.city || br.address || 'Addis Ababa'} · Code: {br.branchCode || `BR-00${idx + 1}`}
+                        </ThemedText>
+
+                        {/* Branch Metrics Pill */}
+                        <View className="flex-row items-center gap-4 mt-1">
+                          <View>
+                            <ThemedText className="text-[10px] font-bold uppercase text-[#60646C]">Sales Today</ThemedText>
+                            <ThemedText className="text-[13px] font-extrabold" style={{ color: colors.text }}>{branchSales}</ThemedText>
+                          </View>
+                          <View>
+                            <ThemedText className="text-[10px] font-bold uppercase text-[#60646C]">Bidr Debt</ThemedText>
+                            <ThemedText className="text-[13px] font-extrabold text-[#FF8F00]">{branchDebt}</ThemedText>
+                          </View>
+                        </View>
+                      </View>
+
+                      {!isSelected && br.id && (
+                        <Pressable
+                          className="px-3 py-1.5 rounded-lg active:opacity-80 border"
+                          style={{ borderColor: colors.primary }}
+                          onPress={() => switchBranch(br.id)}
+                        >
+                          <ThemedText className="text-[12px] font-semibold" style={{ color: colors.primary }}>
+                            Switch
+                          </ThemedText>
+                        </Pressable>
+                      )}
+                    </View>
+                  );
+                })}
               </View>
             </View>
 
@@ -217,4 +306,5 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
+
 
