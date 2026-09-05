@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, usePathname } from 'expo-router';
-
+import Svg, { Path, Line } from 'react-native-svg';
 
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
@@ -53,10 +53,11 @@ export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
     ],
   },
   {
-    title: 'System & Storage',
+    title: 'System & Profile',
     items: [
       { id: 'sync', label: 'Offline Sync Queue', icon: '⚡', route: '/sync' },
-      { id: 'settings', label: 'Settings', icon: '⚙️', route: '/(business)/business-profile' },
+      { id: 'profile', label: 'Merchant Profile', icon: '👤', route: '/profile' },
+      { id: 'settings', label: 'Business Settings', icon: '⚙️', route: '/(business)/business-profile' },
     ],
   },
 ];
@@ -93,36 +94,65 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
     <>
       {/* Persistent Top Header Bar */}
       <View
-        className="w-full px-4 py-3 flex-row items-center justify-between border-b"
-        style={{
-          backgroundColor: colors.background,
-          borderColor: colors.backgroundElement,
-          zIndex: 10,
-        }}
+        style={[
+          styles.headerBar,
+          {
+            backgroundColor: '#FFFFFF',
+            borderBottomColor: '#F3F4F6',
+          },
+        ]}
       >
         <View className="flex-row items-center gap-3">
+          {/* Sleek Custom Styled Hamburger Button */}
           <Pressable
             onPress={() => setIsOpen(true)}
-            className="w-10 h-10 rounded-xl items-center justify-center active:opacity-70"
-            style={{ backgroundColor: colors.backgroundElement }}
+            style={styles.hamburgerBtn}
+            android_ripple={{ color: 'rgba(16, 185, 129, 0.15)', borderless: false }}
           >
-            <ThemedText className="text-[20px] font-bold">☰</ThemedText>
+            <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M3 6H21"
+                stroke="#1F2937"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              />
+              <Path
+                d="M3 12H15"
+                stroke="#10B981"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              />
+              <Path
+                d="M3 18H21"
+                stroke="#1F2937"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              />
+            </Svg>
           </Pressable>
 
-          <View>
-            <ThemedText className="text-[17px] font-bold" style={{ color: colors.text }}>
+          <View className="gap-0.5">
+            <ThemedText className="text-[16px] font-extrabold tracking-tight" style={{ color: colors.text }}>
               {activeBusiness?.name || 'NetWorth Ethiopia'}
             </ThemedText>
-            <ThemedText className="text-[12px]" style={{ color: colors.textSecondary }}>
-              {activeBranch?.name || 'Main Branch'}
-            </ThemedText>
+            <View className="flex-row items-center gap-1.5">
+              <View className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+              <ThemedText className="text-[11px] font-medium" style={{ color: colors.textSecondary }}>
+                {activeBranch?.name || 'Main Branch'}
+              </ThemedText>
+            </View>
           </View>
         </View>
 
         <View className="flex-row items-center gap-2">
-          <View className="px-2.5 py-1 rounded-full flex-row items-center gap-1.5" style={{ backgroundColor: 'rgba(46, 125, 50, 0.12)' }}>
-            <View className="w-2 h-2 rounded-full" style={{ backgroundColor: '#2E7D32' }} />
-            <ThemedText className="text-[12px] font-semibold" style={{ color: '#2E7D32' }}>Online</ThemedText>
+          {/* Subtle Online Status Chip */}
+          <View
+            style={styles.onlineBadge}
+          >
+            <View className="w-2 h-2 rounded-full bg-[#10B981]" />
+            <ThemedText className="text-[11px] font-bold text-[#065F46]">
+              Online
+            </ThemedText>
           </View>
         </View>
       </View>
@@ -142,51 +172,59 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
           <SafeAreaView
             style={[
               styles.drawerContainer,
-              { backgroundColor: colors.background },
+              { backgroundColor: '#FFFFFF' },
             ]}
           >
             {/* Drawer Header */}
-            <View className="p-5 border-b flex-row items-center justify-between" style={{ borderColor: colors.backgroundElement }}>
+            <View style={styles.drawerHeader}>
               <View className="gap-0.5">
-                <ThemedText className="text-[18px] font-extrabold" style={{ color: colors.primary }}>
+                <ThemedText className="text-[18px] font-black text-[#10B981]">
                   NetWorth Ethiopia
                 </ThemedText>
-                <ThemedText className="text-[13px]" style={{ color: colors.textSecondary }}>
+                <ThemedText className="text-[12px] font-medium text-gray-500">
                   {activeBusiness?.name || 'Merchant Operations'}
                 </ThemedText>
               </View>
 
               <Pressable
                 onPress={() => setIsOpen(false)}
-                className="w-9 h-9 rounded-full items-center justify-center active:opacity-70"
-                style={{ backgroundColor: colors.backgroundElement }}
+                style={styles.closeBtn}
               >
-                <ThemedText className="text-[16px] font-bold">✕</ThemedText>
+                <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <Path
+                    d="M18 6L6 18M6 6L18 18"
+                    stroke="#4B5563"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
               </Pressable>
             </View>
 
-            {/* Branch Badge Summary */}
-            <View className="mx-4 my-3 p-3 rounded-xl flex-row items-center justify-between" style={{ backgroundColor: colors.backgroundElement }}>
-              <View className="gap-0.5">
-                <ThemedText className="text-[11px] uppercase font-bold text-[#60646C]">Operating Branch</ThemedText>
-                <ThemedText className="text-[14px] font-bold" style={{ color: colors.text }}>
+            {/* Operating Branch Card */}
+            <View style={styles.branchSummaryCard}>
+              <View className="gap-0.5 flex-1 pr-2">
+                <ThemedText className="text-[10px] uppercase font-extrabold tracking-wider text-emerald-800">
+                  Current Branch
+                </ThemedText>
+                <ThemedText className="text-[14px] font-bold text-gray-900" numberOfLines={1}>
                   {activeBranch?.name || 'No Branch Selected'}
                 </ThemedText>
               </View>
               <Pressable
-                className="px-3 py-1.5 rounded-lg active:opacity-80"
-                style={{ backgroundColor: colors.primary }}
+                style={styles.switchBranchBtn}
                 onPress={() => handleNavigate('/(business)/branches')}
               >
-                <ThemedText className="text-white text-[12px] font-semibold">Switch</ThemedText>
+                <ThemedText className="text-white text-[11px] font-bold">Switch</ThemedText>
               </Pressable>
             </View>
 
             {/* Categorized Tab Navigation List */}
             <ScrollView className="flex-1 px-4 py-2" showsVerticalScrollIndicator={false}>
               {MERCHANT_TAB_CATEGORIES.map((category, catIndex) => (
-                <View key={catIndex} className="mb-5">
-                  <ThemedText className="text-[11px] font-bold uppercase tracking-wider mb-2 pl-2" style={{ color: colors.textSecondary }}>
+                <View key={catIndex} className="mb-4">
+                  <ThemedText className="text-[10px] font-extrabold uppercase tracking-widest mb-1.5 pl-2 text-gray-400">
                     {category.title}
                   </ThemedText>
 
@@ -197,22 +235,21 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
                         <Pressable
                           key={item.id}
                           onPress={() => handleNavigate(item.route)}
-                          className="flex-row items-center justify-between px-3.5 py-3 rounded-xl active:opacity-70"
-                          style={{
-                            backgroundColor: isActive ? colors.backgroundSelected : 'transparent',
-                          }}
+                          style={[
+                            styles.navItem,
+                            isActive && styles.navItemActive,
+                          ]}
                         >
                           <View className="flex-row items-center gap-3">
-                            <ThemedText className="text-[18px]">{item.icon}</ThemedText>
+                            <ThemedText className="text-[17px]">{item.icon}</ThemedText>
                             <ThemedText
-                              className={`text-[15px] ${isActive ? 'font-bold' : 'font-medium'}`}
-                              style={{ color: isActive ? colors.primary : colors.text }}
+                              className={`text-[14px] ${isActive ? 'font-bold text-[#10B981]' : 'font-medium text-gray-700'}`}
                             >
                               {item.label}
                             </ThemedText>
                           </View>
                           {isActive && (
-                            <View className="w-2 h-2 rounded-full" style={{ backgroundColor: colors.primary }} />
+                            <View className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
                           )}
                         </Pressable>
                       );
@@ -223,13 +260,12 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
             </ScrollView>
 
             {/* Drawer Footer / Logout */}
-            <View className="p-4 border-t" style={{ borderColor: colors.backgroundElement }}>
+            <View style={styles.drawerFooter}>
               <Pressable
                 onPress={handleLogout}
-                className="flex-row items-center justify-center gap-2 py-3 rounded-xl active:opacity-80"
-                style={{ backgroundColor: '#111827' }}
+                style={styles.logoutBtn}
               >
-                <ThemedText className="text-white text-[15px] font-semibold">Log out</ThemedText>
+                <ThemedText className="text-white text-[14px] font-bold">Sign Out</ThemedText>
               </Pressable>
             </View>
           </SafeAreaView>
@@ -240,10 +276,46 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
 }
 
 const styles = StyleSheet.create({
+  headerBar: {
+    width: '100%',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    zIndex: 10,
+  },
+  hamburgerBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  onlineBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.2)',
+  },
   modalBackdrop: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
   backdropPressable: {
     flex: 1,
@@ -252,10 +324,68 @@ const styles = StyleSheet.create({
     width: Platform.OS === 'web' ? 340 : '80%',
     maxWidth: 360,
     height: '100%',
-    elevation: 16,
+    elevation: 20,
     shadowColor: '#000',
     shadowOffset: { width: 4, height: 0 },
     shadowOpacity: 0.25,
-    shadowRadius: 10,
+    shadowRadius: 12,
+  },
+  drawerHeader: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F3F4F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  branchSummaryCard: {
+    marginHorizontal: 16,
+    marginVertical: 12,
+    padding: 12,
+    borderRadius: 14,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  switchBranchBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#10B981',
+  },
+  navItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  navItemActive: {
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+  },
+  drawerFooter: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  logoutBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#EF4444',
   },
 });
