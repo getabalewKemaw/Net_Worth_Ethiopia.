@@ -72,3 +72,4 @@ backend/drizzle/*
 
 # Design docs
 docs/design/*
+design.html

@@ -1,5 +1,7 @@
 import '../global.css';
+import '@/lib/online-manager-polyfill';
 import { useEffect } from 'react';
+
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
