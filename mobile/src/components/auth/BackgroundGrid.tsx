@@ -1,27 +1,39 @@
-import { View, useWindowDimensions } from 'react-native';
+import { View, useWindowDimensions, UIManager, Platform } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 import Svg, { Defs, Pattern, Rect, Line } from 'react-native-svg';
+
+const isSvgSupported = (): boolean => {
+  if (Platform.OS === 'web') return true;
+  return Boolean(
+    UIManager.getViewManagerConfig &&
+    UIManager.getViewManagerConfig('RNSVGSvgView')
+  );
+};
 
 export function BackgroundGrid() {
   const theme = useTheme();
   const { width } = useWindowDimensions();
   // Using an estimated height for the header background (e.g. 35% of common mobile heights or a fixed size)
   const height = 300; 
+  const svgAvailable = isSvgSupported();
 
   return (
     <View 
       className="absolute top-0 left-0 right-0 z-[1]" 
       style={{ backgroundColor: theme.primary, width, height }}
     >
-      <Svg height="100%" width="100%">
-        <Defs>
-          <Pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-            <Line x1="30" y1="0" x2="30" y2="30" stroke="rgba(255, 255, 255, 0.07)" strokeWidth="1" />
-            <Line x1="0" y1="30" x2="30" y2="30" stroke="rgba(255, 255, 255, 0.07)" strokeWidth="1" />
-          </Pattern>
-        </Defs>
-        <Rect width="100%" height="100%" fill="url(#grid)" />
-      </Svg>
+      {svgAvailable && (
+        <Svg height="100%" width="100%">
+          <Defs>
+            <Pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+              <Line x1="30" y1="0" x2="30" y2="30" stroke="rgba(255, 255, 255, 0.07)" strokeWidth="1" />
+              <Line x1="0" y1="30" x2="30" y2="30" stroke="rgba(255, 255, 255, 0.07)" strokeWidth="1" />
+            </Pattern>
+          </Defs>
+          <Rect width="100%" height="100%" fill="url(#grid)" />
+        </Svg>
+      )}
     </View>
   );
 }
+
