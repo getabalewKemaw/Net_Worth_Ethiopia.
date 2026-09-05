@@ -1,8 +1,6 @@
 import { relations } from "drizzle-orm";
 import { pgTable, text, timestamp, index, pgEnum } from "drizzle-orm/pg-core";
 import { user } from "./schema";
-
-// 1. Business Type Enum
 export const businessTypeEnum = pgEnum("business_type", [
   "Retail",
   "Wholesale",
@@ -12,7 +10,6 @@ export const businessTypeEnum = pgEnum("business_type", [
   "Other"
 ]);
 
-// 2. Business Table
 export const business = pgTable("business", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -38,7 +35,6 @@ export const business = pgTable("business", {
   index("business_userId_idx").on(table.userId),
 ]);
 
-// 3. Branch Table
 export const branch = pgTable("branch", {
   id: text("id").primaryKey(),
   businessId: text("business_id")
@@ -61,7 +57,6 @@ export const branch = pgTable("branch", {
   index("branch_businessId_idx").on(table.businessId),
 ]);
 
-// 4. Relations Definitions
 export const businessRelations = relations(business, ({ one, many }) => ({
   user: one(user, {
     fields: [business.userId],
