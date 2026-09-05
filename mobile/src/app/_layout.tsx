@@ -1,6 +1,6 @@
 import '../global.css';
 import { useEffect } from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import {  DefaultTheme, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useColorScheme } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
