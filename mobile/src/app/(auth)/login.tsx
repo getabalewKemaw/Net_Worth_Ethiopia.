@@ -27,12 +27,14 @@ export default function LoginScreen() {
       });
 
       if (error) {
+        console.warn('[handleGoogleLogin] Auth returned error:', error);
         router.replace({
           pathname: '/(auth)/signup',
           params: { message: signupMessage },
         });
       }
-    } catch {
+    } catch (err) {
+      console.error('[handleGoogleLogin] Exception during Google login:', err);
       router.replace({
         pathname: '/(auth)/signup',
         params: { message: signupMessage },

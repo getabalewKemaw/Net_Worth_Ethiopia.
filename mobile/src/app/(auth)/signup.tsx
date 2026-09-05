@@ -32,6 +32,7 @@ export default function SignupScreen() {
       });
 
       if (error) {
+        console.warn('[handleGoogleSignup] Auth returned error:', error);
         router.replace({
           pathname: '/(auth)/signup',
           params: {
@@ -40,7 +41,8 @@ export default function SignupScreen() {
           },
         });
       }
-    } catch {
+    } catch (err) {
+      console.error('[handleGoogleSignup] Exception during Google signup:', err);
       router.replace({
         pathname: '/(auth)/signup',
         params: {

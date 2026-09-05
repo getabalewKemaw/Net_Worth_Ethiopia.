@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Dimensions } from 'react-native';
+import { View, Dimensions, UIManager, Platform } from 'react-native';
 import Svg, {
   Path,
   Defs,
@@ -14,8 +14,17 @@ import { useTheme } from '@/hooks/use-theme';
 
 const screenWidth = Dimensions.get('window').width;
 
+const isSvgSupported = (): boolean => {
+  if (Platform.OS === 'web') return true;
+  return Boolean(
+    UIManager.getViewManagerConfig &&
+    UIManager.getViewManagerConfig('RNSVGLinearGradient')
+  );
+};
+
 export function SalesTrendAreaChart() {
   const colors = useTheme();
+  const svgAvailable = isSvgSupported();
 
   // SVG Area Chart Dimensions
   const height = 150;
@@ -27,14 +36,53 @@ export function SalesTrendAreaChart() {
   const areaPath = `${linePath} L 600 ${height - 20} L 10 ${height - 20} Z`;
 
   const dataPoints = [
-    { x: 20, y: 85, val: '12k', label: 'Mon' },
-    { x: 100, y: 65, val: '14.5k', label: 'Tue' },
-    { x: 180, y: 95, val: '9.8k', label: 'Wed' },
-    { x: 260, y: 50, val: '16.2k', label: 'Thu' },
-    { x: 340, y: 20, val: '19k', label: 'Fri', peak: true },
-    { x: 420, y: 55, val: '15.4k', label: 'Sat' },
-    { x: 500, y: 30, val: '18.5k', label: 'Sun', active: true },
+    { x: 20, y: 85, val: '12k', label: 'Mon', heightPct: 62 },
+    { x: 100, y: 65, val: '14.5k', label: 'Tue', heightPct: 75 },
+    { x: 180, y: 95, val: '9.8k', label: 'Wed', heightPct: 50 },
+    { x: 260, y: 50, val: '16.2k', label: 'Thu', heightPct: 84 },
+    { x: 340, y: 20, val: '19k', label: 'Fri', peak: true, heightPct: 100 },
+    { x: 420, y: 55, val: '15.4k', label: 'Sat', heightPct: 80 },
+    { x: 500, y: 30, val: '18.5k', label: 'Sun', active: true, heightPct: 95 },
   ];
+
+  if (!svgAvailable) {
+    // Pure View-based fallback for APKs built before react-native-svg was compiled
+    return (
+      <View className="w-full gap-3">
+        <View className="flex-row items-end justify-between h-32 pt-6 px-1 pb-2 border-b border-black/5">
+          {dataPoints.map((pt, idx) => (
+            <View key={idx} className="items-center gap-1.5 flex-1">
+              <ThemedText className="text-[10px] font-bold" style={{ color: pt.active ? colors.primary : colors.textSecondary }}>
+                {pt.val}
+              </ThemedText>
+              <View
+                className="w-4 rounded-full"
+                style={{
+                  height: `${pt.heightPct}%`,
+                  backgroundColor: pt.active ? colors.primary : pt.peak ? '#F59E0B' : 'rgba(16, 185, 129, 0.35)',
+                }}
+              />
+              <ThemedText className="text-[10px] font-bold mt-1" style={{ color: colors.textSecondary }}>
+                {pt.label}
+              </ThemedText>
+            </View>
+          ))}
+        </View>
+        <View className="flex-row items-center justify-between pt-1">
+          <View className="flex-row items-center gap-2">
+            <View className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colors.primary }} />
+            <ThemedText className="text-[11px] font-semibold" style={{ color: colors.textSecondary }}>
+              Sales Trend (Daily Velocity)
+            </ThemedText>
+          </View>
+          <View className="px-2 py-0.5 rounded-md bg-[#10B981]/15">
+            <ThemedText className="text-[#059669] text-[11px] font-bold">Peak: 19,000 ETB</ThemedText>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
 
   return (
     <View className="w-full gap-3">
@@ -114,6 +162,47 @@ export function SalesTrendAreaChart() {
 
 export function PaymentChannelDonutChart() {
   const colors = useTheme();
+  const svgAvailable = isSvgSupported();
+
+  if (!svgAvailable) {
+    return (
+      <View className="gap-3 w-full">
+        {/* Segmented Horizontal Progress Bar */}
+        <View className="w-full h-4 rounded-full overflow-hidden flex-row bg-gray-100">
+          <View style={{ width: '55%', backgroundColor: '#0284C7' }} />
+          <View style={{ width: '30%', backgroundColor: '#2E7D32' }} />
+          <View style={{ width: '15%', backgroundColor: '#D97706' }} />
+        </View>
+
+        {/* Channel Breakdown Details */}
+        <View className="gap-2 pt-1">
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <View className="w-3 h-3 rounded-full bg-[#0284C7]" />
+              <ThemedText className="text-[13px] font-bold" style={{ color: colors.text }}>Telebirr</ThemedText>
+            </View>
+            <ThemedText className="text-[13px] font-black text-[#0284C7]">55% (10,147 ETB)</ThemedText>
+          </View>
+
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <View className="w-3 h-3 rounded-full bg-[#2E7D32]" />
+              <ThemedText className="text-[13px] font-bold" style={{ color: colors.text }}>CBE Birr</ThemedText>
+            </View>
+            <ThemedText className="text-[13px] font-black text-[#2E7D32]">30% (5,535 ETB)</ThemedText>
+          </View>
+
+          <View className="flex-row items-center justify-between">
+            <View className="flex-row items-center gap-2">
+              <View className="w-3 h-3 rounded-full bg-[#D97706]" />
+              <ThemedText className="text-[13px] font-bold" style={{ color: colors.text }}>Cash</ThemedText>
+            </View>
+            <ThemedText className="text-[13px] font-black text-[#D97706]">15% (2,768 ETB)</ThemedText>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-row items-center justify-between gap-4">

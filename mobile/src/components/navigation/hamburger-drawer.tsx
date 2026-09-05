@@ -4,11 +4,12 @@ import {
   Pressable,
   Modal,
   ScrollView,
-  SafeAreaView,
   StyleSheet,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, usePathname } from 'expo-router';
+
 
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
