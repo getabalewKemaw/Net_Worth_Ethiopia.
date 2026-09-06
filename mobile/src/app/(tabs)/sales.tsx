@@ -18,12 +18,16 @@ import { useTheme } from '@/hooks/use-theme';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+type SaleType = 'instant' | 'dube';
+
 type SaleEntry = {
   id: string;
   description: string;
   amount: number;
   customer?: string;
+  phone?: string;
   paymentMethod: 'cash' | 'telebirr' | 'cbe';
+  saleType: SaleType;
   time: string;
 };
 
@@ -38,9 +42,9 @@ type ExpenseEntry = {
 // ─── Mock Data ─────────────────────────────────────────────────────────────────
 
 const INITIAL_SALES: SaleEntry[] = [
-  { id: 's1', description: 'Injera (10 plates)', amount: 350, customer: 'Abebe M.', paymentMethod: 'cash', time: '09:15 AM' },
-  { id: 's2', description: 'Wholesale flour 50kg', amount: 1200, customer: 'Tigist Shop', paymentMethod: 'telebirr', time: '10:42 AM' },
-  { id: 's3', description: 'Mixed groceries', amount: 480, paymentMethod: 'cbe', time: '11:30 AM' },
+  { id: 's1', description: 'Injera (10 plates)', amount: 350, customer: 'Abebe M.', paymentMethod: 'cash', saleType: 'instant', time: '09:15 AM' },
+  { id: 's2', description: 'Wholesale flour 50kg', amount: 1200, customer: 'Tigist Shop', phone: '0912345678', paymentMethod: 'cash', saleType: 'dube', time: '10:42 AM' },
+  { id: 's3', description: 'Mixed groceries', amount: 480, paymentMethod: 'cbe', saleType: 'instant', time: '11:30 AM' },
 ];
 
 const INITIAL_EXPENSES: ExpenseEntry[] = [
@@ -63,6 +67,20 @@ function PaymentBadge({ method }: { method: SaleEntry['paymentMethod'] }) {
   return (
     <View style={[styles.badge, { backgroundColor: pm.color + '18', borderColor: pm.color + '40' }]}>
       <ThemedText style={{ fontSize: 11, fontWeight: '700', color: pm.color }}>{pm.label}</ThemedText>
+    </View>
+  );
+}
+
+function SaleTypeBadge({ saleType }: { saleType: SaleType }) {
+  const isDube = saleType === 'dube';
+  return (
+    <View style={[styles.badge, {
+      backgroundColor: isDube ? '#FEF3C718' : '#F0FDF418',
+      borderColor: isDube ? '#D9770640' : '#10B98140',
+    }]}>
+      <ThemedText style={{ fontSize: 11, fontWeight: '800', color: isDube ? '#D97706' : '#059669' }}>
+        {isDube ? '📜 Dube' : '⚡ Instant'}
+      </ThemedText>
     </View>
   );
 }
@@ -102,22 +120,51 @@ function AddSaleModal({
   onAdd: (entry: Omit<SaleEntry, 'id' | 'time'>) => void;
   colors: ReturnType<typeof useTheme>;
 }) {
+  const [saleType, setSaleType] = useState<SaleType>('instant');
   const [desc, setDesc] = useState('');
   const [amount, setAmount] = useState('');
   const [customer, setCustomer] = useState('');
+  const [phone, setPhone] = useState('');
   const [method, setMethod] = useState<SaleEntry['paymentMethod']>('cash');
 
-  const reset = () => { setDesc(''); setAmount(''); setCustomer(''); setMethod('cash'); };
+  const reset = () => {
+    setSaleType('instant');
+    setDesc('');
+    setAmount('');
+    setCustomer('');
+    setPhone('');
+    setMethod('cash');
+  };
 
   const handleSubmit = () => {
     if (!desc.trim() || !amount.trim()) {
       Alert.alert('Missing Info', 'Please enter a description and amount.');
       return;
     }
-    onAdd({ description: desc.trim(), amount: parseFloat(amount), customer: customer.trim() || undefined, paymentMethod: method });
+    if (saleType === 'dube') {
+      if (!customer.trim()) {
+        Alert.alert('Missing Info', 'Customer name is required for Dube (debt) sales.');
+        return;
+      }
+      if (!phone.trim()) {
+        Alert.alert('Missing Info', 'Phone number is required for Dube (debt) sales.');
+        return;
+      }
+    }
+    onAdd({
+      description: desc.trim(),
+      amount: parseFloat(amount),
+      customer: customer.trim() || undefined,
+      phone: phone.trim() || undefined,
+      paymentMethod: method,
+      saleType,
+    });
     reset();
     onClose();
   };
+
+  const isDube = saleType === 'dube';
+  const accentColor = isDube ? '#D97706' : '#10B981';
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -128,58 +175,133 @@ function AddSaleModal({
           <View style={styles.handleBar} />
           <ThemedText style={[styles.modalTitle, { color: colors.text }]}>Record New Sale</ThemedText>
 
-          <ThemedText style={styles.inputLabel}>Item / Description *</ThemedText>
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: '#E5E7EB' }]}
-            placeholder="e.g. Injera 10 plates"
-            placeholderTextColor={colors.textSecondary}
-            value={desc}
-            onChangeText={setDesc}
-          />
-
-          <ThemedText style={styles.inputLabel}>Amount (ETB) *</ThemedText>
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: '#E5E7EB' }]}
-            placeholder="0.00"
-            placeholderTextColor={colors.textSecondary}
-            keyboardType="numeric"
-            value={amount}
-            onChangeText={setAmount}
-          />
-
-          <ThemedText style={styles.inputLabel}>Customer (optional)</ThemedText>
-          <TextInput
-            style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: '#E5E7EB' }]}
-            placeholder="Customer name"
-            placeholderTextColor={colors.textSecondary}
-            value={customer}
-            onChangeText={setCustomer}
-          />
-
-          <ThemedText style={styles.inputLabel}>Payment Method</ThemedText>
-          <View style={styles.methodRow}>
-            {PAYMENT_METHODS.map((pm) => (
-              <Pressable
-                key={pm.key}
-                onPress={() => setMethod(pm.key)}
-                style={[
-                  styles.methodBtn,
-                  { borderColor: method === pm.key ? pm.color : '#E5E7EB', backgroundColor: method === pm.key ? pm.color + '18' : colors.background },
-                ]}
-              >
-                <ThemedText style={{ fontSize: 12, fontWeight: '700', color: method === pm.key ? pm.color : colors.textSecondary }}>
-                  {pm.label}
-                </ThemedText>
-              </Pressable>
-            ))}
+          {/* ── Sale Type Toggle ───────────────────────────── */}
+          <View style={[styles.saleTypePill, { backgroundColor: colors.background }]}>
+            <Pressable
+              style={[styles.saleTypeBtn, !isDube && styles.saleTypeBtnActive]}
+              onPress={() => setSaleType('instant')}
+            >
+              {!isDube && <View style={[styles.saleTypeBtnBg, { backgroundColor: '#10B981' }]} />}
+              <ThemedText style={[
+                styles.saleTypeBtnText,
+                { color: !isDube ? '#FFF' : colors.textSecondary },
+              ]}>
+                ⚡  Instant
+              </ThemedText>
+            </Pressable>
+            <Pressable
+              style={[styles.saleTypeBtn, isDube && styles.saleTypeBtnActive]}
+              onPress={() => setSaleType('dube')}
+            >
+              {isDube && <View style={[styles.saleTypeBtnBg, { backgroundColor: '#D97706' }]} />}
+              <ThemedText style={[
+                styles.saleTypeBtnText,
+                { color: isDube ? '#FFF' : colors.textSecondary },
+              ]}>
+                📜  Dube (Debt)
+              </ThemedText>
+            </Pressable>
           </View>
 
-          <View style={styles.modalActions}>
+          {/* ── Dube info note ─────────────────────────────── */}
+          {isDube && (
+            <View style={[styles.dubeNote, { backgroundColor: '#FEF3C7', borderColor: '#FCD34D' }]}>
+              <ThemedText style={{ fontSize: 12, color: '#92400E', fontWeight: '600', lineHeight: 18 }}>
+                📜 Dube means the customer will pay later. Customer name and phone are required.
+              </ThemedText>
+            </View>
+          )}
+
+          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+            <ThemedText style={styles.inputLabel}>Item / Description *</ThemedText>
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: '#E5E7EB' }]}
+              placeholder="e.g. Injera 10 plates"
+              placeholderTextColor={colors.textSecondary}
+              value={desc}
+              onChangeText={setDesc}
+            />
+
+            <ThemedText style={styles.inputLabel}>Amount (ETB) *</ThemedText>
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: '#E5E7EB' }]}
+              placeholder="0.00"
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="numeric"
+              value={amount}
+              onChangeText={setAmount}
+            />
+
+            <ThemedText style={styles.inputLabel}>
+              Customer Name{isDube ? ' *' : ' (optional)'}
+            </ThemedText>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.background,
+                  color: colors.text,
+                  borderColor: isDube && !customer.trim() ? '#FBBF24' : '#E5E7EB',
+                },
+              ]}
+              placeholder={isDube ? 'Required for Dube sales' : 'Customer name (optional)'}
+              placeholderTextColor={isDube ? '#D97706' : colors.textSecondary}
+              value={customer}
+              onChangeText={setCustomer}
+            />
+
+            {/* Phone — shown for both, required for Dube */}
+            <ThemedText style={styles.inputLabel}>
+              Phone Number{isDube ? ' *' : ' (optional)'}
+            </ThemedText>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  backgroundColor: colors.background,
+                  color: colors.text,
+                  borderColor: isDube && !phone.trim() ? '#FBBF24' : '#E5E7EB',
+                },
+              ]}
+              placeholder={isDube ? 'Required — e.g. 0912345678' : 'e.g. 0912345678 (optional)'}
+              placeholderTextColor={isDube ? '#D97706' : colors.textSecondary}
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={setPhone}
+            />
+
+            {/* Payment method only for instant */}
+            {!isDube && (
+              <>
+                <ThemedText style={styles.inputLabel}>Payment Method</ThemedText>
+                <View style={styles.methodRow}>
+                  {PAYMENT_METHODS.map((pm) => (
+                    <Pressable
+                      key={pm.key}
+                      onPress={() => setMethod(pm.key)}
+                      style={[
+                        styles.methodBtn,
+                        { borderColor: method === pm.key ? pm.color : '#E5E7EB', backgroundColor: method === pm.key ? pm.color + '18' : colors.background },
+                      ]}
+                    >
+                      <ThemedText style={{ fontSize: 12, fontWeight: '700', color: method === pm.key ? pm.color : colors.textSecondary }}>
+                        {pm.label}
+                      </ThemedText>
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            )}
+          </ScrollView>
+
+          <View style={[styles.modalActions, { marginTop: 8 }]}>
             <Pressable style={[styles.cancelBtn, { borderColor: '#E5E7EB' }]} onPress={() => { reset(); onClose(); }}>
               <ThemedText style={{ fontWeight: '700', color: '#6B7280' }}>Cancel</ThemedText>
             </Pressable>
-            <Pressable style={[styles.submitBtn, { backgroundColor: '#10B981' }]} onPress={handleSubmit}>
-              <ThemedText style={{ fontWeight: '800', color: '#FFF', fontSize: 15 }}>Add Sale</ThemedText>
+            <Pressable style={[styles.submitBtn, { backgroundColor: accentColor }]} onPress={handleSubmit}>
+              <ThemedText style={{ fontWeight: '800', color: '#FFF', fontSize: 15 }}>
+                {isDube ? 'Record Dube' : 'Add Sale'}
+              </ThemedText>
             </Pressable>
           </View>
         </View>
@@ -387,8 +509,9 @@ export default function SalesScreen() {
                         {sale.customer}
                       </ThemedText>
                     )}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
-                      <PaymentBadge method={sale.paymentMethod} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                      <SaleTypeBadge saleType={sale.saleType} />
+                      {sale.saleType === 'instant' && <PaymentBadge method={sale.paymentMethod} />}
                       <ThemedText style={[styles.cardTime, { color: colors.textSecondary }]}>{sale.time}</ThemedText>
                     </View>
                   </View>
