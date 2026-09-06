@@ -19,7 +19,7 @@ export function SectionSummary({ total, count, label, color }: { total: number; 
       elevation: 3,
     }}>
       <ThemedText style={{ fontSize: 11, fontWeight: "700", color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.8 }}>
-        Today's {label}
+        Today&apos;s {label}
       </ThemedText>
       <ThemedText style={{ fontSize: 26, fontWeight: "900", color, marginTop: 2 }}>
         {total.toLocaleString()} ETB

@@ -64,13 +64,13 @@ export function SalesScreen() {
             </View>
           </Pressable>
 
-          <ThemedText style={[styles.listHeader, { color: colors.textSecondary }]}>Today's Sales</ThemedText>
+          <ThemedText style={[styles.listHeader, { color: colors.textSecondary }]}>Today&apos;s Sales</ThemedText>
 
           {sales.length === 0 ? (
             <View style={styles.emptyState}>
               <ThemedText style={{ fontSize: 36 }}>🛒</ThemedText>
               <ThemedText style={{ fontSize: 14, color: colors.textSecondary, marginTop: 8, textAlign: "center" }}>
-                No sales recorded today.{"\n"}Tap "Record New Sale" to get started.
+                No sales recorded today.{"\n"}Tap &quot;Record New Sale&quot; to get started.
               </ThemedText>
             </View>
           ) : (
@@ -142,13 +142,13 @@ export function SalesScreen() {
             </View>
           </Pressable>
 
-          <ThemedText style={[styles.listHeader, { color: colors.textSecondary }]}>Today's Expenses</ThemedText>
+          <ThemedText style={[styles.listHeader, { color: colors.textSecondary }]}>Today&apos;s Expenses</ThemedText>
 
           {expenses.length === 0 ? (
             <View style={styles.emptyState}>
               <ThemedText style={{ fontSize: 36 }}>💸</ThemedText>
               <ThemedText style={{ fontSize: 14, color: colors.textSecondary, marginTop: 8, textAlign: "center" }}>
-                No expenses logged today.{"\n"}Tap "Log New Expense" to track spending.
+                No expenses logged today.{"\n"}Tap &quot;Log New Expense&quot; to track spending.
               </ThemedText>
             </View>
           ) : (
