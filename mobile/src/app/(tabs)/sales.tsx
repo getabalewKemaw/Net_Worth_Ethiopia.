@@ -54,10 +54,10 @@ const INITIAL_EXPENSES: ExpenseEntry[] = [
 ];
 
 const EXPENSE_CATEGORIES = ['Inventory', 'Utilities', 'Salary', 'Rent', 'Transport', 'Maintenance', 'Other'];
-const PAYMENT_METHODS: { key: SaleEntry['paymentMethod']; label: string; color: string }[] = [
-  { key: 'cash', label: '💵 Cash', color: '#10B981' },
-  { key: 'telebirr', label: '📱 Telebirr', color: '#8B5CF6' },
-  { key: 'cbe', label: '🏦 CBE Birr', color: '#3B82F6' },
+const PAYMENT_METHODS: { key: SaleEntry['paymentMethod']; label: string; name: string; icon: string; color: string }[] = [
+  { key: 'cash', label: '💵 Cash', name: 'Cash', icon: '💵', color: '#10B981' },
+  { key: 'telebirr', label: '📱 Telebirr', name: 'Telebirr', icon: '📱', color: '#7C3AED' },
+  { key: 'cbe', label: '🏦 CBE Birr', name: 'CBE Birr', icon: '🏦', color: '#3B82F6' },
 ];
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
@@ -269,20 +269,38 @@ function AddSaleModal({
               <>
                 <ThemedText style={styles.inputLabel}>Payment Method</ThemedText>
                 <View style={styles.methodRow}>
-                  {PAYMENT_METHODS.map((pm) => (
-                    <Pressable
-                      key={pm.key}
-                      onPress={() => setMethod(pm.key)}
-                      style={[
-                        styles.methodBtn,
-                        { borderColor: method === pm.key ? pm.color : '#E5E7EB', backgroundColor: method === pm.key ? pm.color + '18' : colors.background },
-                      ]}
-                    >
-                      <ThemedText style={{ fontSize: 12, fontWeight: '700', color: method === pm.key ? pm.color : colors.textSecondary }}>
-                        {pm.label}
-                      </ThemedText>
-                    </Pressable>
-                  ))}
+                  {PAYMENT_METHODS.map((pm) => {
+                    const isSelected = method === pm.key;
+                    return (
+                      <Pressable
+                        key={pm.key}
+                        onPress={() => setMethod(pm.key)}
+                        style={[
+                          styles.methodBtn,
+                          {
+                            borderColor: isSelected ? pm.color : '#E5E7EB',
+                            backgroundColor: isSelected ? pm.color + '18' : colors.background,
+                          },
+                        ]}
+                      >
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+                          <ThemedText style={{ fontSize: 13 }}>{pm.icon}</ThemedText>
+                          <ThemedText
+                            numberOfLines={1}
+                            adjustsFontSizeToFit
+                            style={{
+                              fontSize: 12,
+                              lineHeight: 16,
+                              fontWeight: '700',
+                              color: isSelected ? pm.color : colors.text,
+                            }}
+                          >
+                            {pm.name}
+                          </ThemedText>
+                        </View>
+                      </Pressable>
+                    );
+                  })}
                 </View>
               </>
             )}
@@ -827,9 +845,11 @@ const styles = StyleSheet.create({
   methodBtn: {
     flex: 1,
     paddingVertical: 10,
+    paddingHorizontal: 4,
     borderRadius: 10,
     borderWidth: 1.5,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   categoryRow: {
     flexDirection: 'row',
