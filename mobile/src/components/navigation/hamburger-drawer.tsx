@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, usePathname } from 'expo-router';
-import Svg, { Path, Line } from 'react-native-svg';
+
 
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
@@ -109,26 +109,11 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
             style={styles.hamburgerBtn}
             android_ripple={{ color: 'rgba(16, 185, 129, 0.15)', borderless: false }}
           >
-            <Svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <Path
-                d="M3 6H21"
-                stroke="#1F2937"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-              <Path
-                d="M3 12H15"
-                stroke="#10B981"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-              <Path
-                d="M3 18H21"
-                stroke="#1F2937"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-              />
-            </Svg>
+            <View style={{ width: 18, height: 13, justifyContent: 'space-between' }}>
+              <View style={{ width: 18, height: 2.2, borderRadius: 1.5, backgroundColor: '#1F2937' }} />
+              <View style={{ width: 12, height: 2.2, borderRadius: 1.5, backgroundColor: '#10B981' }} />
+              <View style={{ width: 18, height: 2.2, borderRadius: 1.5, backgroundColor: '#1F2937' }} />
+            </View>
           </Pressable>
 
           <View className="gap-0.5">
@@ -190,15 +175,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
                 onPress={() => setIsOpen(false)}
                 style={styles.closeBtn}
               >
-                <Svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <Path
-                    d="M18 6L6 18M6 6L18 18"
-                    stroke="#4B5563"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </Svg>
+                <ThemedText style={{ fontSize: 16, fontWeight: '700', color: '#4B5563' }}>✕</ThemedText>
               </Pressable>
             </View>
 

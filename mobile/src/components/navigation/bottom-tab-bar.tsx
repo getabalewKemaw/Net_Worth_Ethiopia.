@@ -1,5 +1,8 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme } from '@/hooks/use-theme';
+
 export interface BottomTabBarProps {
   state: {
     routes: { key: string; name: string }[];
@@ -11,153 +14,213 @@ export interface BottomTabBarProps {
     navigate: (routeName: string) => void;
   };
 }
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { Path, Rect, Circle } from 'react-native-svg';
-import { useTheme } from '@/hooks/use-theme';
 
-// ==========================================
-// Custom Beautiful SVG Icons
-// ==========================================
+// =================================================================
+// Pure React Native Icons (100% native, zero ViewManager crashes)
+// =================================================================
 
 interface IconProps {
   focused: boolean;
   color: string;
-  size?: number;
 }
 
-function DashboardIcon({ focused, color, size = 22 }: IconProps) {
+function DashboardIcon({ focused, color }: IconProps) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Rect
-        x="3"
-        y="3"
-        width="8"
-        height="8"
-        rx="2.5"
-        fill={focused ? color : 'none'}
-        stroke={color}
-        strokeWidth={focused ? '1.5' : '2'}
+    <View style={iconStyles.dashboardContainer}>
+      <View
+        style={[
+          iconStyles.dashboardTile,
+          { width: 8, height: 8, borderRadius: 2 },
+          focused
+            ? { backgroundColor: color }
+            : { borderWidth: 1.8, borderColor: color },
+        ]}
       />
-      <Rect
-        x="13"
-        y="3"
-        width="8"
-        height="5"
-        rx="2"
-        fill={focused ? color : 'none'}
-        stroke={color}
-        strokeWidth={focused ? '1.5' : '2'}
+      <View
+        style={[
+          iconStyles.dashboardTile,
+          { width: 8, height: 5, borderRadius: 1.8 },
+          focused
+            ? { backgroundColor: color }
+            : { borderWidth: 1.8, borderColor: color },
+        ]}
       />
-      <Rect
-        x="13"
-        y="11"
-        width="8"
-        height="10"
-        rx="2.5"
-        fill={focused ? color : 'none'}
-        stroke={color}
-        strokeWidth={focused ? '1.5' : '2'}
+      <View
+        style={[
+          iconStyles.dashboardTile,
+          { width: 8, height: 9, borderRadius: 2 },
+          focused
+            ? { backgroundColor: color }
+            : { borderWidth: 1.8, borderColor: color },
+        ]}
       />
-      <Rect
-        x="3"
-        y="14"
-        width="8"
-        height="7"
-        rx="2"
-        fill={focused ? color : 'none'}
-        stroke={color}
-        strokeWidth={focused ? '1.5' : '2'}
+      <View
+        style={[
+          iconStyles.dashboardTile,
+          { width: 8, height: 6, borderRadius: 1.8 },
+          focused
+            ? { backgroundColor: color }
+            : { borderWidth: 1.8, borderColor: color },
+        ]}
       />
-    </Svg>
+    </View>
   );
 }
 
-function SalesIcon({ focused, color, size = 22 }: IconProps) {
+function SalesIcon({ focused, color }: IconProps) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z"
-        fill={focused ? `${color}18` : 'none'}
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+    <View style={iconStyles.salesContainer}>
+      {/* Handle */}
+      <View
+        style={[
+          iconStyles.salesHandle,
+          { borderColor: color },
+        ]}
       />
-      <Path
-        d="M3 6H21"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M16 10C16 11.0609 15.5786 12.0783 14.8284 12.8284C14.0783 13.5786 13.0609 14 12 14C10.9391 14 9.92172 13.5786 9.17157 12.8284C8.42143 12.0783 8 11.0609 8 10"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </Svg>
+      {/* Bag body */}
+      <View
+        style={[
+          iconStyles.salesBody,
+          {
+            borderColor: color,
+            backgroundColor: focused ? `${color}25` : 'transparent',
+          },
+        ]}
+      >
+        <View style={[iconStyles.salesDash, { backgroundColor: color }]} />
+      </View>
+    </View>
   );
 }
 
-function BidrIcon({ focused, color, size = 22 }: IconProps) {
+function BidrIcon({ focused, color }: IconProps) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M4 19.5C4 18.837 4.26339 18.2011 4.73223 17.7322C5.20107 17.2634 5.83696 17 6.5 17H20"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M6.5 2H20V22H6.5C5.83696 22 5.20107 21.7366 4.73223 21.2678C4.26339 20.7989 4 20.163 4 19.5V4.5C4 3.83696 4.26339 3.20107 4.73223 2.73223C5.20107 2.26339 5.83696 2 6.5 2Z"
-        fill={focused ? `${color}18` : 'none'}
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <Path
-        d="M9 7H15"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <Path
-        d="M9 11H13"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </Svg>
+    <View style={iconStyles.bidrContainer}>
+      <View
+        style={[
+          iconStyles.bidrBody,
+          {
+            borderColor: color,
+            backgroundColor: focused ? `${color}25` : 'transparent',
+          },
+        ]}
+      >
+        <View style={[iconStyles.bidrLine, { width: 8, backgroundColor: color }]} />
+        <View style={[iconStyles.bidrLine, { width: 11, backgroundColor: color }]} />
+        <View style={[iconStyles.bidrLine, { width: 6, backgroundColor: color }]} />
+      </View>
+    </View>
   );
 }
 
-function ProfileIcon({ focused, color, size = 22 }: IconProps) {
+function ProfileIcon({ focused, color }: IconProps) {
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <Path
-        d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21"
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+    <View style={iconStyles.profileContainer}>
+      {/* Head */}
+      <View
+        style={[
+          iconStyles.profileHead,
+          {
+            borderColor: color,
+            backgroundColor: focused ? color : 'transparent',
+          },
+        ]}
       />
-      <Circle
-        cx="12"
-        cy="7"
-        r="4"
-        fill={focused ? `${color}25` : 'none'}
-        stroke={color}
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+      {/* Body */}
+      <View
+        style={[
+          iconStyles.profileBody,
+          {
+            borderColor: color,
+            backgroundColor: focused ? `${color}25` : 'transparent',
+          },
+        ]}
       />
-    </Svg>
+    </View>
   );
 }
+
+const iconStyles = StyleSheet.create({
+  dashboardContainer: {
+    width: 20,
+    height: 20,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignContent: 'space-between',
+  },
+  dashboardTile: {
+    margin: 0.5,
+  },
+  salesContainer: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  salesHandle: {
+    width: 9,
+    height: 5,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    borderWidth: 1.8,
+    borderBottomWidth: 0,
+    marginBottom: -1,
+  },
+  salesBody: {
+    width: 17,
+    height: 14,
+    borderRadius: 3.5,
+    borderWidth: 1.8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  salesDash: {
+    width: 5,
+    height: 1.8,
+    borderRadius: 1,
+  },
+  bidrContainer: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bidrBody: {
+    width: 16,
+    height: 19,
+    borderRadius: 3,
+    borderWidth: 1.8,
+    paddingHorizontal: 2,
+    justifyContent: 'space-evenly',
+    alignItems: 'flex-start',
+  },
+  bidrLine: {
+    height: 1.8,
+    borderRadius: 1,
+  },
+  profileContainer: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileHead: {
+    width: 9,
+    height: 9,
+    borderRadius: 4.5,
+    borderWidth: 1.8,
+    marginBottom: 1,
+  },
+  profileBody: {
+    width: 17,
+    height: 8,
+    borderTopLeftRadius: 9,
+    borderTopRightRadius: 9,
+    borderWidth: 1.8,
+    borderBottomWidth: 0,
+  },
+});
 
 // ==========================================
 // Bottom Tab Bar Component
@@ -195,7 +258,7 @@ export function BottomTabBar({ state, descriptors, navigation }: BottomTabBarPro
               canPreventDefault: true,
             });
 
-            if (!isFocused && !event.defaultPrevented) {
+            if (!isFocused && !event?.defaultPrevented) {
               navigation.navigate(route.name);
             }
           };
@@ -207,7 +270,6 @@ export function BottomTabBar({ state, descriptors, navigation }: BottomTabBarPro
             });
           };
 
-          // Render appropriate icon based on route name
           const renderIcon = () => {
             const iconColor = isFocused ? activeColor : inactiveColor;
             switch (route.name) {
@@ -246,7 +308,7 @@ export function BottomTabBar({ state, descriptors, navigation }: BottomTabBarPro
               testID={options.tabBarButtonTestID}
               onPress={onPress}
               onLongPress={onLongPress}
-              style={[styles.tabItem]}
+              style={styles.tabItem}
             >
               <View
                 style={[
