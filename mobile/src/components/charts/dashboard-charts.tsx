@@ -1,15 +1,12 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { useTheme } from '@/hooks/use-theme';
 
 // ==========================================
 // 1. WEEKLY SALES BAR CHART (Clean & Responsive)
 // ==========================================
 
 export function SalesTrendAreaChart() {
-  const colors = useTheme();
-
   const dataPoints = [
     { label: 'Mon', val: '12k', heightPct: 62 },
     { label: 'Tue', val: '14.5k', heightPct: 75 },
@@ -93,8 +90,6 @@ export function SalesTrendAreaChart() {
 // ==========================================
 
 export function PaymentChannelDonutChart() {
-  const colors = useTheme();
-
   return (
     <View style={styles.paymentContainer}>
       {/* Multi-segment Progress Bar */}

@@ -19,7 +19,7 @@ import { authClient } from '@/lib/auth-client';
 
 export default function ProfileScreen() {
   const colors = useTheme();
-  const { data: session, isPending: isSessionPending } = authClient.useSession();
+  const { data: session } = authClient.useSession();
   const activeBusiness = useBusinessStore((state) => state.activeBusiness);
   const activeBranch = useBusinessStore((state) => state.activeBranch);
   const branches = useBusinessStore((state) => state.branches);

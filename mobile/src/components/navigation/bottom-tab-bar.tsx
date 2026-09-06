@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '@/hooks/use-theme';
 
 export interface BottomTabBarProps {
   state: {
@@ -228,7 +227,6 @@ const iconStyles = StyleSheet.create({
 
 export function BottomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const theme = useTheme();
 
   // Ethiopian Forest Emerald primary brand color
   const activeColor = '#10B981';

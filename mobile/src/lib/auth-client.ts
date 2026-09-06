@@ -3,10 +3,7 @@ import { createAuthClient } from "better-auth/react";
 import { expoClient } from "@better-auth/expo/client";
 import * as storage from "./storage";
 import { Platform } from "react-native";
-
-
 import * as Device from "expo-device";
-import Constants from "expo-constants";
 
 // Physical Android devices connected via USB debugging with `adb reverse tcp:3000 tcp:3000`
 // connect directly to http://localhost:3000, matching the Google OAuth callback and cookie domain.

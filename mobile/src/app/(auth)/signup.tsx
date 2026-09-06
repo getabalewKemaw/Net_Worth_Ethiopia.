@@ -3,8 +3,7 @@ import { View, TouchableOpacity, Text } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router, useLocalSearchParams } from 'expo-router';
-import * as Linking from 'expo-linking';
-import Checkbox from 'expo-checkbox';
+import ExpoCheckbox from 'expo-checkbox';
 
 import { BackgroundGrid } from '@/components/auth/BackgroundGrid';
 import { AuthCard } from '@/components/auth/AuthCard';
@@ -28,7 +27,7 @@ export default function SignupScreen() {
       const { error } = await authClient.signIn.social({
         provider: 'google',
         requestSignUp: true,
-        callbackURL: Linking.createURL('/signup-success'),
+        callbackURL: '/signup-success',
       });
 
       if (error) {
@@ -81,7 +80,7 @@ export default function SignupScreen() {
             </View>
 
             <View className="flex-row items-center mb-6 px-2 bg-gray-50 py-3 rounded-lg border border-gray-100">
-              <Checkbox
+              <ExpoCheckbox
                 className="mr-3 h-5 w-5"
                 value={isChecked}
                 onValueChange={setChecked}

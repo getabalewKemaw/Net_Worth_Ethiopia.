@@ -15,7 +15,6 @@ import {
 export default function HomeScreen() {
   const colors = useTheme();
 
-  const activeBusiness = useBusinessStore((state) => state.activeBusiness);
   const branches = useBusinessStore((state) => state.branches);
   const activeBranch = useBusinessStore((state) => state.activeBranch);
   const isPending = useBusinessStore((state) => state.isPending);
@@ -70,7 +69,7 @@ export default function HomeScreen() {
                 <View className="flex-row items-center gap-2">
                   <View className="w-2 h-2 rounded-full bg-[#34D399]" />
                   <ThemedText className="text-[#A7F3D0] text-[12px] font-bold uppercase tracking-wider">
-                    Today's Total Revenue
+                    Today&apos;s Total Revenue
                   </ThemedText>
                 </View>
 
@@ -189,7 +188,7 @@ export default function HomeScreen() {
                     Payment Channels
                   </ThemedText>
                   <ThemedText className="text-[12px] font-medium text-gray-500">
-                    Settlement share for today's sales
+                    Settlement share for today&apos;s sales
                   </ThemedText>
                 </View>
 

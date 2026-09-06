@@ -2,7 +2,6 @@ import { View, TouchableOpacity, Text } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router } from 'expo-router';
-import * as Linking from 'expo-linking';
 
 import { BackgroundGrid } from '@/components/auth/BackgroundGrid';
 import { AuthCard } from '@/components/auth/AuthCard';
@@ -20,10 +19,8 @@ export default function LoginScreen() {
     try {
       const { error } = await authClient.signIn.social({
         provider: 'google',
-        callbackURL: Linking.createURL('/'),
-        errorCallbackURL: Linking.createURL(
-          `/(auth)/signup?message=${encodeURIComponent(signupMessage)}`
-        ),
+        callbackURL: '/',
+        errorCallbackURL: `/(auth)/signup?message=${encodeURIComponent(signupMessage)}`,
       });
 
       if (error) {
@@ -68,7 +65,7 @@ export default function LoginScreen() {
             />
 
             <View className="flex-row justify-center items-center mt-4 mb-2">
-              <Text className="text-sm text-gray-600 font-medium">Don't have an account? </Text>
+              <Text className="text-sm text-gray-600 font-medium">Don&apos;t have an account? </Text>
               <Link href="/(auth)/signup" asChild>
                 <TouchableOpacity>
                   <Text className="text-sm font-bold ml-1" style={{ color: theme.primary }}>Sign up</Text>
