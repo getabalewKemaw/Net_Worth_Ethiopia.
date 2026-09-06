@@ -28,6 +28,7 @@ type SaleEntry = {
   phone?: string;
   paymentMethod: 'cash' | 'telebirr' | 'cbe';
   saleType: SaleType;
+  dueDate?: string;
   time: string;
 };
 
@@ -43,7 +44,7 @@ type ExpenseEntry = {
 
 const INITIAL_SALES: SaleEntry[] = [
   { id: 's1', description: 'Injera (10 plates)', amount: 350, customer: 'Abebe M.', paymentMethod: 'cash', saleType: 'instant', time: '09:15 AM' },
-  { id: 's2', description: 'Wholesale flour 50kg', amount: 1200, customer: 'Tigist Shop', phone: '0912345678', paymentMethod: 'cash', saleType: 'dube', time: '10:42 AM' },
+  { id: 's2', description: 'Wholesale flour 50kg', amount: 1200, customer: 'Tigist Shop', phone: '0912345678', paymentMethod: 'cash', saleType: 'dube', dueDate: 'Sep 13, 2026', time: '10:42 AM' },
   { id: 's3', description: 'Mixed groceries', amount: 480, paymentMethod: 'cbe', saleType: 'instant', time: '11:30 AM' },
 ];
 
@@ -109,6 +110,34 @@ function SectionSummary({ total, count, label, color }: { total: number; count: 
 
 // ─── Add Sale Modal ────────────────────────────────────────────────────────────
 
+const DUE_PRESETS = [
+  { label: '3 Days', days: 3 },
+  { label: '1 Week', days: 7 },
+  { label: '2 Weeks', days: 14 },
+  { label: '1 Month', days: 30 },
+];
+
+const formatFutureDate = (days: number): string => {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+};
+
+const getDueRelativeText = (dateStr: string): string => {
+  const target = new Date(dateStr);
+  if (isNaN(target.getTime())) return 'Promised pay date';
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  target.setHours(0, 0, 0, 0);
+  const diffTime = target.getTime() - today.getTime();
+  const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'Due today';
+  if (diffDays === 1) return 'Due tomorrow';
+  if (diffDays > 1) return `Pay in ${diffDays} days`;
+  if (diffDays === -1) return 'Due yesterday (overdue)';
+  return `${Math.abs(diffDays)} days overdue`;
+};
+
 function AddSaleModal({
   visible,
   onClose,
@@ -126,6 +155,9 @@ function AddSaleModal({
   const [customer, setCustomer] = useState('');
   const [phone, setPhone] = useState('');
   const [method, setMethod] = useState<SaleEntry['paymentMethod']>('cash');
+  const [dueDate, setDueDate] = useState(formatFutureDate(7));
+  const [selectedPreset, setSelectedPreset] = useState<number | 'custom'>(7);
+  const [isCustomDate, setIsCustomDate] = useState(false);
 
   const reset = () => {
     setSaleType('instant');
@@ -134,6 +166,28 @@ function AddSaleModal({
     setCustomer('');
     setPhone('');
     setMethod('cash');
+    setDueDate(formatFutureDate(7));
+    setSelectedPreset(7);
+    setIsCustomDate(false);
+  };
+
+  const handleSelectPreset = (days: number) => {
+    setSelectedPreset(days);
+    setIsCustomDate(false);
+    setDueDate(formatFutureDate(days));
+  };
+
+  const handleSelectCustom = () => {
+    setSelectedPreset('custom');
+    setIsCustomDate(true);
+  };
+
+  const adjustDueDateDays = (delta: number) => {
+    const parsed = new Date(dueDate);
+    const baseDate = isNaN(parsed.getTime()) ? new Date() : parsed;
+    baseDate.setDate(baseDate.getDate() + delta);
+    setDueDate(baseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+    setSelectedPreset('custom');
   };
 
   const handleSubmit = () => {
@@ -150,6 +204,10 @@ function AddSaleModal({
         Alert.alert('Missing Info', 'Phone number is required for Dube (debt) sales.');
         return;
       }
+      if (!dueDate.trim()) {
+        Alert.alert('Missing Info', 'Promised payment date is required for Dube (debt) sales.');
+        return;
+      }
     }
     onAdd({
       description: desc.trim(),
@@ -158,6 +216,7 @@ function AddSaleModal({
       phone: phone.trim() || undefined,
       paymentMethod: method,
       saleType,
+      dueDate: saleType === 'dube' ? dueDate.trim() : undefined,
     });
     reset();
     onClose();
@@ -201,7 +260,7 @@ function AddSaleModal({
           {isDube && (
             <View style={[styles.dubeNote, { backgroundColor: '#FEF3C7', borderColor: '#FCD34D' }]}>
               <ThemedText style={{ fontSize: 12, color: '#92400E', fontWeight: '600', lineHeight: 18 }}>
-                📜 Dube means the customer will pay later. Customer name and phone are required.
+                📜 Dube means credit sale. Customer name, phone, and promised pay date are required.
               </ThemedText>
             </View>
           )}
@@ -263,6 +322,121 @@ function AddSaleModal({
               value={phone}
               onChangeText={setPhone}
             />
+
+            {/* ── Promised Payment Date (Dube only) ── */}
+            {isDube && (
+              <View style={{ marginBottom: 16 }}>
+                <ThemedText style={styles.inputLabel}>
+                  Promised Payment Date *
+                </ThemedText>
+
+                {/* Quick Presets Row */}
+                <View style={styles.duePresetsRow}>
+                  {DUE_PRESETS.map((p) => {
+                    const isSelected = selectedPreset === p.days;
+                    return (
+                      <Pressable
+                        key={p.days}
+                        onPress={() => handleSelectPreset(p.days)}
+                        style={[
+                          styles.duePresetChip,
+                          {
+                            borderColor: isSelected ? '#D97706' : '#E5E7EB',
+                            backgroundColor: isSelected ? '#FEF3C7' : colors.background,
+                          },
+                        ]}
+                      >
+                        <ThemedText
+                          style={{
+                            fontSize: 12,
+                            fontWeight: '700',
+                            color: isSelected ? '#D97706' : colors.textSecondary,
+                          }}
+                        >
+                          {p.label}
+                        </ThemedText>
+                      </Pressable>
+                    );
+                  })}
+                  <Pressable
+                    onPress={handleSelectCustom}
+                    style={[
+                      styles.duePresetChip,
+                      {
+                        borderColor: selectedPreset === 'custom' ? '#D97706' : '#E5E7EB',
+                        backgroundColor: selectedPreset === 'custom' ? '#FEF3C7' : colors.background,
+                      },
+                    ]}
+                  >
+                    <ThemedText
+                      style={{
+                        fontSize: 12,
+                        fontWeight: '700',
+                        color: selectedPreset === 'custom' ? '#D97706' : colors.textSecondary,
+                      }}
+                    >
+                      ✏️ Other
+                    </ThemedText>
+                  </Pressable>
+                </View>
+
+                {/* Selected Date Card with Day Stepper */}
+                <View
+                  style={[
+                    styles.dueDateCard,
+                    {
+                      backgroundColor: colors.background,
+                      borderColor: selectedPreset === 'custom' ? '#D97706' : '#FCD34D',
+                    },
+                  ]}
+                >
+                  <View style={{ flex: 1, paddingRight: 8 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <ThemedText style={{ fontSize: 16 }}>📅</ThemedText>
+                      {isCustomDate ? (
+                        <TextInput
+                          style={[
+                            styles.dueDateInput,
+                            { color: colors.text },
+                          ]}
+                          value={dueDate}
+                          onChangeText={(val) => {
+                            setDueDate(val);
+                            setSelectedPreset('custom');
+                          }}
+                          placeholder="e.g. Sep 25, 2026"
+                          placeholderTextColor={colors.textSecondary}
+                          autoFocus={selectedPreset === 'custom'}
+                        />
+                      ) : (
+                        <ThemedText style={{ fontSize: 15, fontWeight: '800', color: colors.text }}>
+                          {dueDate}
+                        </ThemedText>
+                      )}
+                    </View>
+                    <ThemedText style={{ fontSize: 11, fontWeight: '600', color: '#B45309', marginTop: 3, marginLeft: 22 }}>
+                      {getDueRelativeText(dueDate)}
+                    </ThemedText>
+                  </View>
+
+                  {/* Quick +/- Steppers */}
+                  <View style={styles.dueStepperRow}>
+                    <Pressable
+                      onPress={() => adjustDueDateDays(-1)}
+                      style={[styles.dueStepBtn, { borderColor: '#FCD34D', backgroundColor: '#FEF3C7' }]}
+                    >
+                      <ThemedText style={{ fontSize: 15, fontWeight: '800', color: '#92400E' }}>−</ThemedText>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => adjustDueDateDays(1)}
+                      style={[styles.dueStepBtn, { borderColor: '#FCD34D', backgroundColor: '#FEF3C7' }]}
+                    >
+                      <ThemedText style={{ fontSize: 15, fontWeight: '800', color: '#92400E' }}>+</ThemedText>
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+            )}
 
             {/* Payment method only for instant */}
             {!isDube && (
@@ -524,6 +698,13 @@ export default function SalesScreen() {
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                       <SaleTypeBadge saleType={sale.saleType} />
                       {sale.saleType === 'instant' && <PaymentBadge method={sale.paymentMethod} />}
+                      {sale.saleType === 'dube' && sale.dueDate && (
+                        <View style={[styles.badge, { backgroundColor: '#FEF3C7', borderColor: '#FCD34D' }]}>
+                          <ThemedText style={{ fontSize: 10, fontWeight: '800', color: '#92400E' }}>
+                            📅 Due {sale.dueDate}
+                          </ThemedText>
+                        </View>
+                      )}
                       <ThemedText style={[styles.cardTime, { color: colors.textSecondary }]}>{sale.time}</ThemedText>
                     </View>
                   </View>
@@ -848,6 +1029,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     borderRadius: 10,
     borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  duePresetsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 8,
+  },
+  duePresetChip: {
+    flex: 1,
+    paddingVertical: 7,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dueDateCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1.5,
+  },
+  dueDateInput: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '700',
+    paddingVertical: 0,
+  },
+  dueStepperRow: {
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+  },
+  dueStepBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
