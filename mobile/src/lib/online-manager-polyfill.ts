@@ -21,3 +21,70 @@ if (!(globalThis as any)[kOnlineManager]) {
     },
   };
 }
+
+// Fallback for globalThis.expo to prevent early initialization crashes
+if (!(globalThis as any).expo) {
+  class FallbackEventEmitter {
+    private listeners = new Map<string, Set<Function>>();
+    addListener(eventName: string, listener: Function) {
+      if (!this.listeners.has(eventName)) this.listeners.set(eventName, new Set());
+      this.listeners.get(eventName)!.add(listener);
+      return {
+        remove: () => {
+          this.listeners.get(eventName)?.delete(listener);
+        },
+      };
+    }
+    removeListener(eventName: string, listener: Function) {
+      this.listeners.get(eventName)?.delete(listener);
+    }
+    removeAllListeners(eventName?: string) {
+      if (eventName) this.listeners.get(eventName)?.clear();
+      else this.listeners.clear();
+    }
+    emit(eventName: string, ...args: any[]) {
+      this.listeners.get(eventName)?.forEach((l) => {
+        try { l(...args); } catch (e) { console.error(e); }
+      });
+    }
+    listenerCount(eventName: string) {
+      return this.listeners.get(eventName)?.size ?? 0;
+    }
+  }
+
+  (globalThis as any).expo = {
+    EventEmitter: FallbackEventEmitter,
+    modules: {},
+  };
+} else if (!(globalThis as any).expo.EventEmitter) {
+  class FallbackEventEmitter {
+    private listeners = new Map<string, Set<Function>>();
+    addListener(eventName: string, listener: Function) {
+      if (!this.listeners.has(eventName)) this.listeners.set(eventName, new Set());
+      this.listeners.get(eventName)!.add(listener);
+      return {
+        remove: () => {
+          this.listeners.get(eventName)?.delete(listener);
+        },
+      };
+    }
+    removeListener(eventName: string, listener: Function) {
+      this.listeners.get(eventName)?.delete(listener);
+    }
+    removeAllListeners(eventName?: string) {
+      if (eventName) this.listeners.get(eventName)?.clear();
+      else this.listeners.clear();
+    }
+    emit(eventName: string, ...args: any[]) {
+      this.listeners.get(eventName)?.forEach((l) => {
+        try { l(...args); } catch (e) { console.error(e); }
+      });
+    }
+    listenerCount(eventName: string) {
+      return this.listeners.get(eventName)?.size ?? 0;
+    }
+  }
+
+  (globalThis as any).expo.EventEmitter = FallbackEventEmitter;
+}
+

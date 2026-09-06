@@ -27,5 +27,14 @@ export const auth = betterAuth({
   plugins: [
     expo(),
   ],
-  trustedOrigins: [frontendUrl, "networth://"],
+  trustedOrigins: [
+    frontendUrl,
+    "http://localhost:8081",
+    "http://172.16.4.34:8081",
+    "http://172.16.4.34:3000",
+    "networth://",
+    "networth://*",
+    "exp://",
+    "exp://*",
+  ],
 });

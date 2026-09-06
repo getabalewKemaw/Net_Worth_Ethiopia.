@@ -6,9 +6,10 @@ import { Platform } from "react-native";
 
 
 import * as Device from "expo-device";
+import Constants from "expo-constants";
 
 // Physical Android devices connected via USB debugging with `adb reverse tcp:3000 tcp:3000`
-// connect directly to http://localhost:3000.
+// connect directly to http://localhost:3000, matching the Google OAuth callback and cookie domain.
 // Android Emulators use http://10.0.2.2:3000.
 export const baseURL =
   Platform.OS === "android"
