@@ -58,7 +58,7 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         ) : (
-          <View className="gap-5 pb-10">
+          <View className="gap-5 pb-28">
             {/* 1. HERO BANNER CARD (Forest Emerald Gradient Theme) */}
             <View style={styles.heroCard} className="p-5 rounded-3xl gap-4 shadow-md overflow-hidden relative">
               <View className="flex-row items-center justify-between z-10">
