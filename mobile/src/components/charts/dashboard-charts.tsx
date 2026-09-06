@@ -1,299 +1,282 @@
 import React from 'react';
-import { View, Dimensions, UIManager, Platform } from 'react-native';
-import Svg, {
-  Path,
-  Defs,
-  LinearGradient,
-  Stop,
-  Circle,
-  G,
-} from 'react-native-svg';
-
+import { View, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 
-const screenWidth = Dimensions.get('window').width;
-
-const isSvgSupported = (): boolean => {
-  if (Platform.OS === 'web') return true;
-  return Boolean(
-    UIManager.getViewManagerConfig &&
-    UIManager.getViewManagerConfig('RNSVGLinearGradient')
-  );
-};
+// ==========================================
+// 1. WEEKLY SALES BAR CHART (Clean & Responsive)
+// ==========================================
 
 export function SalesTrendAreaChart() {
   const colors = useTheme();
-  const svgAvailable = isSvgSupported();
-
-  // SVG Area Chart Dimensions
-  const height = 150;
-  const width = Math.min(screenWidth - 64, 500);
-
-  // Smooth Area & Line Path Data
-  // Mon: 12k, Tue: 14.5k, Wed: 9.8k, Thu: 16.2k, Fri: 19k, Sat: 15.4k, Sun: 18.45k
-  const linePath = `M 10 90 Q 60 70, 110 50 T 210 85 T 310 35 T 410 15 T 510 40 T 600 20`;
-  const areaPath = `${linePath} L 600 ${height - 20} L 10 ${height - 20} Z`;
 
   const dataPoints = [
-    { x: 20, y: 85, val: '12k', label: 'Mon', heightPct: 62 },
-    { x: 100, y: 65, val: '14.5k', label: 'Tue', heightPct: 75 },
-    { x: 180, y: 95, val: '9.8k', label: 'Wed', heightPct: 50 },
-    { x: 260, y: 50, val: '16.2k', label: 'Thu', heightPct: 84 },
-    { x: 340, y: 20, val: '19k', label: 'Fri', peak: true, heightPct: 100 },
-    { x: 420, y: 55, val: '15.4k', label: 'Sat', heightPct: 80 },
-    { x: 500, y: 30, val: '18.5k', label: 'Sun', active: true, heightPct: 95 },
+    { label: 'Mon', val: '12k', heightPct: 62 },
+    { label: 'Tue', val: '14.5k', heightPct: 75 },
+    { label: 'Wed', val: '9.8k', heightPct: 50 },
+    { label: 'Thu', val: '16.2k', heightPct: 84 },
+    { label: 'Fri', val: '19k', peak: true, heightPct: 100 },
+    { label: 'Sat', val: '15.4k', heightPct: 80 },
+    { label: 'Sun', val: '18.5k', active: true, heightPct: 95 },
   ];
 
-  if (!svgAvailable) {
-    // Pure View-based fallback for APKs built before react-native-svg was compiled
-    return (
-      <View className="w-full gap-3">
-        <View className="flex-row items-end justify-between h-32 pt-6 px-1 pb-2 border-b border-black/5">
-          {dataPoints.map((pt, idx) => (
-            <View key={idx} className="items-center gap-1.5 flex-1">
-              <ThemedText className="text-[10px] font-bold" style={{ color: pt.active ? colors.primary : colors.textSecondary }}>
-                {pt.val}
-              </ThemedText>
-              <View
-                className="w-4 rounded-full"
-                style={{
-                  height: `${pt.heightPct}%`,
-                  backgroundColor: pt.active ? colors.primary : pt.peak ? '#F59E0B' : 'rgba(16, 185, 129, 0.35)',
-                }}
-              />
-              <ThemedText className="text-[10px] font-bold mt-1" style={{ color: colors.textSecondary }}>
-                {pt.label}
-              </ThemedText>
-            </View>
-          ))}
-        </View>
-        <View className="flex-row items-center justify-between pt-1">
-          <View className="flex-row items-center gap-2">
-            <View className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colors.primary }} />
-            <ThemedText className="text-[11px] font-semibold" style={{ color: colors.textSecondary }}>
-              Sales Trend (Daily Velocity)
-            </ThemedText>
-          </View>
-          <View className="px-2 py-0.5 rounded-md bg-[#10B981]/15">
-            <ThemedText className="text-[#059669] text-[11px] font-bold">Peak: 19,000 ETB</ThemedText>
-          </View>
-        </View>
-      </View>
-    );
-  }
-
-
   return (
-    <View className="w-full gap-3">
-      {/* Chart Canvas */}
-      <View className="items-center justify-center py-1">
-        <Svg width="100%" height={height} viewBox={`0 0 520 ${height}`}>
-          <Defs>
-            {/* Emerald Gradient Fill */}
-            <LinearGradient id="emeraldGradient" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0%" stopColor="#10B981" stopOpacity="0.45" />
-              <Stop offset="80%" stopColor="#10B981" stopOpacity="0.02" />
-            </LinearGradient>
-            {/* Secondary Gold Gradient */}
-            <LinearGradient id="goldGradient" x1="0" y1="0" x2="0" y2="1">
-              <Stop offset="0%" stopColor="#F59E0B" stopOpacity="0.25" />
-              <Stop offset="100%" stopColor="#F59E0B" stopOpacity="0.0" />
-            </LinearGradient>
-          </Defs>
-
-          {/* Area Fill */}
-          <Path
-            d="M 20 85 C 60 70, 80 65, 100 65 C 140 65, 160 95, 180 95 C 220 95, 240 50, 260 50 C 300 50, 320 20, 340 20 C 380 20, 400 55, 420 55 C 460 55, 480 30, 500 30 L 500 130 L 20 130 Z"
-            fill="url(#emeraldGradient)"
-          />
-
-          {/* Main Revenue Line */}
-          <Path
-            d="M 20 85 C 60 70, 80 65, 100 65 C 140 65, 160 95, 180 95 C 220 95, 240 50, 260 50 C 300 50, 320 20, 340 20 C 380 20, 400 55, 420 55 C 460 55, 480 30, 500 30"
-            fill="none"
-            stroke={colors.primary}
-            strokeWidth="3.5"
-            strokeLinecap="round"
-          />
-
-          {/* Secondary Profit Line */}
-          <Path
-            d="M 20 105 C 60 95, 80 90, 100 90 C 140 90, 160 110, 180 110 C 220 110, 240 80, 260 80 C 300 80, 320 55, 340 55 C 380 55, 400 85, 420 85 C 460 85, 480 65, 500 65"
-            fill="none"
-            stroke="#F59E0B"
-            strokeWidth="2.5"
-            strokeDasharray="4, 4"
-            strokeLinecap="round"
-          />
-
-          {/* Interactive Glowing Datapoints */}
-          {dataPoints.map((pt, idx) => (
-            <G key={idx}>
-              <Circle
-                cx={pt.x}
-                cy={pt.y}
-                r={pt.peak || pt.active ? '6' : '4'}
-                fill={pt.active ? colors.primary : pt.peak ? '#10B981' : colors.backgroundElement}
-                stroke={colors.primary}
-                strokeWidth="2"
-              />
-            </G>
-          ))}
-        </Svg>
-      </View>
-
-      {/* Days & Values Label Row */}
-      <View className="flex-row items-center justify-between px-1 border-t border-gray-100 pt-2">
+    <View style={styles.chartContainer}>
+      {/* Bars Row */}
+      <View style={styles.barsRow}>
         {dataPoints.map((pt, idx) => (
-          <View key={idx} className="items-center">
-            <ThemedText className={`text-[11px] ${pt.active ? 'font-black text-[#10B981]' : 'font-medium'}`} style={{ color: pt.active ? '#10B981' : colors.textSecondary }}>
-              {pt.label}
-            </ThemedText>
-            <ThemedText className="text-[10px] font-bold" style={{ color: colors.text }}>
+          <View key={idx} style={styles.barColumn}>
+            {/* Value Label */}
+            <ThemedText
+              style={[
+                styles.barValueText,
+                pt.active && styles.activeValueText,
+                pt.peak && styles.peakValueText,
+              ]}
+            >
               {pt.val}
+            </ThemedText>
+
+            {/* Bar Track & Fill */}
+            <View style={styles.barTrack}>
+              <View
+                style={[
+                  styles.barFill,
+                  {
+                    height: `${pt.heightPct}%`,
+                    backgroundColor: pt.active
+                      ? '#10B981'
+                      : pt.peak
+                      ? '#F59E0B'
+                      : '#D1FAE5',
+                  },
+                ]}
+              />
+            </View>
+
+            {/* Day Label */}
+            <ThemedText
+              style={[
+                styles.dayLabel,
+                pt.active && styles.activeDayLabel,
+              ]}
+            >
+              {pt.label}
             </ThemedText>
           </View>
         ))}
       </View>
+
+      {/* Chart Footer Legend */}
+      <View style={styles.chartFooter}>
+        <View style={styles.legendRow}>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: '#10B981' }]} />
+            <ThemedText style={styles.legendText}>Today (Active)</ThemedText>
+          </View>
+          <View style={styles.legendItem}>
+            <View style={[styles.legendDot, { backgroundColor: '#F59E0B' }]} />
+            <ThemedText style={styles.legendText}>Weekly Peak</ThemedText>
+          </View>
+        </View>
+
+        <View style={styles.peakBadge}>
+          <ThemedText style={styles.peakBadgeText}>Avg: 15.2k ETB/day</ThemedText>
+        </View>
+      </View>
     </View>
   );
 }
+
+// ==========================================
+// 2. PAYMENT CHANNELS BREAKDOWN
+// ==========================================
 
 export function PaymentChannelDonutChart() {
   const colors = useTheme();
-  const svgAvailable = isSvgSupported();
-
-  if (!svgAvailable) {
-    return (
-      <View className="gap-3 w-full">
-        {/* Segmented Horizontal Progress Bar */}
-        <View className="w-full h-4 rounded-full overflow-hidden flex-row bg-gray-100">
-          <View style={{ width: '55%', backgroundColor: '#0284C7' }} />
-          <View style={{ width: '30%', backgroundColor: '#2E7D32' }} />
-          <View style={{ width: '15%', backgroundColor: '#D97706' }} />
-        </View>
-
-        {/* Channel Breakdown Details */}
-        <View className="gap-2 pt-1">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <View className="w-3 h-3 rounded-full bg-[#0284C7]" />
-              <ThemedText className="text-[13px] font-bold" style={{ color: colors.text }}>Telebirr</ThemedText>
-            </View>
-            <ThemedText className="text-[13px] font-black text-[#0284C7]">55% (10,147 ETB)</ThemedText>
-          </View>
-
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <View className="w-3 h-3 rounded-full bg-[#2E7D32]" />
-              <ThemedText className="text-[13px] font-bold" style={{ color: colors.text }}>CBE Birr</ThemedText>
-            </View>
-            <ThemedText className="text-[13px] font-black text-[#2E7D32]">30% (5,535 ETB)</ThemedText>
-          </View>
-
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2">
-              <View className="w-3 h-3 rounded-full bg-[#D97706]" />
-              <ThemedText className="text-[13px] font-bold" style={{ color: colors.text }}>Cash</ThemedText>
-            </View>
-            <ThemedText className="text-[13px] font-black text-[#D97706]">15% (2,768 ETB)</ThemedText>
-          </View>
-        </View>
-      </View>
-    );
-  }
 
   return (
-    <View className="flex-row items-center justify-between gap-4">
-      {/* SVG Donut Ring Graphic */}
-      <View className="relative items-center justify-center">
-        <Svg width="120" height="120" viewBox="0 0 120 120">
-          {/* Base Track */}
-          <Circle
-            cx="60"
-            cy="60"
-            r="45"
-            stroke={colors.backgroundElement}
-            strokeWidth="14"
-            fill="none"
-          />
-          {/* Segment 1: Telebirr 55% (#0284C7) */}
-          <Circle
-            cx="60"
-            cy="60"
-            r="45"
-            stroke="#0284C7"
-            strokeWidth="14"
-            fill="none"
-            strokeDasharray="282.7"
-            strokeDashoffset="127"
-            strokeLinecap="round"
-            transform="rotate(-90 60 60)"
-          />
-          {/* Segment 2: CBE Birr 30% (#2E7D32) */}
-          <Circle
-            cx="60"
-            cy="60"
-            r="45"
-            stroke="#2E7D32"
-            strokeWidth="14"
-            fill="none"
-            strokeDasharray="282.7"
-            strokeDashoffset="197"
-            strokeLinecap="round"
-            transform="rotate(108 60 60)"
-          />
-          {/* Segment 3: Cash 15% (#D97706) */}
-          <Circle
-            cx="60"
-            cy="60"
-            r="45"
-            stroke="#D97706"
-            strokeWidth="14"
-            fill="none"
-            strokeDasharray="282.7"
-            strokeDashoffset="240"
-            strokeLinecap="round"
-            transform="rotate(216 60 60)"
-          />
-        </Svg>
-        {/* Center Text */}
-        <View className="absolute items-center justify-center">
-          <ThemedText className="text-[15px] font-black" style={{ color: colors.text }}>100%</ThemedText>
-          <ThemedText className="text-[9px] font-bold uppercase text-[#60646C]">Payment</ThemedText>
-        </View>
+    <View style={styles.paymentContainer}>
+      {/* Multi-segment Progress Bar */}
+      <View style={styles.segmentedBar}>
+        <View style={[styles.segment, { width: '55%', backgroundColor: '#0284C7' }]} />
+        <View style={[styles.segment, { width: '30%', backgroundColor: '#10B981' }]} />
+        <View style={[styles.segment, { width: '15%', backgroundColor: '#F59E0B' }]} />
       </View>
 
-      {/* Channel Breakdown Details */}
-      <View className="flex-1 gap-2">
-        {/* Telebirr */}
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <View className="w-3 h-3 rounded-full bg-[#0284C7]" />
-            <ThemedText className="text-[13px] font-bold" style={{ color: colors.text }}>Telebirr</ThemedText>
+      {/* Channels Grid */}
+      <View style={styles.channelsList}>
+        <View style={styles.channelRow}>
+          <View style={styles.channelLeft}>
+            <View style={[styles.channelDot, { backgroundColor: '#0284C7' }]} />
+            <ThemedText style={styles.channelName}>Telebirr</ThemedText>
           </View>
-          <ThemedText className="text-[13px] font-black text-[#0284C7]">55% (10,147 ETB)</ThemedText>
+          <ThemedText style={[styles.channelAmount, { color: '#0284C7' }]}>
+            55% · 10,147 ETB
+          </ThemedText>
         </View>
 
-        {/* CBE Birr */}
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <View className="w-3 h-3 rounded-full bg-[#2E7D32]" />
-            <ThemedText className="text-[13px] font-bold" style={{ color: colors.text }}>CBE Birr</ThemedText>
+        <View style={styles.channelRow}>
+          <View style={styles.channelLeft}>
+            <View style={[styles.channelDot, { backgroundColor: '#10B981' }]} />
+            <ThemedText style={styles.channelName}>CBE Birr</ThemedText>
           </View>
-          <ThemedText className="text-[13px] font-black text-[#2E7D32]">30% (5,535 ETB)</ThemedText>
+          <ThemedText style={[styles.channelAmount, { color: '#10B981' }]}>
+            30% · 5,535 ETB
+          </ThemedText>
         </View>
 
-        {/* Cash */}
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <View className="w-3 h-3 rounded-full bg-[#D97706]" />
-            <ThemedText className="text-[13px] font-bold" style={{ color: colors.text }}>Cash</ThemedText>
+        <View style={styles.channelRow}>
+          <View style={styles.channelLeft}>
+            <View style={[styles.channelDot, { backgroundColor: '#F59E0B' }]} />
+            <ThemedText style={styles.channelName}>Cash at Counter</ThemedText>
           </View>
-          <ThemedText className="text-[13px] font-black text-[#D97706]">15% (2,768 ETB)</ThemedText>
+          <ThemedText style={[styles.channelAmount, { color: '#D97706' }]}>
+            15% · 2,768 ETB
+          </ThemedText>
         </View>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  chartContainer: {
+    width: '100%',
+    paddingTop: 12,
+  },
+  barsRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    height: 140,
+    paddingHorizontal: 4,
+    paddingBottom: 4,
+  },
+  barColumn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    height: '100%',
+  },
+  barValueText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#94A3B8',
+    marginBottom: 6,
+  },
+  activeValueText: {
+    color: '#10B981',
+    fontWeight: '800',
+  },
+  peakValueText: {
+    color: '#D97706',
+    fontWeight: '800',
+  },
+  barTrack: {
+    width: 14,
+    height: 90,
+    justifyContent: 'flex-end',
+    borderRadius: 7,
+    backgroundColor: '#F1F5F9',
+    overflow: 'hidden',
+  },
+  barFill: {
+    width: '100%',
+    borderRadius: 7,
+  },
+  dayLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+    marginTop: 8,
+  },
+  activeDayLabel: {
+    color: '#10B981',
+    fontWeight: '800',
+  },
+  chartFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 12,
+    marginTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  legendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  legendDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  legendText: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  peakBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    backgroundColor: '#ECFDF5',
+  },
+  peakBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#059669',
+  },
+
+  // Payment Channel Styles
+  paymentContainer: {
+    width: '100%',
+    gap: 14,
+  },
+  segmentedBar: {
+    width: '100%',
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#F1F5F9',
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  segment: {
+    height: '100%',
+  },
+  channelsList: {
+    gap: 10,
+  },
+  channelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  channelLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  channelDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  channelName: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  channelAmount: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+});

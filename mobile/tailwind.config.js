@@ -6,15 +6,15 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#535233',
-          dark: '#3d3c25',
-          light: '#6e6d47',
-          text: '#503D2E',
+          DEFAULT: '#10B981',
+          dark: '#059669',
+          light: '#34D399',
+          text: '#111827',
         },
         primary: {
-          DEFAULT: '#535233',
-          dark: '#3d3c25',
-          light: '#6e6d47',
+          DEFAULT: '#10B981',
+          dark: '#059669',
+          light: '#34D399',
         },
       },
     },
