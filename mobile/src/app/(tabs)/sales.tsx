@@ -175,29 +175,23 @@ function AddSaleModal({
           <View style={styles.handleBar} />
           <ThemedText style={[styles.modalTitle, { color: colors.text }]}>Record New Sale</ThemedText>
 
-          {/* ── Sale Type Toggle ───────────────────────────── */}
+          {/* ── Sale Type Segmented Tab Switcher ─────────────── */}
           <View style={[styles.saleTypePill, { backgroundColor: colors.background }]}>
             <Pressable
-              style={[styles.saleTypeBtn, !isDube && styles.saleTypeBtnActive]}
+              style={[styles.toggleBtn, !isDube && styles.toggleBtnActive]}
               onPress={() => setSaleType('instant')}
             >
-              {!isDube && <View style={[styles.saleTypeBtnBg, { backgroundColor: '#10B981' }]} />}
-              <ThemedText style={[
-                styles.saleTypeBtnText,
-                { color: !isDube ? '#FFF' : colors.textSecondary },
-              ]}>
+              {!isDube && <View style={[styles.toggleBtnBg, { backgroundColor: '#10B981' }]} />}
+              <ThemedText style={[styles.toggleBtnText, { color: !isDube ? '#FFF' : colors.textSecondary }]}>
                 ⚡  Instant
               </ThemedText>
             </Pressable>
             <Pressable
-              style={[styles.saleTypeBtn, isDube && styles.saleTypeBtnActive]}
+              style={[styles.toggleBtn, isDube && styles.toggleBtnActive]}
               onPress={() => setSaleType('dube')}
             >
-              {isDube && <View style={[styles.saleTypeBtnBg, { backgroundColor: '#D97706' }]} />}
-              <ThemedText style={[
-                styles.saleTypeBtnText,
-                { color: isDube ? '#FFF' : colors.textSecondary },
-              ]}>
+              {isDube && <View style={[styles.toggleBtnBg, { backgroundColor: '#D97706' }]} />}
+              <ThemedText style={[styles.toggleBtnText, { color: isDube ? '#FFF' : colors.textSecondary }]}>
                 📜  Dube (Debt)
               </ThemedText>
             </Pressable>
@@ -645,6 +639,15 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     zIndex: 1,
   },
+  saleTypePill: {
+    flexDirection: 'row',
+    borderRadius: 14,
+    padding: 3,
+    gap: 2,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
 
   // ── Summary Card ────────────────────────────────────
   summaryCard: {
@@ -791,7 +794,14 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: '900',
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  dubeNote: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 14,
   },
   inputLabel: {
     fontSize: 12,
