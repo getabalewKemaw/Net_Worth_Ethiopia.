@@ -15,7 +15,7 @@ export const INITIAL_EXPENSES = [
 export const EXPENSE_CATEGORIES = ["Inventory", "Utilities", "Salary", "Rent", "Transport", "Maintenance", "Other"];
 
 export const PAYMENT_METHODS: { key: PaymentMethod; label: string; name: string; icon: string; color: string }[] = [
-  { key: "cash", label: "💵 Cash", name: "Cash", icon: "💵", color: "#10B981" },
+  { key: "cash", label: "💵 Cash", name: "Cash", icon: "💵", color: "#065F46" },
   { key: "telebirr", label: "📱 Telebirr", name: "Telebirr", icon: "📱", color: "#7C3AED" },
   { key: "cbe", label: "🏦 CBE Birr", name: "CBE Birr", icon: "🏦", color: "#3B82F6" },
 ];

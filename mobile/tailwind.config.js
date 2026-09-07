@@ -6,15 +6,17 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#10B981',
-          dark: '#059669',
-          light: '#34D399',
+          DEFAULT: 'var(--color-brand)',
+          dark: 'var(--color-brand-dark)',
+          light: 'var(--color-brand-light)',
+          soft: 'var(--color-brand-soft)',
           text: '#111827',
         },
         primary: {
-          DEFAULT: '#10B981',
-          dark: '#059669',
-          light: '#34D399',
+          DEFAULT: 'var(--color-brand)',
+          dark: 'var(--color-brand-dark)',
+          light: 'var(--color-brand-light)',
+          soft: 'var(--color-brand-soft)',
         },
       },
     },

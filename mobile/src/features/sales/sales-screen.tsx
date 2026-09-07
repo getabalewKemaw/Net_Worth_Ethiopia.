@@ -37,7 +37,7 @@ export function SalesScreen() {
       <View style={[styles.toggleContainer, { backgroundColor: colors.backgroundElement }]}>
         <View style={[styles.togglePill, { backgroundColor: colors.background }]}>
           <Pressable style={[styles.toggleBtn, activeTab === "sales" && styles.toggleBtnActive]} onPress={() => setActiveTab("sales")}>
-            {activeTab === "sales" && <View style={[styles.toggleBtnBg, { backgroundColor: "#10B981" }]} />}
+            {activeTab === "sales" && <View style={[styles.toggleBtnBg, { backgroundColor: "#065F46" }]} />}
             <ThemedText style={[styles.toggleBtnText, { color: activeTab === "sales" ? "#FFF" : colors.textSecondary }]}>
               🛒  Sales
             </ThemedText>
@@ -53,14 +53,14 @@ export function SalesScreen() {
 
       {activeTab === "sales" ? (
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, paddingTop: 4 }} showsVerticalScrollIndicator={false}>
-          <SectionSummary total={totalSales} count={sales.length} label="Sales" color="#10B981" />
+          <SectionSummary total={totalSales} count={sales.length} label="Sales" color="#065F46" />
 
           <Pressable style={styles.addBtn} onPress={() => setShowAddSale(true)}>
             <View style={styles.addBtnInner}>
-              <View style={[styles.addIcon, { backgroundColor: "#10B981" }]}>
+              <View style={[styles.addIcon, { backgroundColor: "#065F46" }]}>
                 <ThemedText style={{ fontSize: 20, color: "#FFF", fontWeight: "900", lineHeight: 24 }}>+</ThemedText>
               </View>
-              <ThemedText style={{ fontSize: 15, fontWeight: "800", color: "#10B981" }}>Record New Sale</ThemedText>
+              <ThemedText style={{ fontSize: 15, fontWeight: "800", color: "#065F46" }}>Record New Sale</ThemedText>
             </View>
           </Pressable>
 
@@ -84,7 +84,7 @@ export function SalesScreen() {
                 ]}
               >
                 <View style={styles.cardLeft}>
-                  <View style={[styles.cardIconBg, { backgroundColor: "#10B98118" }]}>
+                  <View style={[styles.cardIconBg, { backgroundColor: "#065F4618" }]}>
                     <ThemedText style={{ fontSize: 18 }}>🛒</ThemedText>
                   </View>
                   <View style={{ flex: 1 }}>
@@ -110,7 +110,7 @@ export function SalesScreen() {
                     </View>
                   </View>
                 </View>
-                <ThemedText style={[styles.cardAmount, { color: "#10B981" }]}>
+                <ThemedText style={[styles.cardAmount, { color: "#065F46" }]}>
                   +{sale.amount.toLocaleString()}
                   {"\n"}
                   <ThemedText style={{ fontSize: 11, fontWeight: "500", color: colors.textSecondary }}>ETB</ThemedText>
@@ -126,7 +126,7 @@ export function SalesScreen() {
           <View style={[styles.netCard, { backgroundColor: totalSales >= totalExpenses ? "#ECFDF5" : "#FEF2F2", borderColor: totalSales >= totalExpenses ? "#A7F3D0" : "#FECACA" }]}>
             <View>
               <ThemedText style={{ fontSize: 11, fontWeight: "700", color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.8 }}>Net Position Today</ThemedText>
-              <ThemedText style={{ fontSize: 22, fontWeight: "900", color: totalSales >= totalExpenses ? "#059669" : "#DC2626", marginTop: 2 }}>
+              <ThemedText style={{ fontSize: 22, fontWeight: "900", color: totalSales >= totalExpenses ? "#065F46" : "#DC2626", marginTop: 2 }}>
                 {totalSales >= totalExpenses ? "+" : ""}{(totalSales - totalExpenses).toLocaleString()} ETB
               </ThemedText>
             </View>
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   addBtn: {
     borderWidth: 1.5,
-    borderColor: "#10B98140",
+    borderColor: "#065F4640",
     borderStyle: "dashed",
     borderRadius: 14,
     paddingVertical: 14,

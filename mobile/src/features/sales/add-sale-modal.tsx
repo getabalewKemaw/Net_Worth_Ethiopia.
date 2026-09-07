@@ -121,7 +121,7 @@ export function AddSaleModal({
   };
 
   const isDube = saleType === "dube";
-  const accentColor = isDube ? "#D97706" : "#10B981";
+  const accentColor = isDube ? "#D97706" : "#065F46";
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -133,7 +133,7 @@ export function AddSaleModal({
 
           <View style={[styles.saleTypePill, { backgroundColor: colors.background }]}>
             <Pressable style={[styles.toggleBtn, !isDube && styles.toggleBtnActive]} onPress={() => setSaleType("instant")}>
-              {!isDube && <View style={[styles.toggleBtnBg, { backgroundColor: "#10B981" }]} />}
+              {!isDube && <View style={[styles.toggleBtnBg, { backgroundColor: "#065F46" }]} />}
               <ThemedText style={[styles.toggleBtnText, { color: !isDube ? "#FFF" : colors.textSecondary }]}>⚡  Instant</ThemedText>
             </Pressable>
             <Pressable style={[styles.toggleBtn, isDube && styles.toggleBtnActive]} onPress={() => setSaleType("dube")}>
