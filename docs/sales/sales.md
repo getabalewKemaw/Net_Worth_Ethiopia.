@@ -419,4 +419,3 @@ Sales-related code should be split like this:
 - Validation lives in `mobile/src/validations/sales.ts`
 - API access lives in `mobile/src/services/sales.ts`
 - Shared app navigation and dashboard files stay where they are
-
