@@ -110,9 +110,12 @@ backend/src/
 │   └── db.ts
 ├── controllers/
 │   ├── branch.controller.ts
-│   └── business.controller.ts
+│   ├── business.controller.ts
+│   ├── expenses.controller.ts
+│   └── sales.controller.ts
 ├── db/
 │   ├── business-branch-management.ts
+│   ├── sales-expense-management.ts
 │   └── schema.ts
 ├── helpers/
 │   ├── errors.ts
@@ -122,18 +125,26 @@ backend/src/
 │   └── error.ts
 ├── repositories/
 │   ├── branch.repository.ts
-│   └── business.repository.ts
+│   ├── business.repository.ts
+│   ├── expenses.repository.ts
+│   └── sales.repository.ts
 ├── routes/
 │   ├── branch.routes.ts
-│   └── business.routes.ts
+│   ├── business.routes.ts
+│   ├── expenses.routes.ts
+│   └── sales.routes.ts
 ├── service/
 │   ├── branch.service.ts
-│   └── business.service.ts
+│   ├── business.service.ts
+│   ├── expenses.service.ts
+│   └── sales.service.ts
 ├── types/
-│   └── index.ts
+│   ├── index.ts
+│   └── sales.ts
 ├── validations/
 │   ├── branch.validation.ts
-│   └── business.validation.ts
+│   ├── business.validation.ts
+│   └── sales.validation.ts
 └── index.ts
 ```
 

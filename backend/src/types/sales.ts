@@ -14,23 +14,25 @@ export interface CreateSaleInput {
   paymentMethod: PaymentMethod;
   description: string;
   amount: number;
-  customerName?: string | null;
-  customerPhone?: string | null;
-  dueDate?: Date | null;
-  notes?: string | null;
-  status?: SaleStatus;
+  customerName?: string | null | undefined;
+  customerPhone?: string | null | undefined;
+  dueDate?: Date | null | undefined;
+  notes?: string | null | undefined;
+  status?: SaleStatus | undefined;
 }
 
 export interface UpdateSaleInput {
-  saleType?: SaleType;
-  paymentMethod?: PaymentMethod;
-  description?: string;
-  amount?: number;
-  customerName?: string | null;
-  customerPhone?: string | null;
-  dueDate?: Date | null;
-  notes?: string | null;
-  status?: SaleStatus;
+  businessId?: string | undefined;
+  branchId?: string | undefined;
+  saleType?: SaleType | undefined;
+  paymentMethod?: PaymentMethod | undefined;
+  description?: string | undefined;
+  amount?: number | undefined;
+  customerName?: string | null | undefined;
+  customerPhone?: string | null | undefined;
+  dueDate?: Date | null | undefined;
+  notes?: string | null | undefined;
+  status?: SaleStatus | undefined;
 }
 
 export interface CreateExpenseInput {
@@ -39,12 +41,15 @@ export interface CreateExpenseInput {
   description: string;
   amount: number;
   category: string;
-  notes?: string | null;
+  notes?: string | null | undefined;
 }
 
 export interface UpdateExpenseInput {
-  description?: string;
-  amount?: number;
-  category?: string;
-  notes?: string | null;
+  businessId?: string | undefined;
+  branchId?: string | undefined;
+  description?: string | undefined;
+  amount?: number | undefined;
+  category?: string | undefined;
+  notes?: string | null | undefined;
 }
+
