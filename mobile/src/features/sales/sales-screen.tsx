@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ScrollView, Pressable, StyleSheet } from "react-native";
+import { View, ScrollView, Pressable, StyleSheet, RefreshControl, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ThemedText } from "@/components/themed-text";
@@ -20,6 +20,9 @@ export function SalesScreen() {
     setActiveTab,
     sales,
     expenses,
+    isLoading,
+    isRefreshing,
+    refreshSales,
     showAddSale,
     setShowAddSale,
     showAddExpense,
@@ -52,7 +55,19 @@ export function SalesScreen() {
       </View>
 
       {activeTab === "sales" ? (
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, paddingTop: 4 }} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, paddingTop: 4 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={refreshSales}
+              tintColor="#065F46"
+              colors={["#065F46"]}
+            />
+          }
+        >
           <SectionSummary total={totalSales} count={sales.length} label="Sales" color="#065F46" />
 
           <Pressable style={styles.addBtn} onPress={() => setShowAddSale(true)}>
@@ -66,7 +81,14 @@ export function SalesScreen() {
 
           <ThemedText style={[styles.listHeader, { color: colors.textSecondary }]}>Today&apos;s Sales</ThemedText>
 
-          {sales.length === 0 ? (
+          {isLoading && sales.length === 0 ? (
+            <View style={styles.emptyState}>
+              <ActivityIndicator size="large" color="#065F46" />
+              <ThemedText style={{ fontSize: 13, color: colors.textSecondary, marginTop: 12, fontWeight: "600" }}>
+                Loading sales from database...
+              </ThemedText>
+            </View>
+          ) : sales.length === 0 ? (
             <View style={styles.emptyState}>
               <ThemedText style={{ fontSize: 36 }}>🛒</ThemedText>
               <ThemedText style={{ fontSize: 14, color: colors.textSecondary, marginTop: 8, textAlign: "center" }}>
@@ -120,7 +142,19 @@ export function SalesScreen() {
           )}
         </ScrollView>
       ) : (
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, paddingTop: 4 }} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, paddingTop: 4 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={refreshSales}
+              tintColor={colors.expense}
+              colors={[colors.expense]}
+            />
+          }
+        >
           <SectionSummary total={totalExpenses} count={expenses.length} label="Expenses" color={colors.expense} />
 
           <View style={[styles.netCard, { backgroundColor: totalSales >= totalExpenses ? "#ECFDF5" : "#FEF2F2", borderColor: totalSales >= totalExpenses ? "#A7F3D0" : "#FECACA" }]}>
@@ -144,7 +178,14 @@ export function SalesScreen() {
 
           <ThemedText style={[styles.listHeader, { color: colors.textSecondary }]}>Today&apos;s Expenses</ThemedText>
 
-          {expenses.length === 0 ? (
+          {isLoading && expenses.length === 0 ? (
+            <View style={styles.emptyState}>
+              <ActivityIndicator size="large" color={colors.expense} />
+              <ThemedText style={{ fontSize: 13, color: colors.textSecondary, marginTop: 12, fontWeight: "600" }}>
+                Loading expenses from database...
+              </ThemedText>
+            </View>
+          ) : expenses.length === 0 ? (
             <View style={styles.emptyState}>
               <ThemedText style={{ fontSize: 36 }}>💸</ThemedText>
               <ThemedText style={{ fontSize: 14, color: colors.textSecondary, marginTop: 8, textAlign: "center" }}>
