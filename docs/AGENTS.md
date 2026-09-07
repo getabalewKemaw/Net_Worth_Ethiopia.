@@ -518,6 +518,188 @@ Examples may include:
 * Generated clients
 * Generated types
 * ORM-generated files
+
+---
+
+# 23. Folder Ownership and Placement
+
+Use the existing repository layout as the source of truth. When creating or moving files, place them in the closest matching folder below.
+
+## Mobile App
+
+### `mobile/src/app/`
+
+Route files only.
+
+Keep these thin:
+
+* Route wrappers
+* Layout files
+* Route-level redirects or screen mounting
+
+Do not place feature logic, reusable UI, or API access here unless it is truly route-specific.
+
+### `mobile/src/features/<domain>/`
+
+Feature screens and feature-specific orchestration.
+
+Use this for:
+
+* Screen composition
+* Modal flows
+* Feature-local state orchestration
+* Feature-only helpers that are not reusable elsewhere
+
+Keep route files thin by moving real screen work into `features/`.
+
+### `mobile/src/components/ui/`
+
+Generic design-system primitives only.
+
+Use this for:
+
+* Buttons
+* Inputs
+* Basic reusable form controls
+* Small cross-domain UI primitives
+
+If the component mentions a business domain, sales domain, or auth flow, it usually does not belong here.
+
+### `mobile/src/components/<domain>/`
+
+Reusable domain widgets.
+
+Use this for components that are shared inside one domain but not globally generic.
+
+Examples:
+
+* `components/sales/`
+* `components/business/`
+* `components/navigation/`
+* `components/auth/`
+* `components/charts/`
+
+### `mobile/src/hooks/`
+
+Reusable hooks and local controllers.
+
+Use this for:
+
+* Screen data orchestration
+* Derived state
+* Shared local behavior
+* Fetching or mutation coordination when it is reused
+
+Do not put pure view markup here.
+
+### `mobile/src/service/`
+
+Integration and persistence layer.
+
+This repository currently uses the singular `service/` folder name, so keep new work aligned with that existing convention unless a deliberate migration is planned.
+
+Use this for:
+
+* API calls
+* Persistence adapters
+* Backend communication helpers
+
+### `mobile/src/lib/`
+
+Low-level implementation helpers and integrations.
+
+Use this for:
+
+* Storage adapters
+* Auth client setup
+* Polyfills
+* Environment-aware runtime helpers
+
+### `mobile/src/constants/`
+
+Static configuration only.
+
+Use this for:
+
+* Labels
+* Presets
+* Color maps
+* Token values
+* Fixed lists
+
+### `mobile/src/types/`
+
+Shared domain types and payload contracts.
+
+### `mobile/src/validations/`
+
+Validation schemas and form rules.
+
+### `mobile/src/store/`
+
+Global client state only.
+
+Do not put local component state here.
+
+## Backend
+
+The backend uses the same principle: one folder per responsibility.
+
+### `backend/src/routes/`
+
+HTTP route wiring only.
+
+### `backend/src/controllers/`
+
+Request/response coordination only.
+
+### `backend/src/service/`
+
+Business logic and use-case orchestration.
+
+### `backend/src/repositories/`
+
+Database access and persistence queries.
+
+### `backend/src/validations/`
+
+Input validation schemas.
+
+### `backend/src/middleware/`
+
+Express middleware and cross-cutting request handling.
+
+### `backend/src/helpers/`
+
+Shared helper functions that are not domain services.
+
+### `backend/src/config/`
+
+Runtime and infrastructure configuration.
+
+### `backend/src/db/`
+
+Database schema and query-related definitions.
+
+### `backend/src/types/`
+
+Shared backend types.
+
+## Placement Rules
+
+When a file could fit in multiple places, use this order:
+
+```text
+reuse existing → extend existing → feature-local → shared domain component → generic UI primitive → create new
+```
+
+Additional rules:
+
+* Route files should stay thin.
+* Components used in one screen should stay close to that screen.
+* Components used across multiple screens should be promoted only when reuse is real.
+* If a helper is domain-specific, keep it in the domain feature area instead of `lib/` or `utils/`.
+* Update the docs whenever folder ownership changes.
 * Lockfiles when not intentionally changed
 
 Do not commit build output unless the repository explicitly requires it.

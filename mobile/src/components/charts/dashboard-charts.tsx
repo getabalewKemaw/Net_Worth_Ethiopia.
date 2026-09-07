@@ -1,15 +1,12 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
-import { useTheme } from '@/hooks/use-theme';
 
 // ==========================================
 // 1. WEEKLY SALES BAR CHART (Clean & Responsive)
 // ==========================================
 
 export function SalesTrendAreaChart() {
-  const colors = useTheme();
-
   const dataPoints = [
     { label: 'Mon', val: '12k', heightPct: 62 },
     { label: 'Tue', val: '14.5k', heightPct: 75 },
@@ -45,7 +42,7 @@ export function SalesTrendAreaChart() {
                   {
                     height: `${pt.heightPct}%`,
                     backgroundColor: pt.active
-                      ? '#10B981'
+                      ? '#065F46'
                       : pt.peak
                       ? '#F59E0B'
                       : '#D1FAE5',
@@ -71,7 +68,7 @@ export function SalesTrendAreaChart() {
       <View style={styles.chartFooter}>
         <View style={styles.legendRow}>
           <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#10B981' }]} />
+            <View style={[styles.legendDot, { backgroundColor: '#065F46' }]} />
             <ThemedText style={styles.legendText}>Today (Active)</ThemedText>
           </View>
           <View style={styles.legendItem}>
@@ -93,14 +90,12 @@ export function SalesTrendAreaChart() {
 // ==========================================
 
 export function PaymentChannelDonutChart() {
-  const colors = useTheme();
-
   return (
     <View style={styles.paymentContainer}>
       {/* Multi-segment Progress Bar */}
       <View style={styles.segmentedBar}>
         <View style={[styles.segment, { width: '55%', backgroundColor: '#0284C7' }]} />
-        <View style={[styles.segment, { width: '30%', backgroundColor: '#10B981' }]} />
+        <View style={[styles.segment, { width: '30%', backgroundColor: '#065F46' }]} />
         <View style={[styles.segment, { width: '15%', backgroundColor: '#F59E0B' }]} />
       </View>
 
@@ -118,10 +113,10 @@ export function PaymentChannelDonutChart() {
 
         <View style={styles.channelRow}>
           <View style={styles.channelLeft}>
-            <View style={[styles.channelDot, { backgroundColor: '#10B981' }]} />
+            <View style={[styles.channelDot, { backgroundColor: '#065F46' }]} />
             <ThemedText style={styles.channelName}>CBE Birr</ThemedText>
           </View>
-          <ThemedText style={[styles.channelAmount, { color: '#10B981' }]}>
+          <ThemedText style={[styles.channelAmount, { color: '#065F46' }]}>
             30% · 5,535 ETB
           </ThemedText>
         </View>
@@ -166,7 +161,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   activeValueText: {
-    color: '#10B981',
+    color: '#065F46',
     fontWeight: '800',
   },
   peakValueText: {
@@ -192,7 +187,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   activeDayLabel: {
-    color: '#10B981',
+    color: '#065F46',
     fontWeight: '800',
   },
   chartFooter: {
@@ -233,7 +228,7 @@ const styles = StyleSheet.create({
   peakBadgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#059669',
+    color: '#065F46',
   },
 
   // Payment Channel Styles

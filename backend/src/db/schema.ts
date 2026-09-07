@@ -96,3 +96,4 @@ export const accountRelations = relations(account, ({ one }) => ({
 }));
 
 export * from "./business-branch-management";
+export * from "./sales-expense-management";

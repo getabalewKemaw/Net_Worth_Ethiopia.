@@ -15,7 +15,6 @@ import {
 export default function HomeScreen() {
   const colors = useTheme();
 
-  const activeBusiness = useBusinessStore((state) => state.activeBusiness);
   const branches = useBusinessStore((state) => state.branches);
   const activeBranch = useBusinessStore((state) => state.activeBranch);
   const isPending = useBusinessStore((state) => state.isPending);
@@ -56,7 +55,7 @@ export default function HomeScreen() {
       >
         {isPending ? (
           <View className="py-20 items-center justify-center">
-            <ActivityIndicator size="large" color="#10B981" />
+            <ActivityIndicator size="large" color="#065F46" />
             <ThemedText className="text-xs font-semibold mt-3 text-gray-500">
               Loading operational metrics...
             </ThemedText>
@@ -68,14 +67,14 @@ export default function HomeScreen() {
               {/* Card Top Row */}
               <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center gap-2">
-                  <View className="w-2 h-2 rounded-full bg-[#34D399]" />
-                  <ThemedText className="text-[#A7F3D0] text-[12px] font-bold uppercase tracking-wider">
-                    Today's Total Revenue
+                  <View className="w-2 h-2 rounded-full bg-brand-light" />
+                  <ThemedText className="text-brand-light text-[12px] font-bold uppercase tracking-wider">
+                    Today&apos;s Total Revenue
                   </ThemedText>
                 </View>
 
                 <View style={styles.growthBadge}>
-                  <ThemedText className="text-[#34D399] text-[11px] font-black">
+                  <ThemedText className="text-brand-light text-[11px] font-black">
                     ↑ +12.5%
                   </ThemedText>
                 </View>
@@ -86,7 +85,7 @@ export default function HomeScreen() {
                 <ThemedText className="text-white text-[34px] font-black tracking-tight">
                   18,450.00
                 </ThemedText>
-                <ThemedText className="text-[#A7F3D0] text-[16px] font-extrabold">
+                <ThemedText className="text-brand-light text-[16px] font-extrabold">
                   ETB
                 </ThemedText>
               </View>
@@ -99,7 +98,7 @@ export default function HomeScreen() {
                   </ThemedText>
                   <ThemedText className="text-white text-[15px] font-black">
                     6,250 ETB{' '}
-                    <ThemedText className="text-[#34D399] text-[11px] font-bold">
+                    <ThemedText className="text-brand-light text-[11px] font-bold">
                       (33%)
                     </ThemedText>
                   </ThemedText>
@@ -189,12 +188,12 @@ export default function HomeScreen() {
                     Payment Channels
                   </ThemedText>
                   <ThemedText className="text-[12px] font-medium text-gray-500">
-                    Settlement share for today's sales
+                    Settlement share for today&apos;s sales
                   </ThemedText>
                 </View>
 
-                <View className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200">
-                  <ThemedText className="text-[10px] font-extrabold text-[#065F46]">
+                <View className="px-2 py-0.5 rounded-full bg-brand-soft border border-brand-light">
+                  <ThemedText className="text-[10px] font-extrabold text-brand-dark">
                     RECONCILED
                   </ThemedText>
                 </View>
@@ -240,7 +239,7 @@ export default function HomeScreen() {
                         <View
                           style={[
                             styles.branchAvatar,
-                            { backgroundColor: isCurrent ? '#10B981' : '#94A3B8' },
+                            { backgroundColor: isCurrent ? '#065F46' : '#94A3B8' },
                           ]}
                         >
                           <ThemedText className="text-white text-[11px] font-black">
@@ -261,7 +260,7 @@ export default function HomeScreen() {
                         <ThemedText className="text-[13px] font-black text-gray-900">
                           {br.sales || '12,450 ETB'}
                         </ThemedText>
-                        <ThemedText className="text-[10px] font-semibold text-emerald-600">
+                        <ThemedText className="text-[10px] font-semibold text-brand-dark">
                           {isCurrent ? '● Active Branch' : 'Online'}
                         </ThemedText>
                       </View>
@@ -278,7 +277,7 @@ export default function HomeScreen() {
                   Recent Activities
                 </ThemedText>
                 <Pressable onPress={() => router.push('/sales' as any)}>
-                  <ThemedText className="text-[11px] font-bold text-[#10B981]">
+                  <ThemedText className="text-[11px] font-bold text-brand">
                     View all
                   </ThemedText>
                 </Pressable>
@@ -300,7 +299,7 @@ export default function HomeScreen() {
                       </ThemedText>
                     </View>
                   </View>
-                  <ThemedText className="text-[13px] font-black text-[#059669]">
+                  <ThemedText className="text-[13px] font-black text-brand-dark">
                     +850.00 ETB
                   </ThemedText>
                 </View>

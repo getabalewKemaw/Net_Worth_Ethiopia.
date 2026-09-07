@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { router } from "expo-router";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useBusinessStore } from "@/store/business-store";
@@ -15,7 +15,7 @@ export function useCreateBranch() {
   const [apiError, setApiError] = useState<string | null>(null);
 
   const {
-    watch,
+    control,
     setValue,
     handleSubmit: rhfHandleSubmit,
     formState: { errors: rhfErrors, isSubmitting },
@@ -49,28 +49,30 @@ export function useCreateBranch() {
   };
 
   const formattedErrors: Record<string, string> = {};
-  (Object.keys(rhfErrors) as Array<keyof BranchFormInput>).forEach((key) => {
+  (Object.keys(rhfErrors) as (keyof BranchFormInput)[]).forEach((key) => {
     const err = rhfErrors[key];
     if (err?.message) {
       formattedErrors[key] = err.message as string;
     }
   });
 
+  const values = useWatch({ control }) as Partial<BranchFormInput>;
+
   return {
     activeBusiness,
-    name: watch("name") || "",
+    name: values.name || "",
     setName: (val: string) => setValue("name", val, { shouldValidate: true }),
-    phoneNumber: watch("phoneNumber") || "",
+    phoneNumber: values.phoneNumber || "",
     setPhoneNumber: (val: string) => setValue("phoneNumber", val, { shouldValidate: true }),
-    address: watch("address") || "",
+    address: values.address || "",
     setAddress: (val: string) => setValue("address", val, { shouldValidate: true }),
-    city: watch("city") || "",
+    city: values.city || "",
     setCity: (val: string) => setValue("city", val, { shouldValidate: true }),
-    subCityWoreda: watch("subCityWoreda") || "",
+    subCityWoreda: values.subCityWoreda || "",
     setSubCityWoreda: (val: string) => setValue("subCityWoreda", val, { shouldValidate: true }),
-    telebirrMerchantId: watch("telebirrMerchantId") || "",
+    telebirrMerchantId: values.telebirrMerchantId || "",
     setTelebirrMerchantId: (val: string) => setValue("telebirrMerchantId", val, { shouldValidate: true }),
-    cbeBirrMerchantId: watch("cbeBirrMerchantId") || "",
+    cbeBirrMerchantId: values.cbeBirrMerchantId || "",
     setCbeBirrMerchantId: (val: string) => setValue("cbeBirrMerchantId", val, { shouldValidate: true }),
     errors: formattedErrors,
     isSubmitting,

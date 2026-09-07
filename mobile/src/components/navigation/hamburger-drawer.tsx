@@ -107,11 +107,11 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
           <Pressable
             onPress={() => setIsOpen(true)}
             style={styles.hamburgerBtn}
-            android_ripple={{ color: 'rgba(16, 185, 129, 0.15)', borderless: false }}
+            android_ripple={{ color: 'rgba(6, 95, 70, 0.15)', borderless: false }}
           >
             <View style={{ width: 18, height: 13, justifyContent: 'space-between' }}>
               <View style={{ width: 18, height: 2.2, borderRadius: 1.5, backgroundColor: '#1F2937' }} />
-              <View style={{ width: 12, height: 2.2, borderRadius: 1.5, backgroundColor: '#10B981' }} />
+              <View style={{ width: 12, height: 2.2, borderRadius: 1.5, backgroundColor: colors.primary }} />
               <View style={{ width: 18, height: 2.2, borderRadius: 1.5, backgroundColor: '#1F2937' }} />
             </View>
           </Pressable>
@@ -121,7 +121,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
               {activeBusiness?.name || 'NetWorth Ethiopia'}
             </ThemedText>
             <View className="flex-row items-center gap-1.5">
-              <View className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+              <View className="w-1.5 h-1.5 rounded-full bg-brand" />
               <ThemedText className="text-[11px] font-medium" style={{ color: colors.textSecondary }}>
                 {activeBranch?.name || 'Main Branch'}
               </ThemedText>
@@ -134,8 +134,8 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
           <View
             style={styles.onlineBadge}
           >
-            <View className="w-2 h-2 rounded-full bg-[#10B981]" />
-            <ThemedText className="text-[11px] font-bold text-[#065F46]">
+            <View className="w-2 h-2 rounded-full bg-brand" />
+            <ThemedText className="text-[11px] font-bold text-brand-dark">
               Online
             </ThemedText>
           </View>
@@ -163,7 +163,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
             {/* Drawer Header */}
             <View style={styles.drawerHeader}>
               <View className="gap-0.5">
-                <ThemedText className="text-[18px] font-black text-[#10B981]">
+                <ThemedText className="text-[18px] font-black text-brand">
                   NetWorth Ethiopia
                 </ThemedText>
                 <ThemedText className="text-[12px] font-medium text-gray-500">
@@ -182,7 +182,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
             {/* Operating Branch Card */}
             <View style={styles.branchSummaryCard}>
               <View className="gap-0.5 flex-1 pr-2">
-                <ThemedText className="text-[10px] uppercase font-extrabold tracking-wider text-emerald-800">
+                <ThemedText className="text-[10px] uppercase font-extrabold tracking-wider text-brand-dark">
                   Current Branch
                 </ThemedText>
                 <ThemedText className="text-[14px] font-bold text-gray-900" numberOfLines={1}>
@@ -220,13 +220,13 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
                           <View className="flex-row items-center gap-3">
                             <ThemedText className="text-[17px]">{item.icon}</ThemedText>
                             <ThemedText
-                              className={`text-[14px] ${isActive ? 'font-bold text-[#10B981]' : 'font-medium text-gray-700'}`}
+                              className={`text-[14px] ${isActive ? 'font-bold text-brand' : 'font-medium text-gray-700'}`}
                             >
                               {item.label}
                             </ThemedText>
                           </View>
                           {isActive && (
-                            <View className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                            <View className="w-1.5 h-1.5 rounded-full bg-brand" />
                           )}
                         </Pressable>
                       );
@@ -285,9 +285,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(6, 95, 70, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(6, 95, 70, 0.2)',
   },
   modalBackdrop: {
     flex: 1,
@@ -340,7 +340,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: '#10B981',
+    backgroundColor: '#065F46',
   },
   navItem: {
     flexDirection: 'row',
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   navItemActive: {
-    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    backgroundColor: 'rgba(6, 95, 70, 0.08)',
   },
   drawerFooter: {
     padding: 16,

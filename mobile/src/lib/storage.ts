@@ -11,6 +11,8 @@ function getSecureStore() {
   secureStoreChecked = true;
   if (Platform.OS !== 'web') {
     try {
+      // Lazy-load the native module so missing dev-client support falls back cleanly.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       secureStoreModule = require('expo-secure-store');
     } catch {
       secureStoreModule = null;
@@ -97,4 +99,3 @@ export async function removeItem(key: string): Promise<void> {
 export const getItemAsync = async (key: string) => getItem(key);
 export const setItemAsync = setItem;
 export const deleteItemAsync = removeItem;
-

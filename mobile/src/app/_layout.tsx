@@ -1,10 +1,9 @@
 import '../global.css';
 import '@/lib/online-manager-polyfill';
 import { useEffect } from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DefaultTheme, ThemeProvider, Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { authClient } from '@/lib/auth-client';
@@ -20,9 +19,9 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
 }
 
 SplashScreen.preventAutoHideAsync();
+WebBrowser.maybeCompleteAuthSession();
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
   const segments = useSegments();
@@ -36,7 +35,7 @@ export default function TabLayout() {
     if (session) {
       loadInitialState();
     }
-  }, [session]);
+  }, [session, loadInitialState]);
 
   useEffect(() => {
     if (isPending) return;
@@ -64,7 +63,7 @@ export default function TabLayout() {
         }
       }
     }
-  }, [session, isPending, activeBusiness, isBusinessPending, segments]);
+  }, [session, isPending, activeBusiness, isBusinessPending, segments, router]);
 
   return (
     <ThemeProvider value={DefaultTheme}>

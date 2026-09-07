@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useBusinessStore } from "@/store/business-store";
@@ -17,7 +17,7 @@ export function useBusinessProfile() {
   const [apiSuccess, setApiSuccess] = useState<string | null>(null);
 
   const {
-    watch,
+    control,
     setValue,
     reset,
     handleSubmit: rhfHandleSubmit,
@@ -75,36 +75,38 @@ export function useBusinessProfile() {
   };
 
   const formattedErrors: Record<string, string> = {};
-  (Object.keys(rhfErrors) as Array<keyof BusinessFormInput>).forEach((key) => {
+  (Object.keys(rhfErrors) as (keyof BusinessFormInput)[]).forEach((key) => {
     const err = rhfErrors[key];
     if (err?.message) {
       formattedErrors[key] = err.message as string;
     }
   });
 
+  const values = useWatch({ control }) as Partial<BusinessFormInput>;
+
   return {
     activeBusiness,
-    name: watch("name") || "",
+    name: values.name || "",
     setName: (val: string) => setValue("name", val, { shouldValidate: true }),
-    type: watch("type") || "",
+    type: values.type || "",
     setType: (val: typeof BUSINESS_TYPES[number]["value"] | "") => setValue("type", val as any, { shouldValidate: true }),
-    phoneNumber: watch("phoneNumber") || "",
+    phoneNumber: values.phoneNumber || "",
     setPhoneNumber: (val: string) => setValue("phoneNumber", val, { shouldValidate: true }),
-    address: watch("address") || "",
+    address: values.address || "",
     setAddress: (val: string) => setValue("address", val, { shouldValidate: true }),
-    city: watch("city") || "",
+    city: values.city || "",
     setCity: (val: string) => setValue("city", val, { shouldValidate: true }),
-    email: watch("email") || "",
+    email: values.email || "",
     setEmail: (val: string) => setValue("email", val, { shouldValidate: true }),
-    subCityWoreda: watch("subCityWoreda") || "",
+    subCityWoreda: values.subCityWoreda || "",
     setSubCityWoreda: (val: string) => setValue("subCityWoreda", val, { shouldValidate: true }),
-    description: watch("description") || "",
+    description: values.description || "",
     setDescription: (val: string) => setValue("description", val, { shouldValidate: true }),
-    tin: watch("tin") || "",
+    tin: values.tin || "",
     setTin: (val: string) => setValue("tin", val, { shouldValidate: true }),
-    commercialRegistrationNo: watch("commercialRegistrationNo") || "",
+    commercialRegistrationNo: values.commercialRegistrationNo || "",
     setCommercialRegistrationNo: (val: string) => setValue("commercialRegistrationNo", val, { shouldValidate: true }),
-    tradeLicenseNo: watch("tradeLicenseNo") || "",
+    tradeLicenseNo: values.tradeLicenseNo || "",
     setTradeLicenseNo: (val: string) => setValue("tradeLicenseNo", val, { shouldValidate: true }),
     errors: formattedErrors,
     isSubmitting,
