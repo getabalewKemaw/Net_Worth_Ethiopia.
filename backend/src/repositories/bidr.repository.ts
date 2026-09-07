@@ -1,6 +1,6 @@
 import { db } from "../config/db";
 import { sale } from "../db/schema";
-import { eq, and, asc, desc, lt, gte, type SQL } from "drizzle-orm";
+import { eq, and, asc, desc, lt, gte, lte, type SQL } from "drizzle-orm";
 import type { Sale, BidrFilters, DebtSummary, SettleBidrInput, UpdateBidrInput } from "../types";
 
 export const findDebtsByBusinessId = async (
@@ -30,12 +30,28 @@ export const findDebtsByBusinessId = async (
       gte(sale.dueDate, new Date())
     );
   }
+  if (filters?.startDate) {
+    conditions.push(gte(sale.createdAt, filters.startDate));
+  }
+  if (filters?.endDate) {
+    conditions.push(lte(sale.createdAt, filters.endDate));
+  }
 
-  return await db
+  let query = db
     .select()
     .from(sale)
     .where(and(...conditions))
-    .orderBy(asc(sale.dueDate), desc(sale.createdAt));
+    .orderBy(asc(sale.dueDate), desc(sale.createdAt))
+    .$dynamic();
+
+  if (filters?.limit !== undefined) {
+    query = query.limit(filters.limit);
+  }
+  if (filters?.offset !== undefined) {
+    query = query.offset(filters.offset);
+  }
+
+  return await query;
 };
 
 export const findDebtById = async (id: string): Promise<Sale | undefined> => {

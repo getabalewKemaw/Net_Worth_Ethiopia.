@@ -17,6 +17,10 @@ export interface BidrFilters {
   branchId?: string | undefined;
   status?: SaleStatus | undefined;
   isOverdue?: boolean | undefined;
+  startDate?: Date | undefined;
+  endDate?: Date | undefined;
+  limit?: number | undefined;
+  offset?: number | undefined;
 }
 
 export interface DebtSummary {

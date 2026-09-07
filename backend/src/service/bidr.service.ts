@@ -2,6 +2,7 @@ import * as bidrRepo from "../repositories/bidr.repository";
 import * as businessRepo from "../repositories/business.repository";
 import * as branchRepo from "../repositories/branch.repository";
 import { NotFoundError, ForbiddenError, BadRequestError } from "../helpers/errors";
+import { resolveUserBusinessId } from "./sales.service";
 import type { Sale, BidrFilters, DebtSummary, SettleBidrInput, UpdateBidrInput } from "../types";
 
 export const getDebtsService = async (
@@ -9,22 +10,16 @@ export const getDebtsService = async (
   userId: string,
   filters?: BidrFilters | undefined
 ): Promise<Sale[]> => {
-  const biz = await businessRepo.findBusinessById(businessId);
-  if (!biz) {
-    throw new NotFoundError("Business not found");
-  }
-  if (biz.userId !== userId) {
-    throw new ForbiddenError("Unauthorized: You do not own this business");
-  }
+  const verifiedBusinessId = await resolveUserBusinessId(userId, businessId);
 
   if (filters?.branchId) {
     const br = await branchRepo.findBranchById(filters.branchId);
-    if (!br || br.businessId !== businessId) {
+    if (!br || br.businessId !== verifiedBusinessId) {
       throw new BadRequestError("Branch does not belong to the specified business");
     }
   }
 
-  return await bidrRepo.findDebtsByBusinessId(businessId, filters);
+  return await bidrRepo.findDebtsByBusinessId(verifiedBusinessId, filters);
 };
 
 export const getDebtByIdService = async (
@@ -49,22 +44,16 @@ export const getDebtSummaryService = async (
   userId: string,
   branchId?: string | undefined
 ): Promise<DebtSummary> => {
-  const biz = await businessRepo.findBusinessById(businessId);
-  if (!biz) {
-    throw new NotFoundError("Business not found");
-  }
-  if (biz.userId !== userId) {
-    throw new ForbiddenError("Unauthorized: You do not own this business");
-  }
+  const verifiedBusinessId = await resolveUserBusinessId(userId, businessId);
 
   if (branchId) {
     const br = await branchRepo.findBranchById(branchId);
-    if (!br || br.businessId !== businessId) {
+    if (!br || br.businessId !== verifiedBusinessId) {
       throw new BadRequestError("Branch does not belong to the specified business");
     }
   }
 
-  return await bidrRepo.getDebtSummary(businessId, branchId);
+  return await bidrRepo.getDebtSummary(verifiedBusinessId, branchId);
 };
 
 export const settleDebtService = async (

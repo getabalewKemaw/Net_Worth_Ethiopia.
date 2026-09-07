@@ -3,12 +3,18 @@ import * as salesService from "../service/sales.service";
 import { createSaleSchema, updateSaleSchema } from "../validations/sales.validation";
 import { ValidationError, BadRequestError } from "../helpers/errors";
 import { apiResponse } from "../helpers/response";
-import type { AuthenticatedRequest } from "../types";
+import type { AuthenticatedRequest, PaymentMethod, SaleStatus, SaleType } from "../types";
 
 export const createSale = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authReq = req as AuthenticatedRequest;
-    const parsed = createSaleSchema.safeParse(authReq.body);
+    const body = {
+      ...req.body,
+      businessId: req.body?.businessId || (req.headers["x-business-id"] as string | undefined),
+      branchId: req.body?.branchId || (req.headers["x-branch-id"] as string | undefined),
+    };
+
+    const parsed = createSaleSchema.safeParse(body);
     if (!parsed.success) {
       throw new ValidationError("Invalid inputs", parsed.error.format());
     }
@@ -22,19 +28,26 @@ export const createSale = async (req: Request, res: Response, next: NextFunction
 export const getSales = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authReq = req as AuthenticatedRequest;
-    const businessId = (req.query.businessId || req.params.businessId) as string;
-    if (!businessId) {
-      throw new BadRequestError("businessId is required to list sales");
-    }
+    const businessId = (req.query.businessId || req.headers["x-business-id"] || req.params.businessId) as string | undefined;
 
-    const branchId = req.query.branchId as string | undefined;
-    const saleType = req.query.saleType as "instant" | "dube" | undefined;
-    const status = req.query.status as "pending" | "settled" | "voided" | undefined;
+    const branchId = (req.query.branchId || req.headers["x-branch-id"]) as string | undefined;
+    const saleType = req.query.saleType as SaleType | undefined;
+    const paymentMethod = req.query.paymentMethod as PaymentMethod | undefined;
+    const status = req.query.status as SaleStatus | undefined;
+    const startDate = req.query.startDate ? new Date(req.query.startDate as string) : undefined;
+    const endDate = req.query.endDate ? new Date(req.query.endDate as string) : undefined;
+    const limit = req.query.limit ? Math.min(Math.max(1, parseInt(req.query.limit as string, 10) || 50), 100) : undefined;
+    const offset = req.query.offset ? Math.max(0, parseInt(req.query.offset as string, 10) || 0) : undefined;
 
-    const salesList = await salesService.getSalesService(businessId, authReq.user.id, {
+    const salesList = await salesService.getSalesService(businessId || "", authReq.user.id, {
       branchId,
       saleType,
+      paymentMethod,
       status,
+      startDate,
+      endDate,
+      limit,
+      offset,
     });
     apiResponse(res, 200, salesList);
   } catch (error) {

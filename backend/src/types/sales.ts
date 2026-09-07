@@ -53,3 +53,24 @@ export interface UpdateExpenseInput {
   notes?: string | null | undefined;
 }
 
+export interface SaleFilters {
+  branchId?: string | undefined;
+  saleType?: SaleType | undefined;
+  paymentMethod?: PaymentMethod | undefined;
+  status?: SaleStatus | undefined;
+  startDate?: Date | undefined;
+  endDate?: Date | undefined;
+  limit?: number | undefined;
+  offset?: number | undefined;
+}
+
+export interface ExpenseFilters {
+  branchId?: string | undefined;
+  category?: string | undefined;
+  startDate?: Date | undefined;
+  endDate?: Date | undefined;
+  limit?: number | undefined;
+  offset?: number | undefined;
+}
+
+

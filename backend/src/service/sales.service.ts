@@ -65,27 +65,42 @@ export const getSaleByIdService = async (
   return saleItem;
 };
 
+export const resolveUserBusinessId = async (
+  userId: string,
+  requestedBusinessId?: string
+): Promise<string> => {
+  if (requestedBusinessId) {
+    const biz = await businessRepo.findBusinessById(requestedBusinessId);
+    if (!biz) {
+      throw new NotFoundError("Business not found");
+    }
+    if (biz.userId !== userId) {
+      throw new ForbiddenError("Unauthorized: You do not own this business");
+    }
+    return biz.id;
+  }
+  const businesses = await businessRepo.findBusinessesByUserId(userId);
+  if (!businesses || businesses.length === 0) {
+    throw new NotFoundError("No registered business found for this merchant. Please register a business first.");
+  }
+  return businesses[0]!.id;
+};
+
 export const getSalesService = async (
   businessId: string,
   userId: string,
   filters?: salesRepo.SaleFilters | undefined
 ): Promise<Sale[]> => {
-  const biz = await businessRepo.findBusinessById(businessId);
-  if (!biz) {
-    throw new NotFoundError("Business not found");
-  }
-  if (biz.userId !== userId) {
-    throw new ForbiddenError("Unauthorized: You do not own this business");
-  }
+  const verifiedBusinessId = await resolveUserBusinessId(userId, businessId);
 
   if (filters?.branchId) {
     const br = await branchRepo.findBranchById(filters.branchId);
-    if (!br || br.businessId !== businessId) {
+    if (!br || br.businessId !== verifiedBusinessId) {
       throw new BadRequestError("Branch does not belong to the specified business");
     }
   }
 
-  return await salesRepo.findSalesByBusinessId(businessId, filters);
+  return await salesRepo.findSalesByBusinessId(verifiedBusinessId, filters);
 };
 
 export const updateSaleService = async (
@@ -95,7 +110,19 @@ export const updateSaleService = async (
 ): Promise<Sale> => {
   const existingSale = await getSaleByIdService(saleId, userId);
 
+  if (data.businessId && data.businessId !== existingSale.businessId) {
+    throw new ForbiddenError("Cannot reassign a sale to a different business");
+  }
+
+  if (data.branchId && data.branchId !== existingSale.branchId) {
+    const br = await branchRepo.findBranchById(data.branchId);
+    if (!br || br.businessId !== existingSale.businessId) {
+      throw new BadRequestError("Branch does not belong to the parent business");
+    }
+  }
+
   const updateData: UpdateSaleInput & { paidAt?: Date | null | undefined } = { ...data };
+  delete updateData.businessId;
 
   if (data.status === "settled" && existingSale.status !== "settled") {
     updateData.paidAt = new Date();

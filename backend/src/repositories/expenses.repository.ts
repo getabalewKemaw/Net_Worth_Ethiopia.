@@ -1,12 +1,9 @@
 import { db } from "../config/db";
 import { expense } from "../db/schema";
-import { eq, and, desc, type SQL } from "drizzle-orm";
-import type { Expense, NewExpense, UpdateExpenseInput } from "../types";
+import { eq, and, desc, gte, lte, type SQL } from "drizzle-orm";
+import type { Expense, NewExpense, UpdateExpenseInput, ExpenseFilters } from "../types";
 
-export interface ExpenseFilters {
-  branchId?: string | undefined;
-  category?: string | undefined;
-}
+export type { ExpenseFilters };
 
 export const createExpense = async (data: NewExpense): Promise<Expense> => {
   const [result] = await db.insert(expense).values(data).returning();
@@ -20,7 +17,7 @@ export const findExpenseById = async (id: string): Promise<Expense | undefined> 
 
 export const findExpensesByBusinessId = async (
   businessId: string,
-  filters?: ExpenseFilters
+  filters?: ExpenseFilters | undefined
 ): Promise<Expense[]> => {
   const conditions: SQL[] = [eq(expense.businessId, businessId)];
 
@@ -30,12 +27,28 @@ export const findExpensesByBusinessId = async (
   if (filters?.category) {
     conditions.push(eq(expense.category, filters.category));
   }
+  if (filters?.startDate) {
+    conditions.push(gte(expense.createdAt, filters.startDate));
+  }
+  if (filters?.endDate) {
+    conditions.push(lte(expense.createdAt, filters.endDate));
+  }
 
-  return await db
+  let query = db
     .select()
     .from(expense)
     .where(and(...conditions))
-    .orderBy(desc(expense.createdAt));
+    .orderBy(desc(expense.createdAt))
+    .$dynamic();
+
+  if (filters?.limit !== undefined) {
+    query = query.limit(filters.limit);
+  }
+  if (filters?.offset !== undefined) {
+    query = query.offset(filters.offset);
+  }
+
+  return await query;
 };
 
 export const updateExpense = async (

@@ -1,13 +1,9 @@
 import { db } from "../config/db";
 import { sale } from "../db/schema";
-import { eq, and, desc, type SQL } from "drizzle-orm";
-import type { Sale, NewSale, UpdateSaleInput } from "../types";
+import { eq, and, desc, gte, lte, type SQL } from "drizzle-orm";
+import type { Sale, NewSale, UpdateSaleInput, SaleFilters } from "../types";
 
-export interface SaleFilters {
-  branchId?: string | undefined;
-  saleType?: "instant" | "dube" | undefined;
-  status?: "pending" | "settled" | "voided" | undefined;
-}
+export type { SaleFilters };
 
 export const createSale = async (data: NewSale): Promise<Sale> => {
   const [result] = await db.insert(sale).values(data).returning();
@@ -21,7 +17,7 @@ export const findSaleById = async (id: string): Promise<Sale | undefined> => {
 
 export const findSalesByBusinessId = async (
   businessId: string,
-  filters?: SaleFilters
+  filters?: SaleFilters | undefined
 ): Promise<Sale[]> => {
   const conditions: SQL[] = [eq(sale.businessId, businessId)];
 
@@ -31,15 +27,34 @@ export const findSalesByBusinessId = async (
   if (filters?.saleType) {
     conditions.push(eq(sale.saleType, filters.saleType));
   }
+  if (filters?.paymentMethod) {
+    conditions.push(eq(sale.paymentMethod, filters.paymentMethod));
+  }
   if (filters?.status) {
     conditions.push(eq(sale.status, filters.status));
   }
+  if (filters?.startDate) {
+    conditions.push(gte(sale.createdAt, filters.startDate));
+  }
+  if (filters?.endDate) {
+    conditions.push(lte(sale.createdAt, filters.endDate));
+  }
 
-  return await db
+  let query = db
     .select()
     .from(sale)
     .where(and(...conditions))
-    .orderBy(desc(sale.createdAt));
+    .orderBy(desc(sale.createdAt))
+    .$dynamic();
+
+  if (filters?.limit !== undefined) {
+    query = query.limit(filters.limit);
+  }
+  if (filters?.offset !== undefined) {
+    query = query.offset(filters.offset);
+  }
+
+  return await query;
 };
 
 export const updateSale = async (

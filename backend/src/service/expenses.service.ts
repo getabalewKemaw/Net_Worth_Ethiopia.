@@ -3,6 +3,7 @@ import * as expensesRepo from "../repositories/expenses.repository";
 import * as businessRepo from "../repositories/business.repository";
 import * as branchRepo from "../repositories/branch.repository";
 import { NotFoundError, ForbiddenError, BadRequestError } from "../helpers/errors";
+import { resolveUserBusinessId } from "./sales.service";
 import type { Expense, NewExpense, CreateExpenseInput, UpdateExpenseInput } from "../types";
 
 export const createExpenseService = async (
@@ -60,22 +61,16 @@ export const getExpensesService = async (
   userId: string,
   filters?: expensesRepo.ExpenseFilters | undefined
 ): Promise<Expense[]> => {
-  const biz = await businessRepo.findBusinessById(businessId);
-  if (!biz) {
-    throw new NotFoundError("Business not found");
-  }
-  if (biz.userId !== userId) {
-    throw new ForbiddenError("Unauthorized: You do not own this business");
-  }
+  const verifiedBusinessId = await resolveUserBusinessId(userId, businessId);
 
   if (filters?.branchId) {
     const br = await branchRepo.findBranchById(filters.branchId);
-    if (!br || br.businessId !== businessId) {
+    if (!br || br.businessId !== verifiedBusinessId) {
       throw new BadRequestError("Branch does not belong to the specified business");
     }
   }
 
-  return await expensesRepo.findExpensesByBusinessId(businessId, filters);
+  return await expensesRepo.findExpensesByBusinessId(verifiedBusinessId, filters);
 };
 
 export const updateExpenseService = async (
@@ -83,8 +78,23 @@ export const updateExpenseService = async (
   userId: string,
   data: UpdateExpenseInput
 ): Promise<Expense> => {
-  await getExpenseByIdService(expenseId, userId);
-  return await expensesRepo.updateExpense(expenseId, data);
+  const existing = await getExpenseByIdService(expenseId, userId);
+
+  if (data.businessId && data.businessId !== existing.businessId) {
+    throw new ForbiddenError("Cannot reassign an expense to a different business");
+  }
+
+  if (data.branchId && data.branchId !== existing.branchId) {
+    const br = await branchRepo.findBranchById(data.branchId);
+    if (!br || br.businessId !== existing.businessId) {
+      throw new BadRequestError("Branch does not belong to the parent business");
+    }
+  }
+
+  const updateData = { ...data };
+  delete updateData.businessId;
+
+  return await expensesRepo.updateExpense(expenseId, updateData);
 };
 
 export const deleteExpenseService = async (
