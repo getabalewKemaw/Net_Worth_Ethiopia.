@@ -43,7 +43,7 @@ export function SalesScreen() {
             </ThemedText>
           </Pressable>
           <Pressable style={[styles.toggleBtn, activeTab === "expenses" && styles.toggleBtnActive]} onPress={() => setActiveTab("expenses")}>
-            {activeTab === "expenses" && <View style={[styles.toggleBtnBg, { backgroundColor: "#EF4444" }]} />}
+            {activeTab === "expenses" && <View style={[styles.toggleBtnBg, { backgroundColor: colors.expense }]} />}
             <ThemedText style={[styles.toggleBtnText, { color: activeTab === "expenses" ? "#FFF" : colors.textSecondary }]}>
               💸  Expenses
             </ThemedText>
@@ -121,7 +121,7 @@ export function SalesScreen() {
         </ScrollView>
       ) : (
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120, paddingTop: 4 }} showsVerticalScrollIndicator={false}>
-          <SectionSummary total={totalExpenses} count={expenses.length} label="Expenses" color="#EF4444" />
+          <SectionSummary total={totalExpenses} count={expenses.length} label="Expenses" color={colors.expense} />
 
           <View style={[styles.netCard, { backgroundColor: totalSales >= totalExpenses ? "#ECFDF5" : "#FEF2F2", borderColor: totalSales >= totalExpenses ? "#A7F3D0" : "#FECACA" }]}>
             <View>
@@ -133,12 +133,12 @@ export function SalesScreen() {
             <ThemedText style={{ fontSize: 28 }}>{totalSales >= totalExpenses ? "📈" : "📉"}</ThemedText>
           </View>
 
-          <Pressable style={[styles.addBtn, { borderColor: "#EF444440" }]} onPress={() => setShowAddExpense(true)}>
+          <Pressable style={[styles.addBtn, { borderColor: `${colors.expense}40` }]} onPress={() => setShowAddExpense(true)}>
             <View style={styles.addBtnInner}>
-              <View style={[styles.addIcon, { backgroundColor: "#EF4444" }]}>
+              <View style={[styles.addIcon, { backgroundColor: colors.expense }]}>
                 <ThemedText style={{ fontSize: 20, color: "#FFF", fontWeight: "900", lineHeight: 24 }}>+</ThemedText>
               </View>
-              <ThemedText style={{ fontSize: 15, fontWeight: "800", color: "#EF4444" }}>Log New Expense</ThemedText>
+              <ThemedText style={{ fontSize: 15, fontWeight: "800", color: colors.expense }}>Log New Expense</ThemedText>
             </View>
           </Pressable>
 
@@ -162,7 +162,7 @@ export function SalesScreen() {
                 ]}
               >
                 <View style={styles.cardLeft}>
-                  <View style={[styles.cardIconBg, { backgroundColor: "#EF444418" }]}>
+                  <View style={[styles.cardIconBg, { backgroundColor: "#D9770618" }]}>
                     <ThemedText style={{ fontSize: 18 }}>💸</ThemedText>
                   </View>
                   <View style={{ flex: 1 }}>
@@ -175,7 +175,7 @@ export function SalesScreen() {
                     </View>
                   </View>
                 </View>
-                <ThemedText style={[styles.cardAmount, { color: "#EF4444" }]}>
+                <ThemedText style={[styles.cardAmount, { color: colors.expense }]}>
                   -{expense.amount.toLocaleString()}
                   {"\n"}
                   <ThemedText style={{ fontSize: 11, fontWeight: "500", color: colors.textSecondary }}>ETB</ThemedText>

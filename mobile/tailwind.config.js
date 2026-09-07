@@ -18,6 +18,12 @@ module.exports = {
           light: 'var(--color-brand-light)',
           soft: 'var(--color-brand-soft)',
         },
+        expense: {
+          DEFAULT: 'var(--color-expense)',
+          dark: 'var(--color-expense-dark)',
+          light: 'var(--color-expense-light)',
+          soft: 'var(--color-expense-soft)',
+        },
       },
     },
   },

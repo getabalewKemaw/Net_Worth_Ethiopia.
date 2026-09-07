@@ -59,10 +59,13 @@ export function AddExpenseModal({
                   onPress={() => setCategory(cat)}
                   style={[
                     styles.categoryChip,
-                    { borderColor: category === cat ? "#F59E0B" : "#E5E7EB", backgroundColor: category === cat ? "#FEF3C7" : colors.background },
+                    {
+                      borderColor: category === cat ? colors.expenseLight : "#E5E7EB",
+                      backgroundColor: category === cat ? colors.expenseSoft : colors.background,
+                    },
                   ]}
                 >
-                  <ThemedText style={{ fontSize: 12, fontWeight: "700", color: category === cat ? "#D97706" : colors.textSecondary }}>
+                  <ThemedText style={{ fontSize: 12, fontWeight: "700", color: category === cat ? colors.expense : colors.textSecondary }}>
                     {cat}
                   </ThemedText>
                 </Pressable>
@@ -74,7 +77,7 @@ export function AddExpenseModal({
             <Pressable style={[styles.cancelBtn, { borderColor: "#E5E7EB" }]} onPress={() => { reset(); onClose(); }}>
               <ThemedText style={{ fontWeight: "700", color: "#6B7280" }}>Cancel</ThemedText>
             </Pressable>
-            <Pressable style={[styles.submitBtn, { backgroundColor: "#EF4444" }]} onPress={handleSubmit}>
+            <Pressable style={[styles.submitBtn, { backgroundColor: colors.expense }]} onPress={handleSubmit}>
               <ThemedText style={{ fontWeight: "800", color: "#FFF", fontSize: 15 }}>Add Expense</ThemedText>
             </Pressable>
           </View>

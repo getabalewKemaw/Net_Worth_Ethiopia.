@@ -21,7 +21,7 @@ export default function BidrScreen() {
 
         {/* Coming Soon Pill */}
         <View style={styles.pillBadge}>
-          <ThemedText className="text-[12px] font-extrabold text-[#D97706] uppercase tracking-wider">
+          <ThemedText className="text-[12px] font-extrabold text-expense uppercase tracking-wider">
             Coming Soon...
           </ThemedText>
         </View>
