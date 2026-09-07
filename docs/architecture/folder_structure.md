@@ -109,6 +109,7 @@ backend/src/
 │   ├── auth.ts
 │   └── db.ts
 ├── controllers/
+│   ├── bidr.controller.ts
 │   ├── branch.controller.ts
 │   ├── business.controller.ts
 │   ├── expenses.controller.ts
@@ -124,24 +125,29 @@ backend/src/
 │   ├── auth.ts
 │   └── error.ts
 ├── repositories/
+│   ├── bidr.repository.ts
 │   ├── branch.repository.ts
 │   ├── business.repository.ts
 │   ├── expenses.repository.ts
 │   └── sales.repository.ts
 ├── routes/
+│   ├── bidr.routes.ts
 │   ├── branch.routes.ts
 │   ├── business.routes.ts
 │   ├── expenses.routes.ts
 │   └── sales.routes.ts
 ├── service/
+│   ├── bidr.service.ts
 │   ├── branch.service.ts
 │   ├── business.service.ts
 │   ├── expenses.service.ts
 │   └── sales.service.ts
 ├── types/
+│   ├── bidr.ts
 │   ├── index.ts
 │   └── sales.ts
 ├── validations/
+│   ├── bidr.validation.ts
 │   ├── branch.validation.ts
 │   ├── business.validation.ts
 │   └── sales.validation.ts
