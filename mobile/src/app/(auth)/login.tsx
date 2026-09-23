@@ -1,6 +1,7 @@
 import { View, TouchableOpacity, Text } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import * as Linking from 'expo-linking';
 import { Link, router } from 'expo-router';
 
 import { BackgroundGrid } from '@/components/auth/BackgroundGrid';
@@ -17,10 +18,14 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = async () => {
     try {
+      const errorCallbackURL = Linking.createURL('/(auth)/signup', {
+        queryParams: { message: signupMessage },
+      });
+
       const { error } = await authClient.signIn.social({
         provider: 'google',
         callbackURL: '/',
-        errorCallbackURL: `/(auth)/signup?message=${encodeURIComponent(signupMessage)}`,
+        errorCallbackURL,
       });
 
       if (error) {
