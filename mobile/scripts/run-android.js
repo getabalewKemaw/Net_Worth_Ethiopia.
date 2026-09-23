@@ -2,13 +2,14 @@ import { spawn, execSync } from 'child_process';
 
 function ensureReverse() {
   try {
+    execSync('adb reverse tcp:8081 tcp:8081', { stdio: 'ignore' });
     execSync('adb reverse tcp:3000 tcp:3000', { stdio: 'ignore' });
   } catch {}
 }
 
 ensureReverse();
 
-const expoProcess = spawn('npx', ['expo', 'start', '--android'], {
+const expoProcess = spawn('npx', ['expo', 'start', '--android', '--localhost'], {
   stdio: 'inherit',
   shell: true,
 });
