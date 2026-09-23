@@ -2,7 +2,12 @@
 
 This repository contains the **NetWorth Ethiopia** mobile app (Expo / React Native) and backend API (Express / Better Auth / Drizzle ORM / PostgreSQL).
 
-For general AI engineering behavior and coding standards, refer to [docs/AGENTS.md](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/AGENTS.md).
+### Learned Knowledge & Reference Rules
+- **Full System Architecture**: [.agents/rules/system-architecture.md](file:///home/eaglex/Documents/insa-ctc/FinalProject/.agents/rules/system-architecture.md)
+- **Detailed Documentation Analysis**: [.agents/rules/docs-analysis.md](file:///home/eaglex/Documents/insa-ctc/FinalProject/.agents/rules/docs-analysis.md)
+- **Setup & Device Troubleshooting**: [.agents/rules/setup-and-troubleshooting.md](file:///home/eaglex/Documents/insa-ctc/FinalProject/.agents/rules/setup-and-troubleshooting.md)
+- **AI Engineering Rules & Coding Standards**: [docs/AGENTS.md](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/AGENTS.md)
+- **Troubleshooting History**: [docs/TROUBLESHOOTING_HISTORY.md](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/TROUBLESHOOTING_HISTORY.md)
 
 ---
 
