@@ -49,7 +49,7 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "adb reverse tcp:3000 tcp:3000 2>/dev/null || true; expo start --android",
+    "android": "adb reverse tcp:8081 tcp:8081 2>/dev/null || true; adb reverse tcp:3000 tcp:3000 2>/dev/null || true; expo start --android --localhost",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint"
