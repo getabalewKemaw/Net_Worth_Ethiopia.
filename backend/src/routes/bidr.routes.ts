@@ -10,6 +10,7 @@ router.get("/summary", controller.getDebtSummary);
 router.get("/", controller.getDebts);
 router.get("/:id", controller.getDebtById);
 router.post("/:id/settle", controller.settleDebt);
+router.patch("/:id/settle", controller.settleDebt);
 router.patch("/:id", controller.updateDebt);
 
 export default router;
