@@ -43,6 +43,7 @@ export const sale = pgTable(
     index("sale_branchId_idx").on(table.branchId),
     index("sale_status_idx").on(table.status),
     index("sale_createdAt_idx").on(table.createdAt),
+    index("sale_business_updated_idx").on(table.businessId, table.updatedAt),
   ],
 );
 
@@ -71,6 +72,7 @@ export const expense = pgTable(
     index("expense_branchId_idx").on(table.branchId),
     index("expense_category_idx").on(table.category),
     index("expense_createdAt_idx").on(table.createdAt),
+    index("expense_business_updated_idx").on(table.businessId, table.updatedAt),
   ],
 );
 
