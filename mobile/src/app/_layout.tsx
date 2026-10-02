@@ -8,6 +8,7 @@ import * as WebBrowser from 'expo-web-browser';
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { authClient } from '@/lib/auth-client';
 import { useBusinessStore } from '@/store/business-store';
+import { initLocalDatabase } from '@/db/migrations';
 
 import { Platform } from 'react-native';
 
@@ -29,6 +30,13 @@ export default function TabLayout() {
   const loadInitialState = useBusinessStore((state) => state.loadInitialState);
   const activeBusiness = useBusinessStore((state) => state.activeBusiness);
   const isBusinessPending = useBusinessStore((state) => state.isPending);
+
+  // Initialize local SQLite database schema and indexes on mount
+  useEffect(() => {
+    initLocalDatabase().catch((err) => {
+      console.error('[SQLite] Failed to initialize local database:', err);
+    });
+  }, []);
 
   // Sync business store state on authentication
   useEffect(() => {
