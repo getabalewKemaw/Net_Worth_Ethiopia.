@@ -83,15 +83,15 @@ export function SettleDebtModal({
                   width: 32,
                   height: 32,
                   borderRadius: 16,
-                  backgroundColor: 'rgba(6, 95, 70, 0.08)',
+                  backgroundColor: 'rgba(217, 119, 6, 0.1)',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <CheckCircleIcon size={16} color="#065F46" />
+                <CheckCircleIcon size={16} color="#D97706" />
               </View>
               <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>
-                Settle customer debt
+                Settle Dube record
               </Text>
             </View>
 
@@ -118,7 +118,7 @@ export function SettleDebtModal({
             <View style={styles.methodRow}>
               {CLEAN_PAYMENT_CHANNELS.map((pm) => {
                 const isSelected = paymentMethod === pm.key;
-                const activeColor = '#065F46';
+                const activeColor = '#D97706';
                 return (
                   <Pressable
                     key={pm.key}
@@ -127,7 +127,7 @@ export function SettleDebtModal({
                       styles.methodBtn,
                       {
                         borderColor: isSelected ? activeColor : colors.backgroundSelected,
-                        backgroundColor: isSelected ? 'rgba(6, 95, 70, 0.06)' : colors.background,
+                        backgroundColor: isSelected ? 'rgba(217, 119, 6, 0.1)' : colors.background,
                       },
                     ]}
                   >
@@ -166,7 +166,7 @@ export function SettleDebtModal({
               </Pressable>
 
               <Pressable
-                style={[styles.submitBtn, { backgroundColor: '#065F46', opacity: isSubmitting ? 0.7 : 1 }]}
+                style={[styles.submitBtn, { backgroundColor: '#D97706', opacity: isSubmitting ? 0.7 : 1 }]}
                 onPress={handleSubmit}
                 disabled={isSubmitting}
               >

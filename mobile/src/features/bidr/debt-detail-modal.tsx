@@ -65,7 +65,7 @@ export function DebtDetailModal({
       <Pressable style={styles.modalBackdrop} onPress={onClose} />
       <View style={[styles.modalSheet, { backgroundColor: colors.backgroundElement }]}>
         <View style={styles.handleBar} />
-        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>Credit Record Details</ThemedText>
+        <ThemedText style={[styles.modalTitle, { color: colors.text }]}>Dube Record Details</ThemedText>
 
         {/* Balance Card */}
         <View style={[styles.summaryCard, { backgroundColor: colors.background, borderColor: '#E5E7EB' }]}>
@@ -87,10 +87,10 @@ export function DebtDetailModal({
             {debt.customerPhone && (
               <Pressable
                 onPress={handleCall}
-                style={[styles.callBtn, { backgroundColor: '#065F4618' }]}
+                style={[styles.callBtn, { backgroundColor: 'rgba(217, 119, 6, 0.12)' }]}
               >
-                <PhoneIcon size={14} color="#065F46" />
-                <ThemedText style={{ fontSize: 13, fontWeight: '700', color: '#065F46' }}>Call</ThemedText>
+                <PhoneIcon size={14} color="#D97706" />
+                <ThemedText style={{ fontSize: 13, fontWeight: '700', color: '#D97706' }}>Call</ThemedText>
               </Pressable>
             )}
           </View>
@@ -141,14 +141,14 @@ export function DebtDetailModal({
 
             {isPending && (
               <Pressable
-                style={[styles.settleBtn, { backgroundColor: '#065F46' }]}
+                style={[styles.settleBtn, { backgroundColor: '#D97706' }]}
                 onPress={() => {
                   onClose();
                   onSettle(debt);
                 }}
               >
                 <CheckIcon size={16} color="#FFF" strokeWidth={2.5} />
-                <ThemedText style={{ fontSize: 14, fontWeight: '800', color: '#FFF' }}>Settle Debt</ThemedText>
+                <ThemedText style={{ fontSize: 14, fontWeight: '800', color: '#FFF' }}>Settle Dube</ThemedText>
               </Pressable>
             )}
           </View>

@@ -1,9 +1,40 @@
+import crypto from "crypto";
 import * as bidrRepo from "../repositories/bidr.repository";
 import * as businessRepo from "../repositories/business.repository";
 import * as branchRepo from "../repositories/branch.repository";
 import { NotFoundError, ForbiddenError, BadRequestError } from "../helpers/errors";
 import { resolveUserBusinessId } from "./sales.service";
-import type { Sale, BidrFilters, DebtSummary, SettleBidrInput, UpdateBidrInput } from "../types";
+import type { Sale, NewSale, CreateBidrInput, BidrFilters, DebtSummary, SettleBidrInput, UpdateBidrInput } from "../types";
+
+export const createDebtService = async (
+  userId: string,
+  data: CreateBidrInput
+): Promise<Sale> => {
+  const verifiedBusinessId = await resolveUserBusinessId(userId, data.businessId);
+
+  const br = await branchRepo.findBranchById(data.branchId);
+  if (!br || br.businessId !== verifiedBusinessId) {
+    throw new BadRequestError("Branch does not belong to the specified business");
+  }
+
+  const newSale: NewSale = {
+    id: crypto.randomUUID(),
+    businessId: verifiedBusinessId,
+    branchId: data.branchId,
+    saleType: "dube",
+    paymentMethod: data.paymentMethod || "cash",
+    description: data.description,
+    amount: data.amount,
+    customerName: data.customerName,
+    customerPhone: data.customerPhone ?? null,
+    dueDate: data.dueDate ?? null,
+    notes: data.notes ?? null,
+    status: "pending",
+    paidAt: null,
+  };
+
+  return await bidrRepo.createDebt(newSale);
+};
 
 export const getDebtsService = async (
   businessId: string,

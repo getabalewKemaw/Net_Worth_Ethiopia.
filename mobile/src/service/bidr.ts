@@ -3,6 +3,7 @@ import type {
   DebtItem,
   DebtSummaryData,
   FetchDebtsParams,
+  CreateDebtPayload,
   SettleDebtPayload,
   UpdateDebtPayload,
 } from '@/types/bidr';
@@ -85,6 +86,22 @@ export const updateDebt = async (
   });
 
   if (error) throw new Error(error.message || 'Failed to update debt record');
+
+  const json = data as any;
+  if (json?.status === 'error') throw new Error(json.message || 'Server error');
+  return (json?.data ?? json) as DebtItem;
+};
+
+export const createDebt = async (
+  payload: CreateDebtPayload
+): Promise<DebtItem> => {
+  const { data, error } = await authClient.$fetch(`${baseURL}/api/bidr`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  if (error) throw new Error(error.message || 'Failed to record customer debt');
 
   const json = data as any;
   if (json?.status === 'error') throw new Error(json.message || 'Server error');

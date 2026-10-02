@@ -6,6 +6,7 @@ import { calculateDeadlineInsights } from '@/lib/bidr-utils';
 import type {
   DebtFilterStatus,
   DebtSortOption,
+  CreateDebtPayload,
   SettleDebtPayload,
   UpdateDebtPayload,
 } from '@/types/bidr';
@@ -24,6 +25,7 @@ export function useBidr() {
   const searchQuery = useBidrStore((state) => state.searchQuery);
   const sortBy = useBidrStore((state) => state.sortBy);
 
+  const isCreating = useBidrStore((state) => state.isCreating);
   const isSettling = useBidrStore((state) => state.isSettling);
   const isUpdating = useBidrStore((state) => state.isUpdating);
 
@@ -33,6 +35,7 @@ export function useBidr() {
 
   const fetchData = useBidrStore((state) => state.fetchData);
   const refresh = useBidrStore((state) => state.refresh);
+  const create = useBidrStore((state) => state.create);
   const settle = useBidrStore((state) => state.settle);
   const update = useBidrStore((state) => state.update);
 
@@ -120,6 +123,21 @@ export function useBidr() {
     return list;
   }, [debts, filterStatus, searchQuery, sortBy]);
 
+  // Create debt mutation
+  const handleCreateDebt = useCallback(
+    async (payload: Omit<CreateDebtPayload, 'businessId' | 'branchId'>) => {
+      if (!activeBusiness?.id || !activeBranch?.id) {
+        throw new Error('Active business and branch required');
+      }
+      return create({
+        ...payload,
+        businessId: activeBusiness.id,
+        branchId: activeBranch.id,
+      });
+    },
+    [create, activeBusiness?.id, activeBranch?.id]
+  );
+
   // Settle mutation
   const handleSettleDebt = useCallback(
     async (id: string, payload?: SettleDebtPayload) => {
@@ -137,6 +155,8 @@ export function useBidr() {
   );
 
   return {
+    activeBusiness,
+    activeBranch,
     debts,
     filteredDebts,
     summary,
@@ -150,9 +170,11 @@ export function useBidr() {
     sortBy,
     setSortBy,
     deadlineInsights,
+    isCreating,
     isSettling,
     isUpdating,
     onRefresh,
+    handleCreateDebt,
     handleSettleDebt,
     handleUpdateDebt,
   };

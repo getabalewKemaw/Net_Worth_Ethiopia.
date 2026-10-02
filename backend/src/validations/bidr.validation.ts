@@ -24,6 +24,18 @@ export const settleBidrSchema = z.object({
   notes: optionalText,
 });
 
+export const createBidrSchema = z.object({
+  businessId: z.string().min(1, "businessId is required"),
+  branchId: z.string().min(1, "branchId is required"),
+  description: z.string().min(1, "description is required"),
+  amount: z.number().int().positive("amount must be a positive integer"),
+  paymentMethod: z.enum(PAYMENT_METHOD_VALUES).optional().default("cash"),
+  customerName: z.string().trim().min(1, "customerName is required for credit debt"),
+  customerPhone: optionalText,
+  dueDate: optionalDate,
+  notes: optionalText,
+});
+
 export const updateBidrSchema = z.object({
   dueDate: optionalDate,
   customerName: optionalText,

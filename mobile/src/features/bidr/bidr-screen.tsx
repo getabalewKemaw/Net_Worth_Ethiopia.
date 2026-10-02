@@ -17,10 +17,12 @@ import { DebtCard } from '@/components/bidr/debt-card';
 import { DebtDetailModal } from './debt-detail-modal';
 import { SettleDebtModal } from './settle-debt-modal';
 import { UpdateDebtModal } from './update-debt-modal';
+import { AddDebtModal } from './add-debt-modal';
 import {
   ShieldAlertIcon,
   RefreshCwIcon,
   SearchIcon,
+  PlusIcon,
 } from '@/components/icons';
 import type { DebtItem } from '@/types/bidr';
 
@@ -42,6 +44,7 @@ export function BidrScreen() {
     setSortBy,
     deadlineInsights,
     onRefresh,
+    handleCreateDebt,
     handleSettleDebt,
     handleUpdateDebt,
   } = useBidr();
@@ -49,12 +52,13 @@ export function BidrScreen() {
   const [selectedDebt, setSelectedDebt] = useState<DebtItem | null>(null);
   const [settleModalDebt, setSettleModalDebt] = useState<DebtItem | null>(null);
   const [updateModalDebt, setUpdateModalDebt] = useState<DebtItem | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const counts = {
     total: debts.length,
     pending: debts.filter((d) => d.status === 'pending').length,
-    overdue: deadlineInsights.overdueCount,
-    dueSoon: deadlineInsights.dueWithinWeekCount,
+    overdue: summary?.overdueCount ?? deadlineInsights.overdueCount,
+    dueSoon: summary?.dueSoonCount ?? deadlineInsights.dueWithinWeekCount,
     settled: debts.filter((d) => d.status === 'settled').length,
   };
 
@@ -101,7 +105,7 @@ export function BidrScreen() {
         ListEmptyComponent={
           loading ? (
             <View className="items-center justify-center py-20">
-              <ActivityIndicator size="large" color="#065F46" />
+              <ActivityIndicator size="large" color="#D97706" />
               <Text
                 style={{
                   fontSize: 13,
@@ -110,7 +114,7 @@ export function BidrScreen() {
                   marginTop: 12,
                 }}
               >
-                Loading customer credit records...
+                Loading Dube notebook...
               </Text>
             </View>
           ) : error ? (
@@ -124,7 +128,7 @@ export function BidrScreen() {
                   marginTop: 10,
                 }}
               >
-                Unable to load credit records
+                Unable to load Dube records
               </Text>
               <Text
                 style={{
@@ -145,8 +149,8 @@ export function BidrScreen() {
                   borderColor: colors.backgroundSelected,
                 }}
               >
-                <RefreshCwIcon size={14} color="#065F46" />
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#065F46' }}>
+                <RefreshCwIcon size={14} color="#D97706" />
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#D97706' }}>
                   Try again
                 </Text>
               </Pressable>
@@ -170,7 +174,7 @@ export function BidrScreen() {
                   marginTop: 12,
                 }}
               >
-                No customer credit found
+                No Dube records found
               </Text>
               <Text
                 style={{
@@ -182,11 +186,23 @@ export function BidrScreen() {
                 }}
               >
                 {searchQuery
-                  ? `No credit records matching "${searchQuery}".`
+                  ? `No records matching "${searchQuery}".`
                   : filterStatus !== 'all'
                   ? `There are no ${filterStatus.replace('_', ' ')} records right now.`
-                  : 'No customer credit records registered yet.'}
+                  : 'No Dube records registered yet.'}
               </Text>
+
+              {/* Action Button to Record Debt */}
+              <Pressable
+                onPress={() => setShowAddModal(true)}
+                className="flex-row items-center gap-2 mt-5 px-5 py-3 rounded-2xl active:opacity-85"
+                style={{ backgroundColor: '#D97706' }}
+              >
+                <PlusIcon size={16} color="#FFFFFF" strokeWidth={2.5} />
+                <Text style={{ fontSize: 14, fontWeight: '700', color: '#FFFFFF' }}>
+                  Record Dube
+                </Text>
+              </Pressable>
             </View>
           )
         }
@@ -194,11 +210,18 @@ export function BidrScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#065F46"
-            colors={['#065F46']}
+            tintColor="#D97706"
+            colors={['#D97706']}
           />
         }
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 110 }}
+      />
+
+      {/* Add Debt Modal */}
+      <AddDebtModal
+        visible={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onConfirm={handleCreateDebt}
       />
 
       {/* Debt Detail Modal */}

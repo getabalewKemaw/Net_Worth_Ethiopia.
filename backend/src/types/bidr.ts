@@ -23,11 +23,30 @@ export interface BidrFilters {
   offset?: number | undefined;
 }
 
+export interface CreateBidrInput {
+  businessId: string;
+  branchId: string;
+  description: string;
+  amount: number;
+  paymentMethod?: PaymentMethod | undefined;
+  customerName: string;
+  customerPhone?: string | null | undefined;
+  dueDate?: Date | null | undefined;
+  notes?: string | null | undefined;
+}
+
 export interface DebtSummary {
+  totalCreditAmount: number;
+  pendingAmount: number;
   totalPendingAmount: number;
-  pendingCount: number;
-  totalOverdueAmount: number;
-  overdueCount: number;
+  settledAmount: number;
   totalSettledAmount: number;
+  overdueAmount: number;
+  totalOverdueAmount: number;
+  dueSoonAmount: number;
+  totalDebts: number;
+  pendingCount: number;
   settledCount: number;
+  overdueCount: number;
+  dueSoonCount: number;
 }

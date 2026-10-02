@@ -139,12 +139,12 @@ export function DebtCard({ debt, onPress, onSettle }: DebtCardProps) {
               className="flex-row items-center gap-2 py-1.5 px-2.5 rounded-xl active:bg-slate-100 dark:active:bg-slate-800"
               hitSlop={6}
             >
-              <PhoneIcon size={14} color="#065F46" />
+              <PhoneIcon size={14} color="#D97706" />
               <Text
                 style={{
                   fontSize: 13,
                   fontWeight: '600',
-                  color: '#065F46',
+                  color: '#D97706',
                 }}
               >
                 {debt.customerPhone}
@@ -169,8 +169,8 @@ export function DebtCard({ debt, onPress, onSettle }: DebtCardProps) {
             }}
             className="flex-row items-center gap-1.5 px-4 py-2 rounded-xl active:opacity-85"
             style={{
-              backgroundColor: '#065F46',
-              shadowColor: '#065F46',
+              backgroundColor: '#D97706',
+              shadowColor: '#D97706',
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.15,
               shadowRadius: 4,

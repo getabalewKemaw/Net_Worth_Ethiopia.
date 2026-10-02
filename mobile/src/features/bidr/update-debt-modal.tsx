@@ -57,6 +57,7 @@ export function UpdateDebtModal({
   const [customerPhone, setCustomerPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState<SaleStatus>('pending');
+  const [dueDateObj, setDueDateObj] = useState<Date | null>(null);
   const [dueDateStr, setDueDateStr] = useState('');
   const [selectedPreset, setSelectedPreset] = useState<number | 'custom'>(7);
   const [isCustomDate, setIsCustomDate] = useState(false);
@@ -70,8 +71,17 @@ export function UpdateDebtModal({
       setStatus(debt.status);
       if (debt.dueDate) {
         const d = new Date(debt.dueDate);
-        setDueDateStr(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+        if (!isNaN(d.getTime())) {
+          setDueDateObj(d);
+          setDueDateStr(
+            d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+          );
+        } else {
+          setDueDateObj(null);
+          setDueDateStr('');
+        }
       } else {
+        setDueDateObj(null);
         setDueDateStr('');
       }
     }
@@ -84,7 +94,10 @@ export function UpdateDebtModal({
     setIsCustomDate(false);
     const d = new Date();
     d.setDate(d.getDate() + days);
-    setDueDateStr(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+    setDueDateObj(d);
+    setDueDateStr(
+      d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    );
   };
 
   const handleSelectCustom = () => {
@@ -93,17 +106,27 @@ export function UpdateDebtModal({
   };
 
   const adjustDueDateDays = (delta: number) => {
-    const parsed = new Date(dueDateStr);
-    const baseDate = isNaN(parsed.getTime()) ? new Date() : parsed;
+    const baseDate = dueDateObj && !isNaN(dueDateObj.getTime()) ? new Date(dueDateObj) : new Date();
     baseDate.setDate(baseDate.getDate() + delta);
-    setDueDateStr(baseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+    setDueDateObj(baseDate);
+    setDueDateStr(
+      baseDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    );
     setSelectedPreset('custom');
   };
 
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true);
-      const parsedDueDate = dueDateStr ? new Date(dueDateStr).toISOString() : null;
+      let parsedDueDate: string | null = null;
+      if (dueDateObj && !isNaN(dueDateObj.getTime())) {
+        parsedDueDate = dueDateObj.toISOString();
+      } else if (dueDateStr.trim()) {
+        const parsed = new Date(dueDateStr);
+        if (!isNaN(parsed.getTime())) {
+          parsedDueDate = parsed.toISOString();
+        }
+      }
 
       await onConfirm(debt.id, {
         customerName: customerName.trim() || undefined,
@@ -144,7 +167,7 @@ export function UpdateDebtModal({
                 <Edit3Icon size={16} color="#D97706" />
               </View>
               <Text style={{ fontSize: 17, fontWeight: '800', color: colors.text }}>
-                Edit credit record
+                Edit Dube record
               </Text>
             </View>
 
@@ -188,12 +211,12 @@ export function UpdateDebtModal({
                       style={[
                         styles.duePresetChip,
                         {
-                          borderColor: isSelected ? '#065F46' : colors.backgroundSelected,
-                          backgroundColor: isSelected ? 'rgba(6, 95, 70, 0.08)' : colors.background,
+                          borderColor: isSelected ? '#D97706' : colors.backgroundSelected,
+                          backgroundColor: isSelected ? 'rgba(217, 119, 6, 0.1)' : colors.background,
                         },
                       ]}
                     >
-                      <Text style={{ fontSize: 12, fontWeight: '700', color: isSelected ? '#065F46' : colors.textSecondary }}>
+                      <Text style={{ fontSize: 12, fontWeight: '700', color: isSelected ? '#D97706' : colors.textSecondary }}>
                         {p.label}
                       </Text>
                     </Pressable>
@@ -204,14 +227,14 @@ export function UpdateDebtModal({
                   style={[
                     styles.duePresetChip,
                     {
-                      borderColor: selectedPreset === 'custom' ? '#065F46' : colors.backgroundSelected,
-                      backgroundColor: selectedPreset === 'custom' ? 'rgba(6, 95, 70, 0.08)' : colors.background,
+                      borderColor: selectedPreset === 'custom' ? '#D97706' : colors.backgroundSelected,
+                      backgroundColor: selectedPreset === 'custom' ? 'rgba(217, 119, 6, 0.1)' : colors.background,
                     },
                   ]}
                 >
                   <View className="flex-row items-center gap-1">
-                    <Edit3Icon size={12} color={selectedPreset === 'custom' ? '#065F46' : colors.textSecondary} />
-                    <Text style={{ fontSize: 12, fontWeight: '700', color: selectedPreset === 'custom' ? '#065F46' : colors.textSecondary }}>
+                    <Edit3Icon size={12} color={selectedPreset === 'custom' ? '#D97706' : colors.textSecondary} />
+                    <Text style={{ fontSize: 12, fontWeight: '700', color: selectedPreset === 'custom' ? '#D97706' : colors.textSecondary }}>
                       Other
                     </Text>
                   </View>
@@ -221,7 +244,7 @@ export function UpdateDebtModal({
               <View style={[styles.dueDateCard, { backgroundColor: colors.background, borderColor: colors.backgroundSelected }]}>
                 <View style={{ flex: 1, paddingRight: 8 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <CalendarIcon size={15} color="#065F46" />
+                    <CalendarIcon size={15} color="#D97706" />
                     {isCustomDate ? (
                       <TextInput
                         style={[styles.dueDateInput, { color: colors.text }]}
@@ -323,7 +346,7 @@ export function UpdateDebtModal({
               </Pressable>
 
               <Pressable
-                style={[styles.submitBtn, { backgroundColor: '#065F46', opacity: isSubmitting ? 0.7 : 1 }]}
+                style={[styles.submitBtn, { backgroundColor: '#D97706', opacity: isSubmitting ? 0.7 : 1 }]}
                 onPress={handleSubmit}
                 disabled={isSubmitting}
               >

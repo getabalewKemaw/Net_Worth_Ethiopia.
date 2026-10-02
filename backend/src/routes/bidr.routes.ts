@@ -8,6 +8,7 @@ router.use(requireAuth);
 
 router.get("/summary", controller.getDebtSummary);
 router.get("/", controller.getDebts);
+router.post("/", controller.createDebt);
 router.get("/:id", controller.getDebtById);
 router.post("/:id/settle", controller.settleDebt);
 router.patch("/:id/settle", controller.settleDebt);

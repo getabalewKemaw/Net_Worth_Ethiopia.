@@ -1,9 +1,23 @@
 import type { Request, Response, NextFunction } from "express";
 import * as bidrService from "../service/bidr.service";
-import { settleBidrSchema, updateBidrSchema } from "../validations/bidr.validation";
+import { createBidrSchema, settleBidrSchema, updateBidrSchema } from "../validations/bidr.validation";
 import { ValidationError, BadRequestError } from "../helpers/errors";
 import { apiResponse } from "../helpers/response";
 import type { AuthenticatedRequest, SaleStatus } from "../types";
+
+export const createDebt = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const authReq = req as AuthenticatedRequest;
+    const parsed = createBidrSchema.safeParse(authReq.body);
+    if (!parsed.success) {
+      throw new ValidationError("Invalid inputs", parsed.error.format());
+    }
+    const debt = await bidrService.createDebtService(authReq.user.id, parsed.data);
+    apiResponse(res, 201, debt);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const getDebts = async (req: Request, res: Response, next: NextFunction) => {
   try {

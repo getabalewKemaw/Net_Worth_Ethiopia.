@@ -18,13 +18,32 @@ export interface DebtItem {
   updatedAt: string;
 }
 
+export interface CreateDebtPayload {
+  businessId: string;
+  branchId: string;
+  description: string;
+  amount: number;
+  paymentMethod?: PaymentMethod;
+  customerName: string;
+  customerPhone?: string | null;
+  dueDate?: string | null;
+  notes?: string | null;
+}
+
 export interface DebtSummaryData {
+  totalCreditAmount?: number;
+  pendingAmount?: number;
   totalPendingAmount: number;
-  pendingCount: number;
-  totalOverdueAmount: number;
-  overdueCount: number;
+  settledAmount?: number;
   totalSettledAmount: number;
+  overdueAmount?: number;
+  totalOverdueAmount: number;
+  dueSoonAmount?: number;
+  totalDebts?: number;
+  pendingCount: number;
   settledCount: number;
+  overdueCount: number;
+  dueSoonCount?: number;
 }
 
 export interface FetchDebtsParams {

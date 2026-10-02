@@ -1,7 +1,7 @@
 import { db } from "../config/db";
 import { sale } from "../db/schema";
 import { eq, and, asc, desc, lt, gte, lte, type SQL } from "drizzle-orm";
-import type { Sale, BidrFilters, DebtSummary, SettleBidrInput, UpdateBidrInput } from "../types";
+import type { Sale, NewSale, BidrFilters, DebtSummary, SettleBidrInput, UpdateBidrInput } from "../types";
 
 export const findDebtsByBusinessId = async (
   businessId: string,
@@ -126,12 +126,18 @@ export const updateDebt = async (
   return result!;
 };
 
+export const createDebt = async (data: NewSale): Promise<Sale> => {
+  const [result] = await db.insert(sale).values(data).returning();
+  return result!;
+};
+
 export const getDebtSummary = async (
   businessId: string,
   branchId?: string | undefined
 ): Promise<DebtSummary> => {
   const debts = await findDebtsByBusinessId(businessId, { branchId });
   const now = new Date();
+  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
   let totalPendingAmount = 0;
   let pendingCount = 0;
@@ -139,14 +145,22 @@ export const getDebtSummary = async (
   let overdueCount = 0;
   let totalSettledAmount = 0;
   let settledCount = 0;
+  let dueSoonAmount = 0;
+  let dueSoonCount = 0;
 
   for (const d of debts) {
     if (d.status === "pending") {
       totalPendingAmount += d.amount;
       pendingCount += 1;
-      if (d.dueDate && new Date(d.dueDate) < now) {
-        totalOverdueAmount += d.amount;
-        overdueCount += 1;
+      if (d.dueDate) {
+        const dueDateObj = new Date(d.dueDate);
+        if (dueDateObj < now) {
+          totalOverdueAmount += d.amount;
+          overdueCount += 1;
+        } else if (dueDateObj <= sevenDaysFromNow) {
+          dueSoonAmount += d.amount;
+          dueSoonCount += 1;
+        }
       }
     } else if (d.status === "settled") {
       totalSettledAmount += d.amount;
@@ -154,12 +168,22 @@ export const getDebtSummary = async (
     }
   }
 
+  const totalCreditAmount = totalPendingAmount + totalSettledAmount;
+  const totalDebts = debts.length;
+
   return {
+    totalCreditAmount,
+    pendingAmount: totalPendingAmount,
     totalPendingAmount,
-    pendingCount,
-    totalOverdueAmount,
-    overdueCount,
+    settledAmount: totalSettledAmount,
     totalSettledAmount,
+    overdueAmount: totalOverdueAmount,
+    totalOverdueAmount,
+    dueSoonAmount,
+    totalDebts,
+    pendingCount,
     settledCount,
+    overdueCount,
+    dueSoonCount,
   };
 };

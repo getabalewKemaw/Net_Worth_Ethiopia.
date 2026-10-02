@@ -109,7 +109,7 @@ export function DebtFilterBar({
           }}
           accessibilityLabel="Sort options"
         >
-          <ArrowUpDownIcon size={16} color="#065F46" />
+          <ArrowUpDownIcon size={16} color="#D97706" />
         </Pressable>
       </View>
 
@@ -146,7 +146,7 @@ export function DebtFilterBar({
                   style={{
                     fontSize: 13,
                     fontWeight: isActive ? '700' : '500',
-                    color: isActive ? '#065F46' : colors.textSecondary,
+                    color: isActive ? '#D97706' : colors.textSecondary,
                   }}
                 >
                   {tab.label}
@@ -161,7 +161,7 @@ export function DebtFilterBar({
                           ? 'rgba(239, 68, 68, 0.12)'
                           : 'rgba(217, 119, 6, 0.12)'
                         : isActive
-                        ? 'rgba(6, 95, 70, 0.1)'
+                        ? 'rgba(217, 119, 6, 0.12)'
                         : 'rgba(0, 0, 0, 0.05)',
                     }}
                   >
@@ -174,7 +174,7 @@ export function DebtFilterBar({
                             ? '#DC2626'
                             : '#D97706'
                           : isActive
-                          ? '#065F46'
+                          ? '#D97706'
                           : colors.textSecondary,
                       }}
                     >
@@ -212,7 +212,7 @@ export function DebtFilterBar({
 
             <View className="flex-row items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>
-                Sort customer records
+                Sort Dube records
               </Text>
               <Pressable onPress={() => setShowSortModal(false)} hitSlop={6}>
                 <XIcon size={18} color={colors.textSecondary} />
@@ -231,7 +231,7 @@ export function DebtFilterBar({
                     }}
                     className="flex-row items-center justify-between p-3.5 rounded-2xl active:bg-slate-100 dark:active:bg-slate-800"
                     style={{
-                      backgroundColor: isSelected ? 'rgba(6, 95, 70, 0.08)' : 'transparent',
+                      backgroundColor: isSelected ? 'rgba(217, 119, 6, 0.1)' : 'transparent',
                     }}
                   >
                     <View className="flex-1 pr-2">
@@ -239,7 +239,7 @@ export function DebtFilterBar({
                         style={{
                           fontSize: 14,
                           fontWeight: '700',
-                          color: isSelected ? '#065F46' : colors.text,
+                          color: isSelected ? '#D97706' : colors.text,
                         }}
                       >
                         {opt.label}
@@ -248,7 +248,7 @@ export function DebtFilterBar({
                         {opt.desc}
                       </Text>
                     </View>
-                    {isSelected && <CheckIcon size={16} color="#065F46" />}
+                    {isSelected && <CheckIcon size={16} color="#D97706" />}
                   </Pressable>
                 );
               })}

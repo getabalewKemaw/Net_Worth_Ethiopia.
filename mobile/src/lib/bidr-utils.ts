@@ -9,14 +9,30 @@ export interface DebtStatusDisplay {
   isDueSoon?: boolean;
 }
 
+export function formatSafeDate(dateInput?: string | Date | null): string {
+  if (!dateInput) return '';
+  const d = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  if (isNaN(d.getTime())) return '';
+  try {
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+}
+
 export function getDebtStatusDisplay(debt: DebtItem): DebtStatusDisplay {
   if (debt.status === 'settled') {
-    const paidDate = debt.paidAt
-      ? new Date(debt.paidAt).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-        })
-      : 'Paid';
+    let paidDate = 'Paid';
+    if (debt.paidAt) {
+      const p = new Date(debt.paidAt);
+      if (!isNaN(p.getTime())) {
+        try {
+          paidDate = p.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        } catch {
+          paidDate = `${p.getMonth() + 1}/${p.getDate()}`;
+        }
+      }
+    }
     return {
       label: `Settled on ${paidDate}`,
       color: '#065F46',
@@ -40,13 +56,22 @@ export function getDebtStatusDisplay(debt: DebtItem): DebtStatusDisplay {
     };
   }
 
+  const due = new Date(debt.dueDate);
+  if (isNaN(due.getTime())) {
+    return {
+      label: 'Promised credit',
+      color: '#64748B',
+      dotColor: '#94A3B8',
+    };
+  }
+
   const now = new Date();
   now.setHours(0, 0, 0, 0);
 
-  const due = new Date(debt.dueDate);
-  due.setHours(0, 0, 0, 0);
+  const dueNormalized = new Date(due);
+  dueNormalized.setHours(0, 0, 0, 0);
 
-  const diffTime = due.getTime() - now.getTime();
+  const diffTime = dueNormalized.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) {
@@ -86,10 +111,17 @@ export function getDebtStatusDisplay(debt: DebtItem): DebtStatusDisplay {
     };
   }
 
+  let formattedMonthDay = '';
+  try {
+    formattedMonthDay = due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  } catch {
+    formattedMonthDay = `${due.getMonth() + 1}/${due.getDate()}`;
+  }
+
   return {
-    label: `Due ${due.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-    color: '#065F46',
-    dotColor: '#10B981',
+    label: `Due ${formattedMonthDay}`,
+    color: '#D97706',
+    dotColor: '#F59E0B',
   };
 }
 
@@ -103,12 +135,14 @@ export function calculateDeadlineInsights(debts: DebtItem[]) {
   for (const d of debts) {
     if (d.status === 'pending' && d.dueDate) {
       const dueTime = new Date(d.dueDate).getTime();
-      if (dueTime < now) {
-        overdueCount += 1;
-        overdueTotal += d.amount;
-      } else if (dueTime <= now + SEVEN_DAYS_MS) {
-        dueWithinWeekCount += 1;
-        dueWithinWeekTotal += d.amount;
+      if (!isNaN(dueTime)) {
+        if (dueTime < now) {
+          overdueCount += 1;
+          overdueTotal += d.amount;
+        } else if (dueTime <= now + SEVEN_DAYS_MS) {
+          dueWithinWeekCount += 1;
+          dueWithinWeekTotal += d.amount;
+        }
       }
     }
   }
