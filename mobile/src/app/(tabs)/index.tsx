@@ -45,112 +45,112 @@ export default function HomeScreen() {
         ];
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       {/* Top Header */}
       <HamburgerHeader activeTabId="dashboard" />
 
       <ScrollView
-        className="flex-1 px-4 py-3"
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 110 }}
       >
         {isPending ? (
-          <View className="py-20 items-center justify-center">
+          <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#10B981" />
-            <ThemedText className="text-xs font-semibold mt-3 text-gray-500">
+            <ThemedText style={styles.loadingText}>
               Loading operational metrics...
             </ThemedText>
           </View>
         ) : (
-          <View className="gap-4">
-            {/* 1. HERO REVENUE CARD (Premium Ethiopian Emerald) */}
+          <View style={{ gap: 12 }}>
+            {/* 1. HERO REVENUE CARD (Sleek, Balanced Ethiopian Emerald) */}
             <View style={styles.heroCard}>
               {/* Card Top Row */}
-              <View className="flex-row items-center justify-between">
-                <View className="flex-row items-center gap-2">
-                  <View className="w-2 h-2 rounded-full bg-[#34D399]" />
-                  <ThemedText className="text-[#A7F3D0] text-[12px] font-bold uppercase tracking-wider">
-                    Today's Total Revenue
+              <View style={styles.heroTopRow}>
+                <View style={styles.heroHeaderLeft}>
+                  <View style={styles.liveIndicatorDot} />
+                  <ThemedText style={styles.heroHeaderLabel}>
+                    Today&apos;s Total Revenue
                   </ThemedText>
                 </View>
 
                 <View style={styles.growthBadge}>
-                  <ThemedText className="text-[#34D399] text-[11px] font-black">
+                  <ThemedText style={styles.growthBadgeText}>
                     ↑ +12.5%
                   </ThemedText>
                 </View>
               </View>
 
-              {/* Main Balance Display */}
-              <View className="flex-row items-baseline gap-2 my-1">
-                <ThemedText className="text-white text-[34px] font-black tracking-tight">
+              {/* Main Balance Display - Reduced & Proportional */}
+              <View style={styles.heroAmountRow}>
+                <ThemedText style={styles.heroAmountText}>
                   18,450.00
                 </ThemedText>
-                <ThemedText className="text-[#A7F3D0] text-[16px] font-extrabold">
+                <ThemedText style={styles.heroCurrencyText}>
                   ETB
                 </ThemedText>
               </View>
 
-              {/* Card Bottom Stats Grid */}
+              {/* Card Bottom Stats Grid - Compact, Balanced & Refined */}
               <View style={styles.heroStatsDivider}>
-                <View className="flex-1 pr-3 border-r border-white/10">
-                  <ThemedText className="text-white/60 text-[11px] font-medium mb-0.5">
+                <View style={styles.heroStatColLeft}>
+                  <ThemedText style={styles.heroSubLabel}>
                     Estimated Profit
                   </ThemedText>
-                  <ThemedText className="text-white text-[15px] font-black">
+                  <ThemedText style={styles.heroSubValue}>
                     6,250 ETB{' '}
-                    <ThemedText className="text-[#34D399] text-[11px] font-bold">
+                    <ThemedText style={styles.profitPercent}>
                       (33%)
                     </ThemedText>
                   </ThemedText>
                 </View>
 
-                <View className="flex-1 pl-3">
-                  <ThemedText className="text-white/60 text-[11px] font-medium mb-0.5">
-                    Customer Credit (Bidr)
+                <View style={styles.heroStatColRight}>
+                  <ThemedText style={styles.heroSubLabel}>
+                    Registered Dube(debt)
                   </ThemedText>
-                  <ThemedText className="text-[#FCD34D] text-[15px] font-black">
+                  <ThemedText style={styles.heroDubeValue}>
                     32,800 ETB
                   </ThemedText>
                 </View>
               </View>
             </View>
 
-            {/* 2. UNIFIED QUICK ACTIONS (Clean 3-Action Row) */}
-            <View className="flex-row gap-3">
-              {/* Record Sale */}
+            {/* 2. UNIFIED QUICK ACTIONS (Connected directly to actual functionality/tabs) */}
+            <View style={styles.actionRow}>
+              {/* 1. Record Sale -> Navigates to Sales Tab */}
               <Pressable
                 style={[styles.actionButton, styles.saleAction]}
                 onPress={() => router.push('/sales' as any)}
               >
                 <View style={[styles.actionIconBadge, { backgroundColor: '#ECFDF5' }]}>
-                  <ThemedText style={{ fontSize: 16 }}>🛒</ThemedText>
+                  <ThemedText style={{ fontSize: 15 }}>🛒</ThemedText>
                 </View>
                 <ThemedText style={[styles.actionTitle, { color: '#065F46' }]}>
                   + New Sale
                 </ThemedText>
               </Pressable>
 
-              {/* Record Bidr */}
+              {/* 2. Log Expense -> Navigates to Expenses / Sales Tab */}
               <Pressable
-                style={[styles.actionButton, styles.bidrAction]}
-                onPress={() => router.push('/bidr' as any)}
+                style={[styles.actionButton, styles.expenseAction]}
+                onPress={() => router.push('/sales' as any)}
               >
                 <View style={[styles.actionIconBadge, { backgroundColor: '#FFFBEB' }]}>
-                  <ThemedText style={{ fontSize: 16 }}>📜</ThemedText>
+                  <ThemedText style={{ fontSize: 15 }}>💸</ThemedText>
                 </View>
-                <ThemedText style={[styles.actionTitle, { color: '#92400E' }]}>
-                  + Add Bidr
+                <ThemedText style={[styles.actionTitle, { color: '#B45309' }]}>
+                  + Expense
                 </ThemedText>
               </Pressable>
 
-              {/* Branches */}
+              {/* 3. Manage Branches -> Navigates to Branches Screen */}
               <Pressable
                 style={[styles.actionButton, styles.branchesAction]}
-                onPress={() => router.push('/(business)/branches')}
+                onPress={() => router.push('/(business)/branches' as any)}
               >
                 <View style={[styles.actionIconBadge, { backgroundColor: '#EFF6FF' }]}>
-                  <ThemedText style={{ fontSize: 16 }}>🏬</ThemedText>
+                  <ThemedText style={{ fontSize: 15 }}>🏬</ThemedText>
                 </View>
                 <ThemedText style={[styles.actionTitle, { color: '#1E40AF' }]}>
                   Branches
@@ -160,18 +160,18 @@ export default function HomeScreen() {
 
             {/* 3. WEEKLY SALES PERFORMANCE CHART */}
             <View style={styles.cleanCard}>
-              <View className="flex-row items-center justify-between mb-1">
+              <View style={styles.cardHeaderRow}>
                 <View>
-                  <ThemedText className="text-[16px] font-black text-gray-900">
+                  <ThemedText style={styles.sectionTitle}>
                     Weekly Sales Velocity
                   </ThemedText>
-                  <ThemedText className="text-[12px] font-medium text-gray-500">
+                  <ThemedText style={styles.sectionSubtitle}>
                     Daily revenue breakdown for the past 7 days
                   </ThemedText>
                 </View>
 
-                <View className="px-2.5 py-1 rounded-full bg-gray-100">
-                  <ThemedText className="text-[11px] font-bold text-gray-600">
+                <View style={styles.pillBadge}>
+                  <ThemedText style={styles.pillBadgeText}>
                     This Week
                   </ThemedText>
                 </View>
@@ -183,18 +183,18 @@ export default function HomeScreen() {
 
             {/* 4. PAYMENT SETTLEMENT CHANNELS */}
             <View style={styles.cleanCard}>
-              <View className="flex-row items-center justify-between mb-2">
+              <View style={styles.cardHeaderRow}>
                 <View>
-                  <ThemedText className="text-[16px] font-black text-gray-900">
+                  <ThemedText style={styles.sectionTitle}>
                     Payment Channels
                   </ThemedText>
-                  <ThemedText className="text-[12px] font-medium text-gray-500">
-                    Settlement share for today's sales
+                  <ThemedText style={styles.sectionSubtitle}>
+                    Settlement share for today&apos;s sales
                   </ThemedText>
                 </View>
 
-                <View className="px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200">
-                  <ThemedText className="text-[10px] font-extrabold text-[#065F46]">
+                <View style={styles.reconciledBadge}>
+                  <ThemedText style={styles.reconciledText}>
                     RECONCILED
                   </ThemedText>
                 </View>
@@ -205,27 +205,27 @@ export default function HomeScreen() {
 
             {/* 5. MULTI-BRANCH STATUS */}
             <View style={styles.cleanCard}>
-              <View className="flex-row items-center justify-between mb-3">
+              <View style={styles.cardHeaderRow}>
                 <View>
-                  <ThemedText className="text-[16px] font-black text-gray-900">
+                  <ThemedText style={styles.sectionTitle}>
                     Operating Branches
                   </ThemedText>
-                  <ThemedText className="text-[12px] font-medium text-gray-500">
+                  <ThemedText style={styles.sectionSubtitle}>
                     Active locations ({displayBranches.length})
                   </ThemedText>
                 </View>
 
                 <Pressable
-                  onPress={() => router.push('/(business)/branches')}
-                  className="px-3 py-1.5 rounded-xl bg-gray-100 active:opacity-70"
+                  onPress={() => router.push('/(business)/branches' as any)}
+                  style={styles.manageBtn}
                 >
-                  <ThemedText className="text-[11px] font-bold text-gray-700">
+                  <ThemedText style={styles.manageBtnText}>
                     Manage →
                   </ThemedText>
                 </Pressable>
               </View>
 
-              <View className="gap-2.5">
+              <View style={{ gap: 7, marginTop: 4 }}>
                 {displayBranches.map((br: any, idx: number) => {
                   const isCurrent = activeBranch?.id === br.id || br.active;
                   return (
@@ -236,32 +236,32 @@ export default function HomeScreen() {
                         isCurrent && styles.branchRowActive,
                       ]}
                     >
-                      <View className="flex-row items-center gap-3">
+                      <View style={styles.branchLeft}>
                         <View
                           style={[
                             styles.branchAvatar,
                             { backgroundColor: isCurrent ? '#10B981' : '#94A3B8' },
                           ]}
                         >
-                          <ThemedText className="text-white text-[11px] font-black">
+                          <ThemedText style={styles.branchAvatarText}>
                             {idx + 1}
                           </ThemedText>
                         </View>
-                        <View>
-                          <ThemedText className="text-[13px] font-bold text-gray-900">
+                        <View style={{ flex: 1 }}>
+                          <ThemedText style={styles.branchName} numberOfLines={1}>
                             {br.name}
                           </ThemedText>
-                          <ThemedText className="text-[11px] text-gray-500">
+                          <ThemedText style={styles.branchMeta}>
                             {br.city || 'Addis Ababa'} · Share: {br.share || '50%'}
                           </ThemedText>
                         </View>
                       </View>
 
-                      <View className="items-end">
-                        <ThemedText className="text-[13px] font-black text-gray-900">
+                      <View style={{ alignItems: 'flex-end', marginLeft: 8 }}>
+                        <ThemedText style={styles.branchSalesText}>
                           {br.sales || '12,450 ETB'}
                         </ThemedText>
-                        <ThemedText className="text-[10px] font-semibold text-emerald-600">
+                        <ThemedText style={styles.branchActiveTag}>
                           {isCurrent ? '● Active Branch' : 'Online'}
                         </ThemedText>
                       </View>
@@ -273,74 +273,74 @@ export default function HomeScreen() {
 
             {/* 6. RECENT ACTIVITY FEED */}
             <View style={styles.cleanCard}>
-              <View className="flex-row items-center justify-between mb-3">
-                <ThemedText className="text-[16px] font-black text-gray-900">
+              <View style={styles.cardHeaderRow}>
+                <ThemedText style={styles.sectionTitle}>
                   Recent Activities
                 </ThemedText>
                 <Pressable onPress={() => router.push('/sales' as any)}>
-                  <ThemedText className="text-[11px] font-bold text-[#10B981]">
-                    View all
+                  <ThemedText style={styles.viewAllText}>
+                    View all →
                   </ThemedText>
                 </Pressable>
               </View>
 
-              <View className="gap-2">
+              <View style={{ marginTop: 2 }}>
                 {/* Activity 1 */}
                 <View style={styles.activityRow}>
-                  <View className="flex-row items-center gap-3">
+                  <View style={styles.activityLeft}>
                     <View style={[styles.activityIconBadge, { backgroundColor: '#ECFDF5' }]}>
-                      <ThemedText style={{ fontSize: 14 }}>💵</ThemedText>
+                      <ThemedText style={{ fontSize: 13 }}>💵</ThemedText>
                     </View>
-                    <View>
-                      <ThemedText className="text-[13px] font-bold text-gray-900">
+                    <View style={{ flex: 1 }}>
+                      <ThemedText style={styles.activityTitle}>
                         Counter Cash Sale
                       </ThemedText>
-                      <ThemedText className="text-[11px] text-gray-500">
+                      <ThemedText style={styles.activitySubtitle}>
                         Main Branch · 12:45 PM
                       </ThemedText>
                     </View>
                   </View>
-                  <ThemedText className="text-[13px] font-black text-[#059669]">
+                  <ThemedText style={[styles.activityAmount, { color: '#059669' }]}>
                     +850.00 ETB
                   </ThemedText>
                 </View>
 
                 {/* Activity 2 */}
                 <View style={styles.activityRow}>
-                  <View className="flex-row items-center gap-3">
+                  <View style={styles.activityLeft}>
                     <View style={[styles.activityIconBadge, { backgroundColor: '#EFF6FF' }]}>
-                      <ThemedText style={{ fontSize: 14 }}>📱</ThemedText>
+                      <ThemedText style={{ fontSize: 13 }}>📱</ThemedText>
                     </View>
-                    <View>
-                      <ThemedText className="text-[13px] font-bold text-gray-900">
+                    <View style={{ flex: 1 }}>
+                      <ThemedText style={styles.activityTitle}>
                         Telebirr QR Payment
                       </ThemedText>
-                      <ThemedText className="text-[11px] text-gray-500">
+                      <ThemedText style={styles.activitySubtitle}>
                         Main Branch · 11:30 AM
                       </ThemedText>
                     </View>
                   </View>
-                  <ThemedText className="text-[13px] font-black text-[#0284C7]">
+                  <ThemedText style={[styles.activityAmount, { color: '#0284C7' }]}>
                     +500.00 ETB
                   </ThemedText>
                 </View>
 
                 {/* Activity 3 */}
-                <View style={styles.activityRow}>
-                  <View className="flex-row items-center gap-3">
+                <View style={[styles.activityRow, { borderBottomWidth: 0 }]}>
+                  <View style={styles.activityLeft}>
                     <View style={[styles.activityIconBadge, { backgroundColor: '#FFFBEB' }]}>
-                      <ThemedText style={{ fontSize: 14 }}>📜</ThemedText>
+                      <ThemedText style={{ fontSize: 13 }}>📜</ThemedText>
                     </View>
-                    <View>
-                      <ThemedText className="text-[13px] font-bold text-gray-900">
-                        New Bidr — Kebede M.
+                    <View style={{ flex: 1 }}>
+                      <ThemedText style={styles.activityTitle}>
+                        New Dube — Kebede M.
                       </ThemedText>
-                      <ThemedText className="text-[11px] text-gray-500">
+                      <ThemedText style={styles.activitySubtitle}>
                         14-Day Term · 10:15 AM
                       </ThemedText>
                     </View>
                   </View>
-                  <ThemedText className="text-[13px] font-black text-[#D97706]">
+                  <ThemedText style={[styles.activityAmount, { color: '#D97706' }]}>
                     1,200.00 ETB
                   </ThemedText>
                 </View>
@@ -354,50 +354,149 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 110,
+  },
+  loadingContainer: {
+    paddingVertical: 70,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
+    marginTop: 10,
+  },
+
+  // 1. Hero Revenue Card - Elevated, Balanced & Compact
   heroCard: {
     backgroundColor: '#064E3B', // Rich, deep Ethiopian Forest Emerald
-    borderRadius: 24,
-    padding: 20,
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 15,
     borderWidth: 1,
-    borderColor: '#065F46',
+    borderColor: 'rgba(52, 211, 153, 0.22)',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  heroHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  liveIndicatorDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#34D399',
+  },
+  heroHeaderLabel: {
+    color: '#A7F3D0',
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
   growthBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 2.5,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+  },
+  growthBadgeText: {
+    color: '#34D399',
+    fontSize: 10.5,
+    fontWeight: '800',
+  },
+  heroAmountRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 6,
+    marginVertical: 4,
+  },
+  heroAmountText: {
+    color: '#FFFFFF',
+    fontSize: 27, // Clean, reduced from 34px to proportional 27px
+    fontWeight: '900',
+    letterSpacing: -0.4,
+  },
+  heroCurrencyText: {
+    color: '#A7F3D0',
+    fontSize: 13,
+    fontWeight: '800',
   },
   heroStatsDivider: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 12,
-    marginTop: 8,
+    paddingTop: 10,
+    marginTop: 6,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  heroStatColLeft: {
+    flex: 1,
+    paddingRight: 10,
+    borderRightWidth: 1,
+    borderRightColor: 'rgba(255, 255, 255, 0.12)',
+  },
+  heroStatColRight: {
+    flex: 1,
+    paddingLeft: 12,
+  },
+  heroSubLabel: {
+    color: 'rgba(255, 255, 255, 0.65)',
+    fontSize: 10.5,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  heroSubValue: {
+    color: '#FFFFFF',
+    fontSize: 13.5,
+    fontWeight: '800',
+  },
+  profitPercent: {
+    color: '#34D399',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  heroDubeValue: {
+    color: '#FCD34D',
+    fontSize: 13.5,
+    fontWeight: '800',
   },
 
-  // Action Buttons
+  // 2. Quick Action Buttons Row
+  actionRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
   actionButton: {
     flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
-    borderRadius: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 4,
     borderWidth: 1,
   },
   saleAction: {
     backgroundColor: '#ECFDF5',
     borderColor: '#A7F3D0',
   },
-  bidrAction: {
+  expenseAction: {
     backgroundColor: '#FFFBEB',
     borderColor: '#FDE68A',
   },
@@ -406,38 +505,91 @@ const styles = StyleSheet.create({
     borderColor: '#BFDBFE',
   },
   actionIconBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
+    width: 28,
+    height: 28,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
   actionTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '800',
   },
 
-  // Clean Cards
+  // 3. Compact Clean Cards
   cleanCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    padding: 18,
+    borderRadius: 18,
+    padding: 14,
     borderWidth: 1,
     borderColor: '#F1F5F9',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.03,
-    shadowRadius: 6,
+    shadowRadius: 5,
     elevation: 2,
   },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  sectionSubtitle: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#64748B',
+    marginTop: 1,
+  },
+  pillBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+  },
+  pillBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  reconciledBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 10,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  reconciledText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#065F46',
+  },
+  manageBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+  },
+  manageBtnText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#334155',
+  },
 
-  // Branch Rows
+  // Operating Branches Row
   branchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 12,
-    borderRadius: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 12,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -446,28 +598,86 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0FDF4',
     borderColor: '#BBF7D0',
   },
+  branchLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   branchAvatar: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  branchAvatarText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  branchName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  branchMeta: {
+    fontSize: 10,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  branchSalesText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  branchActiveTag: {
+    fontSize: 9.5,
+    fontWeight: '600',
+    color: '#059669',
+  },
+
+  // Recent Activity Feed Row
+  activityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F8FAFC',
+  },
+  activityLeft: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingRight: 8,
+  },
+  activityIconBadge: {
     width: 28,
     height: 28,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  // Activity Rows
-  activityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F8FAFC',
+  activityTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
   },
-  activityIconBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
+  activitySubtitle: {
+    fontSize: 10,
+    color: '#64748B',
+    marginTop: 1,
+  },
+  activityAmount: {
+    fontSize: 12,
+    fontWeight: '800',
+    textAlign: 'right',
+  },
+  viewAllText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#059669',
   },
 });
