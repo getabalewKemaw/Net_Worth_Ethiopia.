@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import type { ExpenseEntry, ExpenseInput, SaleEntry, SaleInput } from "@/types/sales";
-import { createSale, fetchSales } from "@/service/sales";
-import { createExpense, fetchExpenses } from "@/service/expenses";
+import { localSalesRepo } from "@/repositories/local-sales.repo";
+import { localExpensesRepo } from "@/repositories/local-expenses.repo";
+import { syncEngine } from "@/service/sync-engine";
 
 function formatDisplayTime(dateStr?: string | null): string {
   if (!dateStr) return new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
@@ -100,6 +101,10 @@ export const useSalesStore = create<SalesState>((set, get) => ({
       isRefreshing: false,
     }),
 
+  /**
+   * Reads sales & expenses from local SQLite first (0ms latency),
+   * then triggers non-blocking background sync if connected.
+   */
   fetchData: async (businessId: string, branchId?: string, showLoading = true) => {
     if (!businessId) {
       set({ sales: [], expenses: [] });
@@ -107,125 +112,114 @@ export const useSalesStore = create<SalesState>((set, get) => ({
     }
 
     if (showLoading) set({ isLoading: true, error: null });
+
     try {
-      const [salesData, expensesData] = await Promise.all([
-        fetchSales({
-          businessId,
-          branchId,
-        }),
-        fetchExpenses({
-          businessId,
-          branchId,
-        }),
+      // 1. Instant local read from SQLite
+      const [localSales, localExpenses] = await Promise.all([
+        localSalesRepo.getSales(businessId, branchId),
+        localExpensesRepo.getExpenses(businessId, branchId),
       ]);
 
       set({
-        sales: salesData.map(mapBackendSaleToEntry),
-        expenses: expensesData.map(mapBackendExpenseToEntry),
+        sales: localSales,
+        expenses: localExpenses,
+        isLoading: false,
         error: null,
       });
+
+      // 2. Non-blocking background sync
+      syncEngine
+        .sync(businessId)
+        .then(async (result) => {
+          if (result.pulledCount > 0) {
+            // Re-read local storage if remote changes were pulled
+            const [updatedSales, updatedExpenses] = await Promise.all([
+              localSalesRepo.getSales(businessId, branchId),
+              localExpensesRepo.getExpenses(businessId, branchId),
+            ]);
+            set({ sales: updatedSales, expenses: updatedExpenses });
+          }
+        })
+        .catch((err) => {
+          console.log('[Sales Store] Background sync notice:', err?.message);
+        });
     } catch (err: any) {
-      console.warn("Failed to fetch sales/expenses from backend:", err.message);
-      set({ error: err.message || "Failed to fetch sales/expenses" });
-    } finally {
-      set({ isLoading: false, isRefreshing: false });
+      console.warn('[Sales Store] Failed to read local sales/expenses:', err.message);
+      set({
+        error: err.message || 'Failed to load local sales/expenses',
+        isLoading: false,
+      });
     }
   },
 
+  /**
+   * Pull-to-refresh: triggers full sync cycle and reloads local repositories.
+   */
   refresh: async (businessId: string, branchId?: string) => {
+    if (!businessId) return;
     set({ isRefreshing: true });
-    await get().fetchData(businessId, branchId, false);
-  },
-
-  addSale: async (businessId: string, branchId: string, entry: SaleInput) => {
-    const tempId = `temp-sale-${Date.now()}`;
-    const now = new Date();
-    const time = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-
-    const optimisticSale: SaleEntry = {
-      id: tempId,
-      time,
-      ...entry,
-      businessId,
-      branchId,
-    };
-
-    // Optimistic Update
-    set((state) => ({ sales: [optimisticSale, ...state.sales] }));
 
     try {
-      let formattedDueDate: string | null = null;
-      if (entry.dueDate) {
-        const parsed = new Date(entry.dueDate);
-        formattedDueDate = !isNaN(parsed.getTime()) ? parsed.toISOString() : entry.dueDate;
-      }
+      await syncEngine.sync(businessId);
+    } catch (err) {
+      console.log('[Sales Store] Refresh sync notice:', err);
+    } finally {
+      const [updatedSales, updatedExpenses] = await Promise.all([
+        localSalesRepo.getSales(businessId, branchId),
+        localExpensesRepo.getExpenses(businessId, branchId),
+      ]);
+      set({ sales: updatedSales, expenses: updatedExpenses, isRefreshing: false });
+    }
+  },
 
-      const created = await createSale({
-        businessId,
-        branchId,
-        saleType: entry.saleType,
-        paymentMethod: entry.paymentMethod,
-        description: entry.description,
-        amount: Math.round(entry.amount),
-        customerName: entry.customer || null,
-        customerPhone: entry.phone || null,
-        dueDate: formattedDueDate,
-      });
+  /**
+   * Records a sale locally with permanent UUID and outbox enqueueing.
+   * Works 100% offline; triggers background sync without blocking.
+   */
+  addSale: async (businessId: string, branchId: string, entry: SaleInput) => {
+    try {
+      const savedSale = await localSalesRepo.createSaleAtomic(entry, businessId, branchId);
 
-      const serverSale = mapBackendSaleToEntry(created);
-      // Replace optimistic placeholder with confirmed server entity
+      // Prepend to store state immediately
       set((state) => ({
-        sales: state.sales.map((s) => (s.id === tempId ? serverSale : s)),
+        sales: [savedSale, ...state.sales],
       }));
 
-      return serverSale;
+      // Non-blocking background sync attempt
+      syncEngine.sync(businessId).catch(() => {});
+
+      return savedSale;
     } catch (err: any) {
-      // Rollback optimistic state
-      set((state) => ({
-        sales: state.sales.filter((s) => s.id !== tempId),
-      }));
+      console.error('[Sales Store] Failed to record sale locally:', err);
+      set({ error: err.message || 'Failed to record sale' });
       throw err;
     }
   },
 
+  /**
+   * Records an operational expense locally with outbox enqueueing.
+   * Works 100% offline; triggers background sync without blocking.
+   */
   addExpense: async (businessId: string, branchId: string, entry: ExpenseInput) => {
-    const tempId = `temp-exp-${Date.now()}`;
-    const now = new Date();
-    const time = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
-
-    const optimisticExpense: ExpenseEntry = {
-      id: tempId,
-      time,
-      ...entry,
-      businessId,
-      branchId,
-    };
-
-    // Optimistic Update
-    set((state) => ({ expenses: [optimisticExpense, ...state.expenses] }));
-
     try {
-      const created = await createExpense({
+      const savedExpense = await localExpensesRepo.createExpenseAtomic(
+        entry,
         businessId,
-        branchId,
-        description: entry.description,
-        amount: Math.round(entry.amount),
-        category: entry.category,
-        notes: entry.notes || null,
-      });
+        branchId
+      );
 
-      const serverExpense = mapBackendExpenseToEntry(created);
-      // Replace optimistic placeholder with confirmed server entity
+      // Prepend to store state immediately
       set((state) => ({
-        expenses: state.expenses.map((e) => (e.id === tempId ? serverExpense : e)),
+        expenses: [savedExpense, ...state.expenses],
       }));
 
-      return serverExpense;
+      // Non-blocking background sync attempt
+      syncEngine.sync(businessId).catch(() => {});
+
+      return savedExpense;
     } catch (err: any) {
-      // Rollback optimistic state
-      set((state) => ({
-        expenses: state.expenses.filter((e) => e.id !== tempId),
-      }));
+      console.error('[Sales Store] Failed to record expense locally:', err);
+      set({ error: err.message || 'Failed to record expense' });
       throw err;
     }
   },

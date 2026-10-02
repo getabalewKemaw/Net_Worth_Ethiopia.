@@ -18,6 +18,7 @@ import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 import { useBusinessStore } from '@/store/business-store';
 import { authClient } from '@/lib/auth-client';
+import { SyncStatusBadge } from '@/components/common/sync-status-badge';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DRAWER_WIDTH = Math.min(330, SCREEN_WIDTH * 0.82);
@@ -202,13 +203,8 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
         </View>
 
         <View className="flex-row items-center gap-2">
-          {/* Status Badge */}
-          <View style={styles.onlineBadge}>
-            <View style={styles.pulsingDot} />
-            <ThemedText className="text-[11px] font-bold text-emerald-800">
-              Online
-            </ThemedText>
-          </View>
+          {/* Dynamic Offline / Online / Syncing Status Badge */}
+          <SyncStatusBadge />
         </View>
       </View>
 

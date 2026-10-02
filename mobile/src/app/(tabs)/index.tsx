@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ScrollView, View, ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,6 +7,10 @@ import { ThemedText } from '@/components/themed-text';
 import { HamburgerHeader } from '@/components/navigation/hamburger-drawer';
 import { useBusinessStore } from '@/store/business-store';
 import { useTheme } from '@/hooks/use-theme';
+import { localSalesRepo } from '@/repositories/local-sales.repo';
+import { localBidrRepo } from '@/repositories/local-bidr.repo';
+import { localExpensesRepo } from '@/repositories/local-expenses.repo';
+import { useNetworkSync } from '@/hooks/use-network-sync';
 import {
   SalesTrendAreaChart,
   PaymentChannelDonutChart,
@@ -19,6 +23,32 @@ export default function HomeScreen() {
   const branches = useBusinessStore((state) => state.branches);
   const activeBranch = useBusinessStore((state) => state.activeBranch);
   const isPending = useBusinessStore((state) => state.isPending);
+
+  const { lastSyncTime } = useNetworkSync();
+
+  const [todayRevenue, setTodayRevenue] = useState<number>(0);
+  const [registeredDube, setRegisteredDube] = useState<number>(0);
+  const [todayExpense, setTodayExpense] = useState<number>(0);
+
+  const loadDashboardMetrics = useCallback(async () => {
+    if (!activeBusiness?.id) return;
+    try {
+      const [revData, dubeData, expData] = await Promise.all([
+        localSalesRepo.getTodayRevenueMetric(activeBusiness.id, activeBranch?.id),
+        localBidrRepo.getDebtSummaryMetric(activeBusiness.id, activeBranch?.id),
+        localExpensesRepo.getTodayExpenseMetric(activeBusiness.id, activeBranch?.id),
+      ]);
+      setTodayRevenue(revData.revenue);
+      setRegisteredDube(dubeData.totalPendingAmount);
+      setTodayExpense(expData.expenseTotal);
+    } catch (err) {
+      console.warn('[Dashboard] Failed to query local SQLite metrics:', err);
+    }
+  }, [activeBusiness?.id, activeBranch?.id]);
+
+  useEffect(() => {
+    loadDashboardMetrics();
+  }, [loadDashboardMetrics, lastSyncTime]);
 
   const displayBranches =
     branches.length > 0
@@ -84,7 +114,10 @@ export default function HomeScreen() {
               {/* Main Balance Display - Reduced & Proportional */}
               <View style={styles.heroAmountRow}>
                 <ThemedText style={styles.heroAmountText}>
-                  18,450.00
+                  {todayRevenue.toLocaleString('en-US', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </ThemedText>
                 <ThemedText style={styles.heroCurrencyText}>
                   ETB
@@ -98,9 +131,9 @@ export default function HomeScreen() {
                     Estimated Profit
                   </ThemedText>
                   <ThemedText style={styles.heroSubValue}>
-                    6,250 ETB{' '}
+                    {Math.max(0, todayRevenue - todayExpense).toLocaleString('en-US')} ETB{' '}
                     <ThemedText style={styles.profitPercent}>
-                      (33%)
+                      ({todayRevenue > 0 ? Math.round((Math.max(0, todayRevenue - todayExpense) / todayRevenue) * 100) : 0}%)
                     </ThemedText>
                   </ThemedText>
                 </View>
@@ -110,7 +143,7 @@ export default function HomeScreen() {
                     Registered Dube(debt)
                   </ThemedText>
                   <ThemedText style={styles.heroDubeValue}>
-                    32,800 ETB
+                    {registeredDube.toLocaleString('en-US')} ETB
                   </ThemedText>
                 </View>
               </View>
