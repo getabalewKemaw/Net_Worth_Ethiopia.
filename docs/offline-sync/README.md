@@ -15,50 +15,28 @@ This document outlines the **Offline-First Synchronization Architecture**. Under
 
 ---
 
-## 2. Master System Architecture
+## 2. System Flow Overview (Textual Architecture)
 
-The diagram below illustrates the end-to-end data flow between the Android client and the backend server.
+The system operates across three coordinated tiers:
 
-```mermaid
-flowchart TD
-    subgraph MobileApp ["Mobile App (React Native / Expo)"]
-        UI["User Interface (Tabs / Screens)"]
-        Store["Zustand State Layer\n(useSalesStore, useBidrStore)"]
-        
-        subgraph LocalDataLayer ["Local Data Layer (On-Device)"]
-            Repo["Local Repository Layer"]
-            SQLite[("Local SQLite Database\n(expo-sqlite)")]
-            SyncQueue[("Sync Mutation Queue\n(sync_queue table)")]
-        end
-        
-        SyncEngine["Sync Engine\n(Background Worker & NetInfo)"]
-    end
+### Tier 1: UI & State Layer (Client)
+- UI screens ([HomeScreen](file:///home/eaglex/Documents/insa-ctc/FinalProject/mobile/src/app/(tabs)/index.tsx), [SalesScreen](file:///home/eaglex/Documents/insa-ctc/FinalProject/mobile/src/app/(tabs)/sales.tsx), [BidrScreen](file:///home/eaglex/Documents/insa-ctc/FinalProject/mobile/src/app/(tabs)/bidr.tsx)) bind directly to Zustand stores (`useSalesStore`, `useBidrStore`, `useBusinessStore`).
+- User actions (e.g. "+ New Sale", "Log Expense", "Settle Dube") trigger asynchronous store actions that return immediately (0ms user wait time).
 
-    subgraph BackendServer ["Backend Server (Node.js / Express)"]
-        AuthMiddleware["Auth & Tenant Validation"]
-        SyncEndpoints["Sync Router\nPOST /api/sync/push\nGET /api/sync/pull"]
-        Postgres[("PostgreSQL Database\n(Drizzle ORM)")]
-    end
+### Tier 2: Local Database & Outbox Layer (Client SQLite)
+- Handled by `expo-sqlite` in Write-Ahead Logging (WAL) mode.
+- When an entity is created or modified:
+  1. An RFC 4122 v4 UUID is generated on device (`crypto.randomUUID()`).
+  2. Inside a single SQLite ACID transaction, the entity is inserted/updated in the local table (`local_sale`, `local_expense`), and an action record is added to `sync_queue`.
+  3. The local database is immediately queryable for aggregated metrics (Today's Total Revenue, Registered Dube, Estimated Profit) without contacting the backend.
 
-    %% UI Interaction
-    UI -->|1. User Mutation e.g. Add Sale| Store
-    Store -->|2. Write Entity & Enqueue| Repo
-    Repo -->|3. Local ACID Transaction| SQLite
-    Repo -->|3. Insert Pending Action| SyncQueue
-    SQLite -->|4. Reactive Update| Store
-    Store -->|5. Instant UI Render| UI
-
-    %% Sync Interaction
-    SyncEngine -->|Monitor Network| UI
-    SyncEngine -->|Read Pending Queue| SyncQueue
-    SyncEngine -->|6. Batch Push Mutations| SyncEndpoints
-    SyncEndpoints --> AuthMiddleware
-    AuthMiddleware --> Postgres
-    SyncEndpoints -->|7. Ack Success & Return Conflicts| SyncEngine
-    SyncEngine -->|8. Mark Synced & Evict Queue| SyncQueue
-    SyncEngine -->|9. Pull Server Delta| SyncEndpoints
-    SyncEndpoints -->|10. Return Delta since Timestamp| SQLite
-```
+### Tier 3: Asynchronous Replication Layer (Sync Engine & Express Backend)
+- A background worker (`sync-engine.ts`) listens to network connectivity (`expo-network`) and application lifecycle events (`AppState`).
+- When connectivity is detected:
+  1. **Push Phase**: Batches up to 50 pending items from `sync_queue` to `POST /api/sync/push`. The backend processes mutations inside a PostgreSQL database transaction with idempotency checks.
+  2. **Acknowledge Phase**: Client receives confirmation of processed mutation IDs, deletes them from `sync_queue`, and updates entity status to `synced`.
+  3. **Pull Phase**: Client requests changed records since the last sync timestamp via `GET /api/sync/pull?since=...`.
+  4. **Merge Phase**: Client upserts incoming changes into local SQLite and refreshes active Zustand state.
 
 ---
 
@@ -68,9 +46,9 @@ The offline sync documentation is structured into the following specialized modu
 
 | Document | Focus & Content |
 | :--- | :--- |
-| **[1. SQLite Evaluation](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/offline-sync/sqlite-evaluation.md)** | Comprehensive comparison of `expo-sqlite` vs MMKV, AsyncStorage, WatermelonDB, and Realm across feasibility, performance, memory, code quality, and Android compatibility. |
-| **[2. Sync Architecture & Protocol](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/offline-sync/sync-architecture-and-protocol.md)** | Database schemas, mutation outbox queue design, push/pull delta sync protocol, client UUID generation, and conflict resolution rules. |
-| **[3. Implementation Roadmap](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/offline-sync/implementation-roadmap.md)** | Phased 5-stage implementation plan, backend API specifications, frontend repository structure, testing matrix, and deployment checklist. |
+| **[1. Detailed Implementation Plan](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/offline-sync/implementation-roadmap.md)** | Step-by-step 6-phase engineering plan, complete file implementation matrix, exact function specifications, and verification tests. |
+| **[2. SQLite Evaluation](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/offline-sync/sqlite-evaluation.md)** | Comprehensive comparison of `expo-sqlite` vs MMKV, AsyncStorage, WatermelonDB, and Realm across feasibility, performance, memory, code quality, and Android compatibility. |
+| **[3. Sync Architecture & Protocol](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/offline-sync/sync-architecture-and-protocol.md)** | Local DDL schema, transactional outbox design, API payloads (`push`/`pull`), and conflict resolution rules. |
 
 ---
 
@@ -86,4 +64,4 @@ The offline sync documentation is structured into the following specialized modu
    - *Rationale*: Network reconnect listener (`expo-network`), application foregrounding (`AppState`), periodic timer (every 3 minutes when online), and manual pull-to-refresh.
 5. **Conflict Resolution**:
    - **Sales & Expenses**: Immutable append-only ledger entries. Duplicate prevention through idempotency keys.
-   - **Dube (Debt) Status**: Last-Write-Wins with timestamp verification and state-transition safety (e.g. once marked settled, subsequent offline edits are flagged for reconciliation).
+   - **Dube (Debt) Status**: Terminal state wins for settlements; Last-Write-Wins with timestamp verification for profile/note updates.

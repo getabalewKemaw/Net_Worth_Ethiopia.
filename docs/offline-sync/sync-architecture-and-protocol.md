@@ -14,65 +14,13 @@ NetWorth Ethiopia implements a **Local-First Architecture**. Under this model:
 
 The local SQLite schema mirrors the PostgreSQL backend schema while adding metadata columns (`sync_status`, `sync_attempt`, `client_updated_at`) to track replication state.
 
-```mermaid
-erDiagram
-    LOCAL_BUSINESS ||--o{ LOCAL_BRANCH : contains
-    LOCAL_BUSINESS ||--o{ LOCAL_SALE : records
-    LOCAL_BRANCH ||--o{ LOCAL_SALE : records
-    LOCAL_BUSINESS ||--o{ LOCAL_EXPENSE : incurs
-    LOCAL_BRANCH ||--o{ LOCAL_EXPENSE : incurs
-    
-    LOCAL_SALE {
-        TEXT id PK "UUID v4"
-        TEXT business_id FK
-        TEXT branch_id FK
-        TEXT sale_type "instant | dube"
-        TEXT payment_method "cash | telebirr | cbe_birr | ..."
-        TEXT description
-        INTEGER amount "In Cents or Integer ETB"
-        TEXT customer_name
-        TEXT customer_phone
-        TEXT due_date "ISO-8601"
-        TEXT status "pending | settled | overdue | voided"
-        TEXT notes
-        TEXT paid_at "ISO-8601"
-        TEXT sync_status "synced | pending_create | pending_update"
-        TEXT created_at "ISO-8601"
-        TEXT updated_at "ISO-8601"
-    }
-
-    LOCAL_EXPENSE {
-        TEXT id PK "UUID v4"
-        TEXT business_id FK
-        TEXT branch_id FK
-        TEXT description
-        INTEGER amount
-        TEXT category
-        TEXT notes
-        TEXT sync_status "synced | pending_create"
-        TEXT created_at "ISO-8601"
-        TEXT updated_at "ISO-8601"
-    }
-
-    SYNC_QUEUE {
-        INTEGER id PK "AUTOINCREMENT"
-        TEXT mutation_id "UUID v4 (Idempotency Key)"
-        TEXT entity_type "sale | expense | debt | branch"
-        TEXT entity_id "UUID of the record"
-        TEXT action "CREATE | UPDATE | SETTLE | DELETE"
-        TEXT payload "JSON serialized string"
-        INTEGER retry_count "Default 0"
-        TEXT last_error "Error message if failed"
-        TEXT status "pending | processing | failed"
-        TEXT created_at "ISO-8601"
-    }
-
-    SYNC_METADATA {
-        TEXT key PK "e.g. last_pulled_at, device_id"
-        TEXT value
-        TEXT updated_at "ISO-8601"
-    }
-```
+### Entity Relationships
+- **Business (`local_business`)**: Master tenant profile. Contains multiple branches, sales, and expenses.
+- **Branch (`local_branch`)**: Physical store or sales outlet. Each sale and expense is associated with a `branch_id`.
+- **Sale & Dube (`local_sale`)**: Records both instant sales (`sale_type = 'instant'`) and customer credit (`sale_type = 'dube'`).
+- **Expense (`local_expense`)**: Operational costs categorized by utility, salary, rent, supplies, etc.
+- **Sync Outbox (`sync_queue`)**: FIFO mutation queue tracking all offline create, update, and settle events.
+- **Sync Metadata (`sync_metadata`)**: Key-value store tracking sync cursors (`last_pulled_at`) and device identifiers.
 
 ### Table Definitions (DDL)
 
@@ -148,30 +96,18 @@ CREATE TABLE IF NOT EXISTS sync_metadata (
 
 To ensure that no offline mutation is ever lost, writing to the entity table and the outbox queue occurs within a **single SQLite transaction**.
 
-```mermaid
-sequenceDiagram
-    participant User as Merchant
-    participant UI as Screen / Component
-    participant Store as Zustand Store
-    participant Repo as Local Repo (SQLite)
-    participant Queue as sync_queue Table
-    participant Sync as Sync Worker
-
-    User->>UI: Fills Form & Taps "Save Sale"
-    UI->>Store: addSale(payload)
-    Store->>Repo: createSaleAtomic(saleData)
-    
-    rect rgb(235, 245, 255)
-        Note over Repo,Queue: SQLite ACID Transaction
-        Repo->>Repo: 1. Generate UUID v4 (id)
-        Repo->>Repo: 2. INSERT INTO local_sale (sync_status = 'pending_create')
-        Repo->>Queue: 3. INSERT INTO sync_queue (mutation_id, action = 'CREATE', payload)
-    end
-
-    Repo-->>Store: Returns Created Sale Object
-    Store->>UI: Updates Store State (Optimistic render, 0ms latency)
-    Store->>Sync: notifyMutationAvailable()
-```
+### Transaction Sequence:
+1. **User Action**: Merchant enters sale amount and customer details in the UI, then taps "Save Sale".
+2. **Action Dispatch**: The screen invokes `useSalesStore.getState().addSale(payload)`.
+3. **Repository Execution**: The store calls `localSalesRepo.createSaleAtomic(saleData)`.
+4. **Atomic SQLite Transaction**:
+   - Step A: Generate UUID v4 for the entity (`id = crypto.randomUUID()`).
+   - Step B: Generate UUID v4 for the mutation idempotency key (`mutation_id = crypto.randomUUID()`).
+   - Step C: `INSERT INTO local_sale (id, ..., sync_status = 'pending_create')`.
+   - Step D: `INSERT INTO sync_queue (mutation_id, action = 'CREATE', payload)`.
+   - Step E: `COMMIT TRANSACTION`.
+5. **Instant Store Update**: The newly created record is appended directly to the Zustand store, immediately updating the UI with 0ms latency.
+6. **Non-Blocking Sync Dispatch**: An asynchronous event notifies the background sync engine that pending mutations are available.
 
 ---
 
@@ -182,11 +118,11 @@ Historically, systems used auto-incrementing integer IDs or waited for server re
 1. An offline sale cannot reference a parent or branch without a valid ID.
 2. Temporary IDs require remapping all relational foreign keys when the server assigns permanent IDs upon sync.
 
-**NetWorth Solution**:
+### NetWorth Solution:
 Every entity receives an RFC 4122 Version 4 UUID (`crypto.randomUUID()`) generated immediately on the device:
 - The client-generated ID is permanent.
 - The server stores the record using the client-provided `id`.
-- The `mutation_id` in `sync_queue` acts as an **Idempotency Key**. If a network timeout causes the client to push the same mutation twice, the server identifies the duplicate key and returns HTTP 200 without creating a duplicate record.
+- The `mutation_id` in `sync_queue` acts as an **Idempotency Key**. If a network timeout causes the client to push the same mutation twice, the server identifies the duplicate key in `sync_idempotency` and returns HTTP 200 without creating duplicate records.
 
 ---
 
@@ -194,36 +130,31 @@ Every entity receives an RFC 4122 Version 4 UUID (`crypto.randomUUID()`) generat
 
 The synchronization protocol executes in two phases: **Push (upstream replication)** followed by **Pull (downstream replication)**.
 
-```mermaid
-sequenceDiagram
-    participant Mobile as Mobile Sync Engine
-    participant API as Backend Sync API (/api/sync)
-    participant DB as PostgreSQL Database
+### Step-by-Step Protocol Flow:
+1. **Connectivity Check**: Sync engine confirms device has active internet access.
+2. **Push Phase**:
+   - Query `sync_queue` for up to 50 items with `status = 'pending'`.
+   - Send `POST /api/sync/push` containing `mutations` array and `businessId`.
+   - Backend processes all items in a single PostgreSQL transaction.
+   - Backend acknowledges successfully ingested `processedMutationIds`.
+   - Client deletes acknowledged items from `sync_queue` and sets `local_sale.sync_status = 'synced'`.
+3. **Pull Phase**:
+   - Query `sync_metadata` for `last_pulled_at`.
+   - Send `GET /api/sync/pull?businessId=...&since=last_pulled_at`.
+   - Backend queries all records updated after `since`.
+   - Backend returns delta payload and current `serverTimestamp`.
+4. **Merge Phase**:
+   - Client executes SQLite transaction to upsert received sales, expenses, and branches.
+   - Client updates `sync_metadata.last_pulled_at` with `serverTimestamp`.
+   - Client notifies Zustand stores to refresh UI.
 
-    Note over Mobile: Network Connected / App Foregrounded
-    Mobile->>API: 1. POST /api/sync/push (Batch of queued mutations)
-    activate API
-    API->>DB: Process batch in transaction (Idempotent upsert)
-    DB-->>API: Success / Conflicts
-    API-->>Mobile: { success: true, processedMutationIds: [...] }
-    deactivate API
-
-    Mobile->>Mobile: 2. Remove processed mutations from sync_queue
-    Mobile->>Mobile: 3. Mark matching records as 'synced' in local_sale
-
-    Mobile->>API: 4. GET /api/sync/pull?businessId=...&since=last_synced_at
-    activate API
-    API->>DB: SELECT * FROM records WHERE updated_at > since
-    DB-->>API: Changed records (sales, expenses, debts, branches)
-    API-->>Mobile: { serverTimestamp: '...', changes: { sales: [...], expenses: [...] } }
-    deactivate API
-
-    Mobile->>Mobile: 5. Upsert incoming records into local SQLite
-    Mobile->>Mobile: 6. Update last_synced_at in sync_metadata
-    Mobile->>Mobile: 7. Notify Zustand Stores to refresh active UI
-```
+---
 
 ### 5.1 Push API Specification (`POST /api/sync/push`)
+
+**Request Headers**:
+- `Authorization`: Bearer session token / Cookie session
+- `Content-Type`: `application/json`
 
 **Request Payload**:
 ```json
@@ -256,7 +187,8 @@ sequenceDiagram
       "timestamp": "2026-10-02T19:15:00.000Z",
       "payload": {
         "paymentMethod": "cash",
-        "notes": "Full settlement at shop"
+        "notes": "Full settlement at shop",
+        "paidAt": "2026-10-02T19:15:00.000Z"
       }
     }
   ]
@@ -275,11 +207,13 @@ sequenceDiagram
 }
 ```
 
+---
+
 ### 5.2 Pull API Specification (`GET /api/sync/pull`)
 
 **Query Parameters**:
-- `businessId`: `biz_8f43c19b`
-- `since`: ISO timestamp (e.g. `2026-10-02T17:00:00.000Z`). If omitted or null, performs initial hydration.
+- `businessId` (string, required): Target business ID.
+- `since` (string, optional ISO timestamp): e.g. `2026-10-02T17:00:00.000Z`. If omitted, returns initial full dataset.
 
 **Response Payload**:
 ```json
@@ -311,8 +245,6 @@ sequenceDiagram
 
 ## 6. Conflict Resolution Strategy
 
-Conflicts can occur when multiple devices record changes for the same business, or when a debt is modified while offline:
-
 | Entity / Action | Conflict Nature | Resolution Rule | Technical Implementation |
 | :--- | :--- | :--- | :--- |
 | **Sales (Instant)** | High Volume, Append-Only | **Additive / No Conflict** | Instant sales are financial ledger entries. Each record has a unique UUID. The server accepts all valid new sales idempotently. |
@@ -326,7 +258,7 @@ Conflicts can occur when multiple devices record changes for the same business, 
 
 ## 7. Network Monitoring & Trigger Engine
 
-The sync engine is reactive and executes automatically across four distinct lifecycle triggers:
+The sync engine executes automatically across four distinct lifecycle triggers:
 
 1. **Network Connectivity Transition**:
    - Monitored via `expo-network` (`Network.addNetworkStateListener`).
