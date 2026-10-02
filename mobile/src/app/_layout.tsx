@@ -9,6 +9,7 @@ import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { authClient } from '@/lib/auth-client';
 import { useBusinessStore } from '@/store/business-store';
 import { initLocalDatabase } from '@/db/migrations';
+import { useNetworkSync } from '@/hooks/use-network-sync';
 
 import { Platform } from 'react-native';
 
@@ -26,6 +27,9 @@ export default function TabLayout() {
   const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
   const segments = useSegments();
+
+  // Background offline sync lifecycle watcher
+  useNetworkSync();
 
   const loadInitialState = useBusinessStore((state) => state.loadInitialState);
   const activeBusiness = useBusinessStore((state) => state.activeBusiness);
