@@ -183,6 +183,12 @@ export const localSalesRepo = {
     branchId?: string
   ): Promise<{ revenue: number; saleCount: number }> {
     const db = await getDatabase();
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const todayDatePrefix = `${year}-${month}-${day}%`;
+
     let query = `
       SELECT 
         COALESCE(SUM(amount), 0) AS revenue,
@@ -190,9 +196,13 @@ export const localSalesRepo = {
       FROM local_sale
       WHERE business_id = ? 
         AND sale_type = 'instant'
-        AND date(created_at) = date('now')
+        AND (
+          created_at LIKE ?
+          OR date(created_at, 'localtime') = date('now', 'localtime')
+          OR date(created_at) = date('now')
+        )
     `;
-    const params: any[] = [businessId];
+    const params: any[] = [businessId, todayDatePrefix];
 
     if (branchId) {
       query += ` AND branch_id = ?`;

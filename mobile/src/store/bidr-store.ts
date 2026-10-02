@@ -85,14 +85,9 @@ export const useBidrStore = create<BidrState>((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      const state = get();
-      // 1. Instant local read from SQLite
+      // 1. Instant local read from SQLite (loads full branch debts so counts & filters remain fast & accurate)
       const [localDebts, localSummary] = await Promise.all([
-        localBidrRepo.getDebts(businessId, branchId, {
-          searchQuery: state.searchQuery,
-          filterStatus: state.filterStatus,
-          sortBy: state.sortBy,
-        }),
+        localBidrRepo.getDebts(businessId, branchId),
         localBidrRepo.getDebtSummaryMetric(businessId, branchId),
       ]);
 
@@ -108,13 +103,8 @@ export const useBidrStore = create<BidrState>((set, get) => ({
         .sync(businessId)
         .then(async (result) => {
           if (result.pulledCount > 0) {
-            const currentState = get();
             const [updatedDebts, updatedSummary] = await Promise.all([
-              localBidrRepo.getDebts(businessId, branchId, {
-                searchQuery: currentState.searchQuery,
-                filterStatus: currentState.filterStatus,
-                sortBy: currentState.sortBy,
-              }),
+              localBidrRepo.getDebts(businessId, branchId),
               localBidrRepo.getDebtSummaryMetric(businessId, branchId),
             ]);
             set({ debts: updatedDebts, summary: updatedSummary });
@@ -144,13 +134,8 @@ export const useBidrStore = create<BidrState>((set, get) => ({
     } catch (err: any) {
       console.log('[Bidr Store] Refresh sync notice:', err?.message);
     } finally {
-      const state = get();
       const [updatedDebts, updatedSummary] = await Promise.all([
-        localBidrRepo.getDebts(businessId, branchId, {
-          searchQuery: state.searchQuery,
-          filterStatus: state.filterStatus,
-          sortBy: state.sortBy,
-        }),
+        localBidrRepo.getDebts(businessId, branchId),
         localBidrRepo.getDebtSummaryMetric(businessId, branchId),
       ]);
       set({ debts: updatedDebts, summary: updatedSummary, refreshing: false });
@@ -284,3 +269,22 @@ export const useBidrStore = create<BidrState>((set, get) => ({
     }
   },
 }));
+
+// Reactively reload local debts and summary when background sync pulls updates
+syncEngine.subscribe((event) => {
+  if (event.type === 'sync_success') {
+    const state = useBidrStore.getState();
+    const lastBusinessId = state.debts[0]?.businessId;
+    if (lastBusinessId) {
+      Promise.all([
+        localBidrRepo.getDebts(lastBusinessId),
+        localBidrRepo.getDebtSummaryMetric(lastBusinessId),
+      ])
+        .then(([debts, summary]) => {
+          useBidrStore.setState({ debts, summary });
+        })
+        .catch(() => {});
+    }
+  }
+});
+

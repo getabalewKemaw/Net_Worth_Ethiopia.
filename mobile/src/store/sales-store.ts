@@ -224,3 +224,22 @@ export const useSalesStore = create<SalesState>((set, get) => ({
     }
   },
 }));
+
+// Reactively reload local sales and expenses when background sync pulls updates
+syncEngine.subscribe((event) => {
+  if (event.type === 'sync_success') {
+    const state = useSalesStore.getState();
+    const lastBusinessId = state.sales[0]?.businessId || state.expenses[0]?.businessId;
+    if (lastBusinessId) {
+      Promise.all([
+        localSalesRepo.getSales(lastBusinessId),
+        localExpensesRepo.getExpenses(lastBusinessId),
+      ])
+        .then(([sales, expenses]) => {
+          useSalesStore.setState({ sales, expenses });
+        })
+        .catch(() => {});
+    }
+  }
+});
+
