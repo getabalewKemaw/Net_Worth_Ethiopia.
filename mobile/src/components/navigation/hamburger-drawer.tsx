@@ -33,6 +33,7 @@ export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: '🏠', route: '/' },
       { id: 'sales', label: 'Sales', icon: '🛒', route: '/sales' },
+      { id: 'text-fetching', label: 'Text Fetching', icon: '💬', route: '/text-fetching' },
       { id: 'bidr', label: 'Bidr (Debt)', icon: '📜', route: '/bidr' },
       { id: 'expenses', label: 'Expenses', icon: '💸', route: '/expenses' },
     ],
@@ -55,7 +56,6 @@ export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
   {
     title: 'System & Profile',
     items: [
-      { id: 'sync', label: 'Offline Sync Queue', icon: '⚡', route: '/sync' },
       { id: 'profile', label: 'Merchant Profile', icon: '👤', route: '/profile' },
       { id: 'settings', label: 'Business Settings', icon: '⚙️', route: '/(business)/business-profile' },
     ],

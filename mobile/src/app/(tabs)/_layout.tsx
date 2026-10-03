@@ -23,6 +23,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="text-fetching"
+        options={{
+          title: 'Text Fetching',
+        }}
+      />
+      <Tabs.Screen
         name="bidr"
         options={{
           title: 'Debt / Bidr',

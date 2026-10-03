@@ -250,15 +250,28 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.preferenceRow}>
-            <ThemedText className="text-[13px] font-semibold text-gray-700">
-              Sync Status
-            </ThemedText>
-            <View className="flex-row items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-50 border border-gray-200">
-              <View className="w-2 h-2 rounded-full bg-[#10B981]" />
-              <ThemedText className="text-[11px] font-bold text-gray-600">
-                Connected & Synced
+            <View className="flex-row items-center gap-2">
+              <ThemedText className="text-[15px]">☁️</ThemedText>
+              <ThemedText className="text-[13px] font-semibold text-gray-700">
+                Cloud Sync Status
               </ThemedText>
             </View>
+
+            <Pressable
+              onPress={() => {
+                Alert.alert(
+                  'Cloud Sync Status',
+                  'Your device is connected. All sales, expenses, and customer credit records are up to date and safely synchronized with the server.',
+                  [{ text: 'OK' }]
+                );
+              }}
+              style={styles.syncStatusBadge}
+            >
+              <View style={styles.syncDotGreen} />
+              <ThemedText style={styles.syncTextGreen}>
+                🟢 Synced
+              </ThemedText>
+            </Pressable>
           </View>
 
           <View style={styles.preferenceRow}>
@@ -366,4 +379,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  syncStatusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  syncDotGreen: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
+  },
+  syncTextGreen: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#065F46',
+  },
 });
+

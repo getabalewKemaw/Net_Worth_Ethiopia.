@@ -140,6 +140,26 @@ function ProfileIcon({ focused, color }: IconProps) {
   );
 }
 
+function TextFetchingIcon({ focused, color }: IconProps) {
+  return (
+    <View style={iconStyles.textFetchingContainer}>
+      <View
+        style={[
+          iconStyles.textFetchingBubble,
+          {
+            borderColor: color,
+            backgroundColor: focused ? `${color}25` : 'transparent',
+          },
+        ]}
+      >
+        <View style={[iconStyles.textFetchingLine, { width: 9, backgroundColor: color }]} />
+        <View style={[iconStyles.textFetchingLine, { width: 6, backgroundColor: color }]} />
+      </View>
+      <View style={[iconStyles.textFetchingTail, { borderTopColor: color }]} />
+    </View>
+  );
+}
+
 const iconStyles = StyleSheet.create({
   dashboardContainer: {
     width: 20,
@@ -220,6 +240,38 @@ const iconStyles = StyleSheet.create({
     borderWidth: 1.8,
     borderBottomWidth: 0,
   },
+  textFetchingContainer: {
+    width: 20,
+    height: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textFetchingBubble: {
+    width: 17,
+    height: 13,
+    borderRadius: 4,
+    borderWidth: 1.8,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    paddingHorizontal: 2.5,
+    gap: 2,
+  },
+  textFetchingLine: {
+    height: 1.8,
+    borderRadius: 1,
+  },
+  textFetchingTail: {
+    width: 0,
+    height: 0,
+    borderLeftWidth: 3,
+    borderRightWidth: 3,
+    borderTopWidth: 3,
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    alignSelf: 'flex-start',
+    marginLeft: 4,
+    marginTop: -0.5,
+  },
 });
 
 // ==========================================
@@ -277,6 +329,8 @@ export function BottomTabBar({ state, descriptors, navigation }: BottomTabBarPro
                 return <DashboardIcon focused={isFocused} color={iconColor} />;
               case 'sales':
                 return <SalesIcon focused={isFocused} color={iconColor} />;
+              case 'text-fetching':
+                return <TextFetchingIcon focused={isFocused} color={iconColor} />;
               case 'bidr':
                 return <BidrIcon focused={isFocused} color={iconColor} />;
               case 'profile':
@@ -295,6 +349,8 @@ export function BottomTabBar({ state, descriptors, navigation }: BottomTabBarPro
               ? 'Dashboard'
               : route.name === 'sales'
               ? 'Sales'
+              : route.name === 'text-fetching'
+              ? 'SMS Fetch'
               : route.name === 'bidr'
               ? 'Debt / Bidr'
               : 'Profile';
