@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { localBidrRepo } from '@/repositories/local-bidr.repo';
 import { syncEngine } from '@/service/sync-engine';
+import { isSQLiteAvailable } from '@/db/client';
+import {
+  fetchDebts,
+  fetchDebtSummary,
+  createDebt,
+  settleDebt,
+  updateDebt,
+} from '@/service/bidr';
 import type {
   DebtItem,
   DebtSummaryData,
@@ -73,8 +81,8 @@ export const useBidrStore = create<BidrState>((set, get) => ({
   setError: (error) => set({ error }),
 
   /**
-   * Reads debts & debt summary from local SQLite immediately (0ms delay),
-   * then triggers non-blocking background sync if connected.
+   * Reads debts & debt summary: from local SQLite if available (0ms delay),
+   * or falls back to online API endpoints if native SQLite is not in the APK.
    */
   fetchData: async (businessId: string, branchId?: string) => {
     if (!businessId) {
@@ -85,7 +93,23 @@ export const useBidrStore = create<BidrState>((set, get) => ({
     set({ loading: true, error: null });
 
     try {
-      // 1. Instant local read from SQLite (loads full branch debts so counts & filters remain fast & accurate)
+      if (!isSQLiteAvailable()) {
+        // Online fallback mode
+        const [onlineDebts, onlineSummary] = await Promise.all([
+          fetchDebts({ businessId, branchId }),
+          fetchDebtSummary(businessId, branchId),
+        ]);
+
+        set({
+          debts: Array.isArray(onlineDebts) ? onlineDebts : [],
+          summary: onlineSummary ?? null,
+          loading: false,
+          error: null,
+        });
+        return;
+      }
+
+      // 1. Instant local read from SQLite
       const [localDebts, localSummary] = await Promise.all([
         localBidrRepo.getDebts(businessId, branchId),
         localBidrRepo.getDebtSummaryMetric(businessId, branchId),
@@ -114,7 +138,7 @@ export const useBidrStore = create<BidrState>((set, get) => ({
           console.log('[Bidr Store] Background sync notice:', err?.message);
         });
     } catch (err: any) {
-      console.warn('[Bidr Store] Failed to load local debts:', err);
+      console.warn('[Bidr Store] Failed to load debts:', err);
       set({
         error: err?.message || 'Failed to load debt records',
         loading: false,
@@ -123,33 +147,62 @@ export const useBidrStore = create<BidrState>((set, get) => ({
   },
 
   /**
-   * Pull-to-refresh: runs full sync cycle and re-queries local repositories.
+   * Pull-to-refresh: runs full sync cycle and re-queries local repositories,
+   * or directly fetches remote data in online mode.
    */
   refresh: async (businessId: string, branchId?: string) => {
     if (!businessId) return;
     set({ refreshing: true, error: null });
 
     try {
+      if (!isSQLiteAvailable()) {
+        const [onlineDebts, onlineSummary] = await Promise.all([
+          fetchDebts({ businessId, branchId }),
+          fetchDebtSummary(businessId, branchId),
+        ]);
+
+        set({
+          debts: Array.isArray(onlineDebts) ? onlineDebts : [],
+          summary: onlineSummary ?? null,
+          refreshing: false,
+        });
+        return;
+      }
+
       await syncEngine.sync(businessId);
     } catch (err: any) {
       console.log('[Bidr Store] Refresh sync notice:', err?.message);
     } finally {
-      const [updatedDebts, updatedSummary] = await Promise.all([
-        localBidrRepo.getDebts(businessId, branchId),
-        localBidrRepo.getDebtSummaryMetric(businessId, branchId),
-      ]);
-      set({ debts: updatedDebts, summary: updatedSummary, refreshing: false });
+      if (isSQLiteAvailable()) {
+        const [updatedDebts, updatedSummary] = await Promise.all([
+          localBidrRepo.getDebts(businessId, branchId),
+          localBidrRepo.getDebtSummaryMetric(businessId, branchId),
+        ]);
+        set({ debts: updatedDebts, summary: updatedSummary, refreshing: false });
+      } else {
+        set({ refreshing: false });
+      }
     }
   },
 
   /**
-   * Records a customer credit (Dube) debt locally with permanent UUID and outbox enqueueing.
-   * Works 100% offline.
+   * Records a customer credit (Dube) debt locally (or posts directly if online fallback).
    */
   create: async (payload: CreateDebtPayload) => {
     set({ isCreating: true, error: null });
 
     try {
+      if (!isSQLiteAvailable()) {
+        const remoteDebt = await createDebt(payload);
+        set((state) => ({ debts: [remoteDebt, ...state.debts] }));
+        if (payload.businessId) {
+          fetchDebtSummary(payload.businessId, payload.branchId)
+            .then((summary) => set({ summary }))
+            .catch(() => {});
+        }
+        return remoteDebt;
+      }
+
       const savedDebt = await localBidrRepo.createDebtAtomic(payload);
 
       // Prepend to store state immediately
@@ -172,7 +225,7 @@ export const useBidrStore = create<BidrState>((set, get) => ({
 
       return savedDebt;
     } catch (err: any) {
-      console.error('[Bidr Store] Failed to create debt locally:', err);
+      console.error('[Bidr Store] Failed to create debt:', err);
       set({ error: err?.message || 'Failed to create debt record' });
       throw err;
     } finally {
@@ -181,8 +234,7 @@ export const useBidrStore = create<BidrState>((set, get) => ({
   },
 
   /**
-   * Settles a customer credit (Dube) debt locally and marks outbox sync action.
-   * Works 100% offline.
+   * Settles a customer credit (Dube) debt (or posts directly if online fallback).
    */
   settle: async (
     id: string,
@@ -193,6 +245,21 @@ export const useBidrStore = create<BidrState>((set, get) => ({
     set({ isSettling: true, error: null });
 
     try {
+      if (!isSQLiteAvailable()) {
+        const remoteSettled = await settleDebt(id, payload);
+        set((state) => ({
+          debts: state.debts.map((item) =>
+            item.id === id ? { ...item, ...remoteSettled } : item
+          ),
+        }));
+        if (businessId) {
+          fetchDebtSummary(businessId, branchId)
+            .then((summary) => set({ summary }))
+            .catch(() => {});
+        }
+        return remoteSettled;
+      }
+
       const settled = await localBidrRepo.settleDebtAtomic(id, payload);
 
       // Update debt item in state immediately
@@ -217,7 +284,7 @@ export const useBidrStore = create<BidrState>((set, get) => ({
 
       return settled;
     } catch (err: any) {
-      console.error('[Bidr Store] Failed to settle debt locally:', err);
+      console.error('[Bidr Store] Failed to settle debt:', err);
       set({ error: err?.message || 'Failed to settle debt record' });
       throw err;
     } finally {
@@ -226,7 +293,7 @@ export const useBidrStore = create<BidrState>((set, get) => ({
   },
 
   /**
-   * Updates an existing customer credit (Dube) debt offline.
+   * Updates an existing customer credit (Dube) debt (or posts directly if online fallback).
    */
   update: async (
     id: string,
@@ -237,6 +304,21 @@ export const useBidrStore = create<BidrState>((set, get) => ({
     set({ isUpdating: true, error: null });
 
     try {
+      if (!isSQLiteAvailable()) {
+        const remoteUpdated = await updateDebt(id, payload);
+        set((state) => ({
+          debts: state.debts.map((item) =>
+            item.id === id ? { ...item, ...remoteUpdated } : item
+          ),
+        }));
+        if (businessId) {
+          fetchDebtSummary(businessId, branchId)
+            .then((summary) => set({ summary }))
+            .catch(() => {});
+        }
+        return remoteUpdated;
+      }
+
       const updated = await localBidrRepo.updateDebtAtomic(id, payload);
 
       // Update debt item in state immediately
@@ -261,7 +343,7 @@ export const useBidrStore = create<BidrState>((set, get) => ({
 
       return updated;
     } catch (err: any) {
-      console.error('[Bidr Store] Failed to update debt locally:', err);
+      console.error('[Bidr Store] Failed to update debt:', err);
       set({ error: err?.message || 'Failed to update debt record' });
       throw err;
     } finally {
@@ -272,7 +354,7 @@ export const useBidrStore = create<BidrState>((set, get) => ({
 
 // Reactively reload local debts and summary when background sync pulls updates
 syncEngine.subscribe((event) => {
-  if (event.type === 'sync_success') {
+  if (event.type === 'sync_success' && isSQLiteAvailable()) {
     const state = useBidrStore.getState();
     const lastBusinessId = state.debts[0]?.businessId;
     if (lastBusinessId) {
@@ -287,4 +369,5 @@ syncEngine.subscribe((event) => {
     }
   }
 });
+
 

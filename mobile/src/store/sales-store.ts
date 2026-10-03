@@ -3,6 +3,9 @@ import type { ExpenseEntry, ExpenseInput, SaleEntry, SaleInput } from "@/types/s
 import { localSalesRepo } from "@/repositories/local-sales.repo";
 import { localExpensesRepo } from "@/repositories/local-expenses.repo";
 import { syncEngine } from "@/service/sync-engine";
+import { isSQLiteAvailable } from "@/db/client";
+import { fetchSales, createSale } from "@/service/sales";
+import { fetchExpenses, createExpense } from "@/service/expenses";
 
 function formatDisplayTime(dateStr?: string | null): string {
   if (!dateStr) return new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
@@ -102,8 +105,8 @@ export const useSalesStore = create<SalesState>((set, get) => ({
     }),
 
   /**
-   * Reads sales & expenses from local SQLite first (0ms latency),
-   * then triggers non-blocking background sync if connected.
+   * Reads sales & expenses: from local SQLite if available (0ms latency),
+   * or falls back to online API endpoints if native SQLite is not in the APK.
    */
   fetchData: async (businessId: string, branchId?: string, showLoading = true) => {
     if (!businessId) {
@@ -114,6 +117,25 @@ export const useSalesStore = create<SalesState>((set, get) => ({
     if (showLoading) set({ isLoading: true, error: null });
 
     try {
+      if (!isSQLiteAvailable()) {
+        // Online fallback mode
+        const [salesRes, expRes] = await Promise.all([
+          fetchSales({ businessId, branchId, limit: 100 }),
+          fetchExpenses({ businessId, branchId, limit: 100 }),
+        ]);
+
+        const mappedSales = (Array.isArray(salesRes) ? salesRes : []).map(mapBackendSaleToEntry);
+        const mappedExpenses = (Array.isArray(expRes) ? expRes : []).map(mapBackendExpenseToEntry);
+
+        set({
+          sales: mappedSales,
+          expenses: mappedExpenses,
+          isLoading: false,
+          error: null,
+        });
+        return;
+      }
+
       // 1. Instant local read from SQLite
       const [localSales, localExpenses] = await Promise.all([
         localSalesRepo.getSales(businessId, branchId),
@@ -132,7 +154,6 @@ export const useSalesStore = create<SalesState>((set, get) => ({
         .sync(businessId)
         .then(async (result) => {
           if (result.pulledCount > 0) {
-            // Re-read local storage if remote changes were pulled
             const [updatedSales, updatedExpenses] = await Promise.all([
               localSalesRepo.getSales(businessId, branchId),
               localExpensesRepo.getExpenses(businessId, branchId),
@@ -144,40 +165,76 @@ export const useSalesStore = create<SalesState>((set, get) => ({
           console.log('[Sales Store] Background sync notice:', err?.message);
         });
     } catch (err: any) {
-      console.warn('[Sales Store] Failed to read local sales/expenses:', err.message);
+      console.warn('[Sales Store] Failed to read sales/expenses:', err.message);
       set({
-        error: err.message || 'Failed to load local sales/expenses',
+        error: err.message || 'Failed to load sales/expenses',
         isLoading: false,
       });
     }
   },
 
   /**
-   * Pull-to-refresh: triggers full sync cycle and reloads local repositories.
+   * Pull-to-refresh: triggers full sync cycle and reloads local repositories,
+   * or directly fetches remote data in online mode.
    */
   refresh: async (businessId: string, branchId?: string) => {
     if (!businessId) return;
     set({ isRefreshing: true });
 
     try {
+      if (!isSQLiteAvailable()) {
+        const [salesRes, expRes] = await Promise.all([
+          fetchSales({ businessId, branchId, limit: 100 }),
+          fetchExpenses({ businessId, branchId, limit: 100 }),
+        ]);
+
+        const mappedSales = (Array.isArray(salesRes) ? salesRes : []).map(mapBackendSaleToEntry);
+        const mappedExpenses = (Array.isArray(expRes) ? expRes : []).map(mapBackendExpenseToEntry);
+
+        set({ sales: mappedSales, expenses: mappedExpenses, isRefreshing: false });
+        return;
+      }
+
       await syncEngine.sync(businessId);
     } catch (err) {
       console.log('[Sales Store] Refresh sync notice:', err);
     } finally {
-      const [updatedSales, updatedExpenses] = await Promise.all([
-        localSalesRepo.getSales(businessId, branchId),
-        localExpensesRepo.getExpenses(businessId, branchId),
-      ]);
-      set({ sales: updatedSales, expenses: updatedExpenses, isRefreshing: false });
+      if (isSQLiteAvailable()) {
+        const [updatedSales, updatedExpenses] = await Promise.all([
+          localSalesRepo.getSales(businessId, branchId),
+          localExpensesRepo.getExpenses(businessId, branchId),
+        ]);
+        set({ sales: updatedSales, expenses: updatedExpenses, isRefreshing: false });
+      } else {
+        set({ isRefreshing: false });
+      }
     }
   },
 
   /**
-   * Records a sale locally with permanent UUID and outbox enqueueing.
-   * Works 100% offline; triggers background sync without blocking.
+   * Records a sale locally with permanent UUID and outbox enqueueing (or posts directly if online fallback).
    */
   addSale: async (businessId: string, branchId: string, entry: SaleInput) => {
     try {
+      if (!isSQLiteAvailable()) {
+        const remoteSale = await createSale({
+          businessId,
+          branchId,
+          saleType: entry.saleType,
+          paymentMethod: entry.paymentMethod,
+          description: entry.description,
+          amount: Number(entry.amount),
+          customerName: entry.customer,
+          customerPhone: entry.phone,
+          dueDate: entry.dueDate,
+          notes: (entry as any).notes ?? null,
+        });
+
+        const newEntry = mapBackendSaleToEntry(remoteSale);
+        set((state) => ({ sales: [newEntry, ...state.sales] }));
+        return newEntry;
+      }
+
       const savedSale = await localSalesRepo.createSaleAtomic(entry, businessId, branchId);
 
       // Prepend to store state immediately
@@ -190,18 +247,32 @@ export const useSalesStore = create<SalesState>((set, get) => ({
 
       return savedSale;
     } catch (err: any) {
-      console.error('[Sales Store] Failed to record sale locally:', err);
+      console.error('[Sales Store] Failed to record sale:', err);
       set({ error: err.message || 'Failed to record sale' });
       throw err;
     }
   },
 
   /**
-   * Records an operational expense locally with outbox enqueueing.
-   * Works 100% offline; triggers background sync without blocking.
+   * Records an operational expense locally with outbox enqueueing (or posts directly if online fallback).
    */
   addExpense: async (businessId: string, branchId: string, entry: ExpenseInput) => {
     try {
+      if (!isSQLiteAvailable()) {
+        const remoteExpense = await createExpense({
+          businessId,
+          branchId,
+          description: entry.description,
+          amount: Number(entry.amount),
+          category: entry.category,
+          notes: entry.notes,
+        });
+
+        const newEntry = mapBackendExpenseToEntry(remoteExpense);
+        set((state) => ({ expenses: [newEntry, ...state.expenses] }));
+        return newEntry;
+      }
+
       const savedExpense = await localExpensesRepo.createExpenseAtomic(
         entry,
         businessId,
@@ -218,7 +289,7 @@ export const useSalesStore = create<SalesState>((set, get) => ({
 
       return savedExpense;
     } catch (err: any) {
-      console.error('[Sales Store] Failed to record expense locally:', err);
+      console.error('[Sales Store] Failed to record expense:', err);
       set({ error: err.message || 'Failed to record expense' });
       throw err;
     }
@@ -227,7 +298,7 @@ export const useSalesStore = create<SalesState>((set, get) => ({
 
 // Reactively reload local sales and expenses when background sync pulls updates
 syncEngine.subscribe((event) => {
-  if (event.type === 'sync_success') {
+  if (event.type === 'sync_success' && isSQLiteAvailable()) {
     const state = useSalesStore.getState();
     const lastBusinessId = state.sales[0]?.businessId || state.expenses[0]?.businessId;
     if (lastBusinessId) {
@@ -242,4 +313,5 @@ syncEngine.subscribe((event) => {
     }
   }
 });
+
 

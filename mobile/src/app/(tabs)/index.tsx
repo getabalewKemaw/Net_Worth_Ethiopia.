@@ -11,6 +11,9 @@ import { localSalesRepo } from '@/repositories/local-sales.repo';
 import { localBidrRepo } from '@/repositories/local-bidr.repo';
 import { localExpensesRepo } from '@/repositories/local-expenses.repo';
 import { useNetworkSync } from '@/hooks/use-network-sync';
+import { isSQLiteAvailable } from '@/db/client';
+import { fetchSales } from '@/service/sales';
+import { fetchDebtSummary } from '@/service/bidr';
 import {
   SalesTrendAreaChart,
   PaymentChannelDonutChart,
@@ -32,6 +35,27 @@ export default function HomeScreen() {
 
   const loadDashboardMetrics = useCallback(async () => {
     if (!activeBusiness?.id) return;
+
+    if (!isSQLiteAvailable()) {
+      try {
+        const [salesList, dubeSummary] = await Promise.all([
+          fetchSales({ businessId: activeBusiness.id, branchId: activeBranch?.id }),
+          fetchDebtSummary(activeBusiness.id, activeBranch?.id),
+        ]);
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const todaySales = (Array.isArray(salesList) ? salesList : []).filter(
+          (s: any) => s.createdAt && s.createdAt.startsWith(todayStr) && s.saleType !== 'dube'
+        );
+        const totalRev = todaySales.reduce((sum: number, s: any) => sum + (Number(s.amount) || 0), 0);
+        setTodayRevenue(totalRev);
+        setRegisteredDube(dubeSummary?.totalPendingAmount ?? 0);
+        setTodayExpense(0);
+      } catch (err) {
+        console.warn('[Dashboard] Online metrics fetch notice:', err);
+      }
+      return;
+    }
+
     try {
       const [revData, dubeData, expData] = await Promise.all([
         localSalesRepo.getTodayRevenueMetric(activeBusiness.id, activeBranch?.id),
@@ -45,6 +69,7 @@ export default function HomeScreen() {
       console.warn('[Dashboard] Failed to query local SQLite metrics:', err);
     }
   }, [activeBusiness?.id, activeBranch?.id]);
+
 
   useEffect(() => {
     loadDashboardMetrics();

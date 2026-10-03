@@ -4,7 +4,7 @@ import { localSalesRepo } from '../repositories/local-sales.repo';
 import { localExpensesRepo } from '../repositories/local-expenses.repo';
 import { localBidrRepo } from '../repositories/local-bidr.repo';
 import { localBusinessRepo } from '../repositories/local-business.repo';
-import { getDatabase } from '../db/client';
+import { getDatabase, isSQLiteAvailable } from '../db/client';
 
 export type SyncEventType = 'sync_start' | 'sync_success' | 'sync_error';
 
@@ -63,7 +63,7 @@ class SyncEngine {
     pulledCount: number;
     pendingCount: number;
   }> {
-    if (!businessId) {
+    if (!businessId || !isSQLiteAvailable()) {
       return { pushedCount: 0, pulledCount: 0, pendingCount: 0 };
     }
 

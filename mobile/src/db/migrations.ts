@@ -1,4 +1,4 @@
-import { getDatabase } from './client';
+import { getDatabase, isSQLiteAvailable } from './client';
 import { CREATE_TABLES_SQL } from './schema';
 
 export const CURRENT_SCHEMA_VERSION = 1;
@@ -8,6 +8,13 @@ export const CURRENT_SCHEMA_VERSION = 1;
  * Guarantees that tables and indexes exist before any repository runs queries.
  */
 export async function initLocalDatabase(): Promise<void> {
+  if (!isSQLiteAvailable()) {
+    console.log(
+      '[SQLite Migrations] Native module ExpoSQLite not detected in current APK. Running in online fallback mode. Rebuild with `npx expo run:android` to enable offline SQLite.'
+    );
+    return;
+  }
+
   const db = await getDatabase();
 
   const result = await db.getFirstAsync<{ user_version: number }>(

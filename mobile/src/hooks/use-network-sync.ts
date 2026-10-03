@@ -1,9 +1,10 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
-import * as Network from 'expo-network';
+import { requireOptionalNativeModule } from 'expo';
 import { syncEngine, type SyncEvent } from '@/service/sync-engine';
 import { syncQueueRepo } from '@/repositories/sync-queue.repo';
 import { useBusinessStore } from '@/store/business-store';
+import { isSQLiteAvailable } from '@/db/client';
 
 export interface NetworkSyncState {
   isOnline: boolean;
@@ -12,6 +13,26 @@ export interface NetworkSyncState {
   lastSyncTime: string | null;
   lastError: string | null;
   triggerSync: () => Promise<void>;
+}
+
+/**
+ * Checks whether the native ExpoNetwork module is linked in the running binary.
+ */
+export function isNetworkModuleAvailable(): boolean {
+  try {
+    return Boolean(requireOptionalNativeModule('ExpoNetwork'));
+  } catch {
+    return false;
+  }
+}
+
+function getNetworkModule(): any | null {
+  if (!isNetworkModuleAvailable()) return null;
+  try {
+    return require('expo-network');
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -44,8 +65,10 @@ export function useNetworkSync(): NetworkSyncState {
 
   // 1. Subscribe to SyncEngine lifecycle events
   useEffect(() => {
-    // Initial pending count query
-    syncQueueRepo.getPendingCount().then(setPendingCount).catch(() => {});
+    // Initial pending count query (only if local SQLite is active)
+    if (isSQLiteAvailable()) {
+      syncQueueRepo.getPendingCount().then(setPendingCount).catch(() => {});
+    }
 
     const unsubscribe = syncEngine.subscribe((event: SyncEvent) => {
       setIsSyncing(event.type === 'sync_start');
@@ -62,13 +85,20 @@ export function useNetworkSync(): NetworkSyncState {
     return unsubscribe;
   }, []);
 
-  // 2. Monitor Network connectivity changes via expo-network
+  // 2. Monitor Network connectivity changes via expo-network (if available)
   useEffect(() => {
     let isMounted = true;
+    const NetworkModule = getNetworkModule();
+
+    if (!NetworkModule) {
+      // Fallback: assume online when native network module is not compiled into the APK
+      setIsOnline(true);
+      return;
+    }
 
     // Initial check
-    Network.getNetworkStateAsync()
-      .then((state) => {
+    NetworkModule.getNetworkStateAsync()
+      .then((state: any) => {
         if (!isMounted) return;
         const online = Boolean(state.isConnected && (state.isInternetReachable ?? true));
         setIsOnline(online);
@@ -79,7 +109,7 @@ export function useNetworkSync(): NetworkSyncState {
       .catch(() => {});
 
     // Reconnection listener
-    const subscription = Network.addNetworkStateListener((state) => {
+    const subscription = NetworkModule.addNetworkStateListener((state: any) => {
       if (!isMounted) return;
       const online = Boolean(state.isConnected && (state.isInternetReachable ?? true));
       setIsOnline((prev) => {
@@ -93,9 +123,10 @@ export function useNetworkSync(): NetworkSyncState {
 
     return () => {
       isMounted = false;
-      subscription?.remove();
+      subscription?.remove?.();
     };
   }, [activeBusinessId, triggerSync]);
+
 
   // 3. Monitor AppState (app foreground resume)
   useEffect(() => {

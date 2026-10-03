@@ -1,17 +1,35 @@
-import * as SQLite from 'expo-sqlite';
+import { requireOptionalNativeModule } from 'expo';
+import type { SQLiteDatabase } from 'expo-sqlite';
 
 export const DB_NAME = 'networth.db';
 
-let dbInstance: SQLite.SQLiteDatabase | null = null;
-let initPromise: Promise<SQLite.SQLiteDatabase> | null = null;
+let dbInstance: SQLiteDatabase | null = null;
+let initPromise: Promise<SQLiteDatabase> | null = null;
+
+/**
+ * Checks whether the native ExpoSQLite binary module is compiled and available in the running APK.
+ */
+export function isSQLiteAvailable(): boolean {
+  try {
+    return Boolean(requireOptionalNativeModule('ExpoSQLite'));
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Initializes and returns the shared SQLite database instance.
  * Applies optimal PRAGMA settings for mobile concurrency on Android (WAL mode).
  */
-export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
+export async function getDatabase(): Promise<SQLiteDatabase> {
   if (dbInstance) {
     return dbInstance;
+  }
+
+  if (!isSQLiteAvailable()) {
+    throw new Error(
+      "Native module 'ExpoSQLite' is not available in the current Android build. Rebuild with `npx expo run:android`."
+    );
   }
 
   if (initPromise) {
@@ -20,6 +38,7 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
 
   initPromise = (async () => {
     try {
+      const SQLite = require('expo-sqlite');
       const db = await SQLite.openDatabaseAsync(DB_NAME);
 
       // Configure SQLite engine optimizations for concurrency and durability
@@ -40,6 +59,7 @@ export async function getDatabase(): Promise<SQLite.SQLiteDatabase> {
 
   return initPromise;
 }
+
 
 /**
  * Closes the database connection if open (useful for test resets or user switch).
