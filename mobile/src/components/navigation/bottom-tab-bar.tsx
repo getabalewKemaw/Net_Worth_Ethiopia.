@@ -280,12 +280,12 @@ const iconStyles = StyleSheet.create({
 
 export function BottomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const theme = useTheme();
+  const colors = useTheme();
 
   // Ethiopian Forest Emerald primary brand color
-  const activeColor = '#10B981';
+  const activeColor = colors.primary;
   const inactiveColor = '#9CA3AF';
-  const activeBg = 'rgba(16, 185, 129, 0.1)';
+  const activeBg = 'rgba(6, 95, 70, 0.1)';
 
   return (
     <View

@@ -5,6 +5,10 @@ import { toNodeHandler } from "better-auth/node";
 import { auth } from "./config/auth";
 import businessRoutes from "./routes/business.routes";
 import branchRoutes from "./routes/branch.routes";
+import salesRoutes from "./routes/sales.routes";
+import expensesRoutes from "./routes/expenses.routes";
+import bidrRoutes from "./routes/bidr.routes";
+import syncRoutes from "./routes/sync.routes";
 import { errorHandler } from "./middleware/error";
 
 dotenv.config();
@@ -22,6 +26,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", toNodeHandler(auth));
 app.use("/api/businesses", businessRoutes);
 app.use("/api", branchRoutes);
+app.use("/api/sales", salesRoutes);
+app.use("/api/expenses", expensesRoutes);
+app.use("/api/bidr", bidrRoutes);
+app.use("/api/sync", syncRoutes);
 
 app.get("/", (req: Request, res: Response) => {
     res.send("NetWorth API is running!");

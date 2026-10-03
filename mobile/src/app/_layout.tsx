@@ -1,15 +1,15 @@
 import '../global.css';
 import '@/lib/online-manager-polyfill';
 import { useEffect } from 'react';
-
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { DefaultTheme, ThemeProvider, Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { authClient } from '@/lib/auth-client';
 import { useBusinessStore } from '@/store/business-store';
+import { initLocalDatabase } from '@/db/migrations';
+import { useNetworkSync } from '@/hooks/use-network-sync';
 
 import { Platform } from 'react-native';
 
@@ -21,23 +21,33 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
 }
 
 SplashScreen.preventAutoHideAsync();
+WebBrowser.maybeCompleteAuthSession();
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
   const segments = useSegments();
 
+  // Background offline sync lifecycle watcher
+  useNetworkSync();
+
   const loadInitialState = useBusinessStore((state) => state.loadInitialState);
   const activeBusiness = useBusinessStore((state) => state.activeBusiness);
   const isBusinessPending = useBusinessStore((state) => state.isPending);
+
+  // Initialize local SQLite database schema and indexes on mount
+  useEffect(() => {
+    initLocalDatabase().catch((err) => {
+      console.error('[SQLite] Failed to initialize local database:', err);
+    });
+  }, []);
 
   // Sync business store state on authentication
   useEffect(() => {
     if (session) {
       loadInitialState();
     }
-  }, [session]);
+  }, [session, loadInitialState]);
 
   useEffect(() => {
     if (isPending) return;
@@ -65,7 +75,7 @@ export default function TabLayout() {
         }
       }
     }
-  }, [session, isPending, activeBusiness, isBusinessPending, segments]);
+  }, [session, isPending, activeBusiness, isBusinessPending, segments, router]);
 
   return (
     <ThemeProvider value={DefaultTheme}>

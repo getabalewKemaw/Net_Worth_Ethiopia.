@@ -16,10 +16,12 @@ import { HamburgerHeader } from '@/components/navigation/hamburger-drawer';
 import { useTheme } from '@/hooks/use-theme';
 import { useBusinessStore } from '@/store/business-store';
 import { authClient } from '@/lib/auth-client';
+import { useNetworkSync } from '@/hooks/use-network-sync';
 
 export default function ProfileScreen() {
   const colors = useTheme();
-  const { data: session, isPending: isSessionPending } = authClient.useSession();
+  const { isOnline, isSyncing, pendingCount, triggerSync } = useNetworkSync();
+  const { data: session } = authClient.useSession();
   const activeBusiness = useBusinessStore((state) => state.activeBusiness);
   const activeBranch = useBusinessStore((state) => state.activeBranch);
   const branches = useBusinessStore((state) => state.branches);
@@ -87,7 +89,7 @@ export default function ProfileScreen() {
                   {displayName}
                 </ThemedText>
                 <View style={styles.roleBadge}>
-                  <ThemedText className="text-[10px] font-extrabold text-[#10B981] uppercase">
+                  <ThemedText className="text-[10px] font-extrabold text-brand uppercase">
                     Owner
                   </ThemedText>
                 </View>
@@ -103,7 +105,7 @@ export default function ProfileScreen() {
         <View className="mt-4 p-5 rounded-3xl bg-white border border-gray-100 shadow-sm gap-3.5">
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-2.5">
-              <View className="w-8 h-8 rounded-xl bg-emerald-50 items-center justify-center border border-emerald-100">
+              <View className="w-8 h-8 rounded-xl bg-brand-soft items-center justify-center border border-brand-light">
                 <ThemedText className="text-[16px]">🏬</ThemedText>
               </View>
               <ThemedText className="text-[15px] font-extrabold text-gray-900">
@@ -144,7 +146,7 @@ export default function ProfileScreen() {
                 Active Branch: {activeBranch?.name || 'Main Branch'}
               </ThemedText>
               <Pressable onPress={() => router.push('/(business)/branches' as any)}>
-                <ThemedText className="text-[12px] font-bold text-[#10B981]">
+                <ThemedText className="text-[12px] font-bold text-brand">
                   Manage ({branches.length})
                 </ThemedText>
               </Pressable>
@@ -165,10 +167,10 @@ export default function ProfileScreen() {
                       ]}
                     >
                       <View
-                        className={`w-2 h-2 rounded-full ${isCurrent ? 'bg-[#10B981]' : 'bg-gray-300'}`}
+                        className={`w-2 h-2 rounded-full ${isCurrent ? 'bg-brand' : 'bg-gray-300'}`}
                       />
                       <ThemedText
-                        className={`text-[13px] ${isCurrent ? 'font-black text-[#065F46]' : 'font-medium text-gray-700'}`}
+                        className={`text-[13px] ${isCurrent ? 'font-black text-brand-dark' : 'font-medium text-gray-700'}`}
                       >
                         {branch.name}
                       </ThemedText>
@@ -206,7 +208,7 @@ export default function ProfileScreen() {
             style={styles.actionRow}
           >
             <View className="flex-row items-center gap-3">
-              <View className="w-8 h-8 rounded-xl bg-emerald-50 items-center justify-center">
+              <View className="w-8 h-8 rounded-xl bg-brand-soft items-center justify-center">
                 <ThemedText className="text-[15px]">➕</ThemedText>
               </View>
               <ThemedText className="text-[14px] font-bold text-gray-800">
@@ -242,8 +244,8 @@ export default function ProfileScreen() {
             <ThemedText className="text-[13px] font-semibold text-gray-700">
               Primary Currency
             </ThemedText>
-            <View className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200">
-              <ThemedText className="text-[11px] font-bold text-[#065F46]">
+            <View className="px-2.5 py-1 rounded-lg bg-brand-soft border border-brand-light">
+              <ThemedText className="text-[11px] font-bold text-brand-dark">
                 ETB (Ethiopian Birr)
               </ThemedText>
             </View>
@@ -259,17 +261,57 @@ export default function ProfileScreen() {
 
             <Pressable
               onPress={() => {
-                Alert.alert(
-                  'Cloud Sync Status',
-                  'Your device is connected. All sales, expenses, and customer credit records are up to date and safely synchronized with the server.',
-                  [{ text: 'OK' }]
-                );
+                if (isSyncing) {
+                  Alert.alert('Sync in Progress', 'Currently syncing pending changes with the server.');
+                } else if (!isOnline) {
+                  Alert.alert(
+                    'Offline Mode',
+                    'You are currently offline. Changes are saved locally and will automatically sync once your connection is restored.'
+                  );
+                } else if (pendingCount > 0) {
+                  Alert.alert(
+                    'Unsynced Changes',
+                    `You have ${pendingCount} pending offline update(s). Tap Sync Now to push them immediately.`,
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Sync Now', onPress: () => triggerSync() },
+                    ]
+                  );
+                } else {
+                  Alert.alert(
+                    'Cloud Sync Status',
+                    'Your device is connected and all data is fully synchronized with the server.',
+                    [{ text: 'OK' }]
+                  );
+                }
               }}
-              style={styles.syncStatusBadge}
+              style={[
+                styles.syncStatusBadge,
+                !isOnline && styles.syncStatusOffline,
+                pendingCount > 0 && styles.syncStatusPending,
+              ]}
             >
-              <View style={styles.syncDotGreen} />
-              <ThemedText style={styles.syncTextGreen}>
-                🟢 Synced
+              <View
+                style={[
+                  styles.syncDotGreen,
+                  !isOnline && styles.syncDotOffline,
+                  pendingCount > 0 && styles.syncDotPending,
+                ]}
+              />
+              <ThemedText
+                style={[
+                  styles.syncTextGreen,
+                  !isOnline && styles.syncTextOffline,
+                  pendingCount > 0 && styles.syncTextPending,
+                ]}
+              >
+                {isSyncing
+                  ? '🔄 Syncing...'
+                  : !isOnline
+                  ? '📶 Offline'
+                  : pendingCount > 0
+                  ? `🟡 ${pendingCount} Unsynced`
+                  : '🟢 Synced'}
               </ThemedText>
             </Pressable>
           </View>
@@ -325,7 +367,7 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: '#10B981',
+    backgroundColor: '#065F46',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -335,9 +377,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 12,
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    backgroundColor: 'rgba(6, 95, 70, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: 'rgba(6, 95, 70, 0.2)',
   },
   branchChip: {
     flexDirection: 'row',
@@ -390,16 +432,40 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#A7F3D0',
   },
+  syncStatusOffline: {
+    backgroundColor: '#F3F4F6',
+    borderColor: '#E5E7EB',
+  },
+  syncStatusPending: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+  },
   syncDotGreen: {
     width: 6,
     height: 6,
     borderRadius: 3,
     backgroundColor: '#10B981',
   },
+  syncDotOffline: {
+    backgroundColor: '#9CA3AF',
+  },
+  syncDotPending: {
+    backgroundColor: '#F59E0B',
+  },
   syncTextGreen: {
     fontSize: 11.5,
     fontWeight: '700',
     color: '#065F46',
+  },
+  syncTextOffline: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#4B5563',
+  },
+  syncTextPending: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#92400E',
   },
 });
 

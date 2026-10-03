@@ -59,7 +59,7 @@ export const CreateBusinessUI: React.FC<CreateBusinessUIProps> = ({ hookProps })
         <View className="mb-2 gap-2">
           <ThemedText type="title" className="text-[28px] font-extrabold">Register Your Business</ThemedText>
           <ThemedText className="text-sm leading-5" style={{ color: theme.textSecondary }}>
-            Let's set up your profile to start tracking your finances.
+            Let&apos;s set up your profile to start tracking your finances.
           </ThemedText>
         </View>
 

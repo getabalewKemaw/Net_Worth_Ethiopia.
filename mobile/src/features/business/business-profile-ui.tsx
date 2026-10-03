@@ -68,8 +68,8 @@ export const BusinessProfileUI: React.FC<BusinessProfileUIProps> = ({ hookProps 
         ) : null}
 
         {apiSuccess ? (
-          <View className="bg-green-100 p-3 rounded-lg">
-            <ThemedText className="text-green-800 text-sm font-semibold">{apiSuccess}</ThemedText>
+          <View className="bg-brand-soft p-3 rounded-lg">
+            <ThemedText className="text-brand-dark text-sm font-semibold">{apiSuccess}</ThemedText>
           </View>
         ) : null}
 

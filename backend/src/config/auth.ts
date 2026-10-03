@@ -30,6 +30,8 @@ export const auth = betterAuth({
   trustedOrigins: [
     frontendUrl,
     "http://localhost:8081",
+    "http://192.168.137.195:8081",
+    "http://192.168.137.195:3000",
     "http://172.16.4.34:8081",
     "http://172.16.4.34:3000",
     "networth://",

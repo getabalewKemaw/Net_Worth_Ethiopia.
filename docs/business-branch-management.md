@@ -109,10 +109,10 @@ To sync the schema with your local database instance:
    ```
 
 2. **Generate Migration Files:**
-   If you make changes to [`schema.ts`](file:///c:/Users/Hp/Desktop/NetworthET/Net_Worth_Ethiopia/backend/src/db/schema.ts) or [`business-branch-management.ts`](file:///c:/Users/Hp/Desktop/NetworthET/Net_Worth_Ethiopia/backend/src/db/business-branch-management.ts), generate migrations using:
-   ```bash
    npx drizzle-kit generate
    ```
+   npx drizzle-kit migrate
+
 
 3. **Apply Schema to Database:**
    Push the schema updates directly to the database:
