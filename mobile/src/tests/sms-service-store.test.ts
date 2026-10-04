@@ -131,7 +131,10 @@ export async function runServiceAndStoreTests() {
   console.log('==============================================');
 }
 
-runServiceAndStoreTests().catch((err) => {
-  console.error('Test execution failed:', err);
-  process.exit(1);
-});
+if (typeof require !== 'undefined' && (require as any).main === module) {
+  runServiceAndStoreTests().catch((err) => {
+    console.error('Test execution failed:', err);
+    process.exit(1);
+  });
+}
+

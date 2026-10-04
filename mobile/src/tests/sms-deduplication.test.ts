@@ -61,11 +61,31 @@ export function runDeduplicationAndGroupingTests() {
   console.log(`  - CBE: In +ETB 1800 | Out -ETB 1200`);
   console.log(`  - Awash: In +ETB 3200`);
   console.log(`  - BOA: In +ETB 1250`);
-  console.log(`  - Dashen: In +ETB 2100\n`);
+  // Test 3: Heavy Volume Stress Deduplication (120 messages -> 8 unique)
+  console.log('Test 3: Stress testing heavy SMS stream (120 messages)...');
+  const heavyStream: NativeSmsRecord[] = [];
+  for (let i = 0; i < 15; i++) {
+    heavyStream.push(...MOCK_BANK_SMS_MESSAGES);
+  }
+  assert(heavyStream.length === 120, 'Heavy stream should have exactly 120 items');
+
+  const startMs = Date.now();
+  const heavyDeduplicated = bankParserRegistry.parseBatch(heavyStream);
+  const elapsedMs = Date.now() - startMs;
+
+  assert(
+    heavyDeduplicated.length === 8,
+    `Expected exactly 8 unique transactions from 120 duplicates, got ${heavyDeduplicated.length}`
+  );
+  assert(elapsedMs < 200, `Parsing 120 messages should take <200ms, took ${elapsedMs}ms`);
+  console.log(`PASS: Deduplicated 120 messages down to 8 unique records in ${elapsedMs}ms (<200ms threshold).\n`);
 
   console.log('==============================================');
   console.log('ALL DEDUPLICATION & GROUPING TESTS PASSED!');
   console.log('==============================================\n');
 }
 
-runDeduplicationAndGroupingTests();
+if (typeof require !== 'undefined' && (require as any).main === module) {
+  runDeduplicationAndGroupingTests();
+}
+

@@ -28,7 +28,7 @@ export class DashenParser implements BankSmsParser {
     else if (isSent) flow = 'expense';
 
     // 2. Extract Amount
-    const amountMatch = body.match(/(?:received|transferred|credited|debited)\s+ETB\s*([\d,]+(?:\.\d{1,2})?)/i);
+    const amountMatch = body.match(/(?:received|transferred|credited|debited|paid)\s*(?:by|with)?\s*ETB\s*([\d,]+(?:\.\d{1,2})?)/i);
     const amount = parseBirrAmount(amountMatch ? amountMatch[1] : null);
     if (!amount) return null;
 
@@ -37,7 +37,7 @@ export class DashenParser implements BankSmsParser {
     const accountMasked = accMatch ? accMatch[1].trim() : null;
 
     // 4. Extract Txn Ref
-    const refMatch = body.match(/(?:Ref:?|Txn ID:?|Transaction ID:?)\s*([A-Za-z0-9]+)/i);
+    const refMatch = body.match(/(?:Txn Ref:?|Ref:?|Txn ID:?|Transaction ID:?)\s*([A-Za-z0-9]+)/i);
     const transactionRef = refMatch ? refMatch[1].trim() : `DASH-${sms.date}-${sms.id}`;
 
     // 5. Extract Counterparty
