@@ -38,18 +38,17 @@ class ExpoSmsInboxModule : Module() {
 
       val maxLimit = if (limit != null && limit > 0) limit else 200
 
-      // Strict whitelist of addresses for Ethiopian banks and mobile money
+      // Whitelist of sender keywords for Ethiopian financial institutions
       val bankSenders = listOf(
-        "127", "telebirr", "Telebirr",
-        "CBE", "CBEBirr", "cbebirr", "889", "829",
-        "AWASH", "AwashBank", "Awash Bank", "awash",
-        "BOA", "Abyssinia", "Bank of Abyssinia", "boa",
-        "DashenBank", "Dashen", "Amole", "amole"
+        "127", "telebirr", "cbe", "cbebirr", "889", "829",
+        "awash", "boa", "abyssinia", "dashen", "amole", "wegagen",
+        "coop", "hibret", "enat", "nib", "zemen", "berhan",
+        "siinqee", "sinquee", "lion", "oromia", "bunna"
       )
 
-      val inClause = bankSenders.joinToString(",") { "'$it'" }
-      val selection = "${Telephony.Sms.ADDRESS} IN ($inClause)"
-      val sortOrder = "${Telephony.Sms.DATE} DESC LIMIT $maxLimit"
+      // Important: Do NOT put LIMIT inside sortOrder string as ContentResolver on Android 10+
+      // rejects SQL keywords in sortOrder. Handle limiting inside the cursor loop instead.
+      val sortOrder = "${Telephony.Sms.DATE} DESC"
 
       val projection = arrayOf(
         Telephony.Sms._ID,
@@ -63,7 +62,7 @@ class ExpoSmsInboxModule : Module() {
       val cursor = context.contentResolver.query(
         Telephony.Sms.Inbox.CONTENT_URI,
         projection,
-        selection,
+        null,
         null,
         sortOrder
       )
@@ -74,20 +73,35 @@ class ExpoSmsInboxModule : Module() {
         val bodyCol = it.getColumnIndexOrThrow(Telephony.Sms.BODY)
         val dateCol = it.getColumnIndexOrThrow(Telephony.Sms.DATE)
 
-        while (it.moveToNext()) {
+        while (it.moveToNext() && results.size < maxLimit) {
           val id = it.getString(idCol) ?: ""
           val address = it.getString(addressCol) ?: ""
           val body = it.getString(bodyCol) ?: ""
           val date = it.getLong(dateCol)
 
-          results.add(
-            mapOf(
-              "id" to id,
-              "address" to address,
-              "body" to body,
-              "date" to date.toDouble()
+          val lowerAddress = address.lowercase().trim()
+          val lowerBody = body.lowercase()
+
+          // Check if sender matches any known bank or mobile money keyword
+          val isBankSender = bankSenders.any { sender -> lowerAddress.contains(sender) }
+
+          // Or if message contains Ethiopian financial transaction signals
+          val hasTxKeywords = (lowerBody.contains("etb") || lowerBody.contains("birr") || lowerBody.contains("ብር")) &&
+            (lowerBody.contains("credited") || lowerBody.contains("debited") || lowerBody.contains("transferred") ||
+             lowerBody.contains("received") || lowerBody.contains("paid") || lowerBody.contains("payment") ||
+             lowerBody.contains("balance") || lowerBody.contains("recharged") || lowerBody.contains("ሒሳብ") ||
+             lowerBody.contains("ተቀብለዋል") || lowerBody.contains("ተከፍሏል"))
+
+          if (isBankSender || hasTxKeywords) {
+            results.add(
+              mapOf(
+                "id" to id,
+                "address" to address,
+                "body" to body,
+                "date" to date.toDouble()
+              )
             )
-          )
+          }
         }
       }
 
@@ -95,3 +109,4 @@ class ExpoSmsInboxModule : Module() {
     }
   }
 }
+
