@@ -1,6 +1,20 @@
-import { Platform, PermissionsAndroid } from 'react-native';
 import { ExpoSmsInbox, type NativeSmsRecord } from '../../modules/expo-sms-inbox';
 import { MOCK_BANK_SMS_MESSAGES } from '@/mocks/mock-bank-sms';
+
+// Safe retrieval of React Native primitives to support test runners and non-Android targets
+let Platform: any = { OS: 'web' };
+let PermissionsAndroid: any = null;
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const RN = require('react-native');
+  if (RN) {
+    Platform = RN.Platform || Platform;
+    PermissionsAndroid = RN.PermissionsAndroid || PermissionsAndroid;
+  }
+} catch {
+  // Gracefully fallback when running outside React Native (e.g. Node tests / Web)
+}
 
 export interface SmsFetchOptions {
   limit?: number;
@@ -12,7 +26,7 @@ export interface SmsFetchOptions {
  * and functional in the currently running binary.
  */
 export function isNativeSmsAvailable(): boolean {
-  if (Platform.OS !== 'android') return false;
+  if (Platform?.OS !== 'android') return false;
   try {
     return Boolean(ExpoSmsInbox && typeof ExpoSmsInbox.fetchBankSmsMessages === 'function');
   } catch {

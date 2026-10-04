@@ -1,5 +1,13 @@
-import { requireOptionalNativeModule } from 'expo';
 import type { SQLiteDatabase } from 'expo-sqlite';
+
+let requireOptionalNativeModule: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const expo = require('expo');
+  requireOptionalNativeModule = expo.requireOptionalNativeModule;
+} catch {
+  // Graceful fallback outside Expo mobile runtime (e.g. Node tests, Web)
+}
 
 export const DB_NAME = 'networth.db';
 
@@ -11,7 +19,7 @@ let initPromise: Promise<SQLiteDatabase> | null = null;
  */
 export function isSQLiteAvailable(): boolean {
   try {
-    return Boolean(requireOptionalNativeModule('ExpoSQLite'));
+    return Boolean(typeof requireOptionalNativeModule === 'function' && requireOptionalNativeModule('ExpoSQLite'));
   } catch {
     return false;
   }

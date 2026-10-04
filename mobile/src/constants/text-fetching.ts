@@ -1,4 +1,4 @@
-import type { BankProvider, BankProviderConfig } from '@/types/text-fetching';
+import type { BankProvider, BankProviderConfig, ProviderSummary } from '@/types/text-fetching';
 
 export const BANK_PROVIDERS: Record<BankProvider, BankProviderConfig> = {
   telebirr: {
@@ -56,3 +56,69 @@ export const BANK_PROVIDERS: Record<BankProvider, BankProviderConfig> = {
     identifiers: [],
   },
 };
+
+export function createDefaultProviderSummaries(): Record<BankProvider, ProviderSummary> {
+  return {
+    telebirr: {
+      provider: 'telebirr',
+      displayName: BANK_PROVIDERS.telebirr.displayName,
+      totalDeposits: 0,
+      totalExpenses: 0,
+      depositCount: 0,
+      expenseCount: 0,
+      latestBalance: null,
+      lastTransactionAt: null,
+    },
+    cbe: {
+      provider: 'cbe',
+      displayName: BANK_PROVIDERS.cbe.displayName,
+      totalDeposits: 0,
+      totalExpenses: 0,
+      depositCount: 0,
+      expenseCount: 0,
+      latestBalance: null,
+      lastTransactionAt: null,
+    },
+    awash: {
+      provider: 'awash',
+      displayName: BANK_PROVIDERS.awash.displayName,
+      totalDeposits: 0,
+      totalExpenses: 0,
+      depositCount: 0,
+      expenseCount: 0,
+      latestBalance: null,
+      lastTransactionAt: null,
+    },
+    boa: {
+      provider: 'boa',
+      displayName: BANK_PROVIDERS.boa.displayName,
+      totalDeposits: 0,
+      totalExpenses: 0,
+      depositCount: 0,
+      expenseCount: 0,
+      latestBalance: null,
+      lastTransactionAt: null,
+    },
+    dashen: {
+      provider: 'dashen',
+      displayName: BANK_PROVIDERS.dashen.displayName,
+      totalDeposits: 0,
+      totalExpenses: 0,
+      depositCount: 0,
+      expenseCount: 0,
+      latestBalance: null,
+      lastTransactionAt: null,
+    },
+    unknown: {
+      provider: 'unknown',
+      displayName: BANK_PROVIDERS.unknown.displayName,
+      totalDeposits: 0,
+      totalExpenses: 0,
+      depositCount: 0,
+      expenseCount: 0,
+      latestBalance: null,
+      lastTransactionAt: null,
+    },
+  };
+}
+
