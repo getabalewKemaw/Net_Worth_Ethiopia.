@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 import { useTextFetchingStore } from '@/store/text-fetching-store';
 import { BANK_PROVIDERS } from '@/constants/text-fetching';
@@ -25,11 +25,11 @@ export function FilterPillBar() {
 
   const providers: Array<{ id: BankProvider | 'all'; label: string; icon?: string }> = [
     { id: 'all', label: 'All Banks' },
-    { id: 'telebirr', label: 'telebirr', icon: '📱' },
-    { id: 'cbe', label: 'CBE', icon: '🏦' },
-    { id: 'awash', label: 'Awash', icon: '🏛️' },
-    { id: 'boa', label: 'BOA', icon: '🪙' },
-    { id: 'dashen', label: 'Dashen', icon: '💳' },
+    { id: 'telebirr', label: 'telebirr' },
+    { id: 'cbe', label: 'CBE' },
+    { id: 'awash', label: 'Awash' },
+    { id: 'boa', label: 'BOA' },
+    { id: 'dashen', label: 'Dashen' },
   ];
 
   return (
@@ -131,7 +131,7 @@ export function FilterPillBar() {
             <Pressable
               key={p.id}
               onPress={() => setProviderFilter(p.id)}
-              className="flex-row items-center gap-1 px-3 py-1 rounded-full border active:opacity-80"
+              className="flex-row items-center gap-1.5 px-3 py-1 rounded-full border active:opacity-80"
               style={{
                 backgroundColor: isSelected
                   ? config?.badgeBg || '#0F172A'
@@ -141,7 +141,13 @@ export function FilterPillBar() {
                   : colors.backgroundSelected,
               }}
             >
-              {p.icon && <Text style={{ fontSize: 11 }}>{p.icon}</Text>}
+              {config?.logo ? (
+                <Image
+                  source={config.logo}
+                  style={{ width: 14, height: 14, borderRadius: 3 }}
+                  resizeMode="cover"
+                />
+              ) : null}
               <Text
                 className="text-xs font-medium"
                 style={{

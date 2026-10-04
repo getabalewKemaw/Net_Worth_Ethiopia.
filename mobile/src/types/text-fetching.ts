@@ -37,6 +37,7 @@ export interface BankProviderConfig {
   badgeBg: string;
   badgeTextColor: string;
   icon: string;
+  logo?: any;
   identifiers: string[];
 }
 

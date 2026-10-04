@@ -1,5 +1,21 @@
 import type { BankProvider, BankProviderConfig, ProviderSummary } from '@/types/text-fetching';
 
+let telebirrLogo: any = null;
+let cbeLogo: any = null;
+let awashLogo: any = null;
+let boaLogo: any = null;
+let dashenLogo: any = null;
+
+try {
+  telebirrLogo = require('../../assets/images/banks/telebirr.jpg');
+  cbeLogo = require('../../assets/images/banks/cbe.jpg');
+  awashLogo = require('../../assets/images/banks/awash.jpg');
+  boaLogo = require('../../assets/images/banks/boa.jpg');
+  dashenLogo = require('../../assets/images/banks/dashen.jpg');
+} catch {
+  // In Node test runners, assets are safely skipped
+}
+
 export const BANK_PROVIDERS: Record<BankProvider, BankProviderConfig> = {
   telebirr: {
     id: 'telebirr',
@@ -8,6 +24,7 @@ export const BANK_PROVIDERS: Record<BankProvider, BankProviderConfig> = {
     badgeBg: '#E0F2FE',
     badgeTextColor: '#0284C7',
     icon: '📱',
+    logo: telebirrLogo,
     identifiers: ['127', 'telebirr', 'Telebirr', 'TELEBIRR'],
   },
   cbe: {
@@ -17,6 +34,7 @@ export const BANK_PROVIDERS: Record<BankProvider, BankProviderConfig> = {
     badgeBg: '#F3E8FF',
     badgeTextColor: '#7E22CE',
     icon: '🏦',
+    logo: cbeLogo,
     identifiers: ['CBE', 'CBEBirr', 'cbebirr', '889', '829'],
   },
   awash: {
@@ -26,6 +44,7 @@ export const BANK_PROVIDERS: Record<BankProvider, BankProviderConfig> = {
     badgeBg: '#FFF7ED',
     badgeTextColor: '#C2410C',
     icon: '🏛️',
+    logo: awashLogo,
     identifiers: ['AWASH', 'AwashBank', 'Awash Bank', 'awash'],
   },
   boa: {
@@ -35,6 +54,7 @@ export const BANK_PROVIDERS: Record<BankProvider, BankProviderConfig> = {
     badgeBg: '#FEF3C7',
     badgeTextColor: '#92400E',
     icon: '🪙',
+    logo: boaLogo,
     identifiers: ['BOA', 'Abyssinia', 'Bank of Abyssinia', 'boa'],
   },
   dashen: {
@@ -44,6 +64,7 @@ export const BANK_PROVIDERS: Record<BankProvider, BankProviderConfig> = {
     badgeBg: '#EFF6FF',
     badgeTextColor: '#1D4ED8',
     icon: '💳',
+    logo: dashenLogo,
     identifiers: ['DashenBank', 'Dashen', 'Amole', 'amole'],
   },
   unknown: {

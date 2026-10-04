@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Alert } from 'react-native';
+import { View, Text, Pressable, Image } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 import { BANK_PROVIDERS } from '@/constants/text-fetching';
 import {
@@ -75,12 +75,20 @@ export function TransactionCard({
       {/* Top Row: Provider Badge + Time + Flow Badge */}
       <View className="flex-row items-center justify-between mb-2.5">
         <View className="flex-row items-center gap-2">
-          {/* Bank Provider Pill */}
+          {/* Bank Provider Pill with Real Logo */}
           <View
             className="flex-row items-center gap-1.5 px-2.5 py-1 rounded-full"
             style={{ backgroundColor: config.badgeBg }}
           >
-            <Text style={{ fontSize: 13 }}>{config.icon}</Text>
+            {config.logo ? (
+              <Image
+                source={config.logo}
+                style={{ width: 16, height: 16, borderRadius: 4 }}
+                resizeMode="cover"
+              />
+            ) : (
+              <Text style={{ fontSize: 13 }}>{config.icon}</Text>
+            )}
             <Text
               style={{
                 fontSize: 11,
