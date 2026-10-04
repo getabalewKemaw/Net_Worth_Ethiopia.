@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -11,10 +11,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { HamburgerHeader } from '@/components/navigation/hamburger-drawer';
 import { useTheme } from '@/hooks/use-theme';
 import { useTextFetchingStore } from '@/store/text-fetching-store';
+import { useBidrStore } from '@/store/bidr-store';
+import { useBusinessStore } from '@/store/business-store';
 import { ScanHeader } from '@/components/text-fetching/scan-header';
 import { ProviderCarousel } from '@/components/text-fetching/provider-carousel';
 import { FilterPillBar } from '@/components/text-fetching/filter-pill-bar';
 import { TransactionCard } from '@/components/text-fetching/transaction-card';
+import { ConvertSaleModal } from '@/features/text-fetching/modals/convert-to-sale-modal';
+import { ConvertExpenseModal } from '@/features/text-fetching/modals/convert-to-expense-modal';
+import { MatchBidrModal } from '@/features/text-fetching/modals/match-bidr-modal';
 import { PlusIcon } from '@/components/icons';
 import type { ParsedBankTransaction } from '@/types/text-fetching';
 
@@ -26,7 +31,6 @@ export default function TextFetchingScreen() {
     scanInbox,
     loadSavedTransactions,
     dismissTransaction,
-    markTransactionConverted,
     setProviderFilter,
     setStatusFilter,
     getFilteredTransactions,
@@ -34,10 +38,21 @@ export default function TextFetchingScreen() {
     selectedStatus,
   } = useTextFetchingStore();
 
-  // Load saved transactions on initial screen mount
+  const { activeBusiness, activeBranch } = useBusinessStore();
+  const { fetchData: fetchDebts } = useBidrStore();
+
+  // Active conversion modal state
+  const [saleModalTxn, setSaleModalTxn] = useState<ParsedBankTransaction | null>(null);
+  const [expenseModalTxn, setExpenseModalTxn] = useState<ParsedBankTransaction | null>(null);
+  const [bidrModalTxn, setBidrModalTxn] = useState<ParsedBankTransaction | null>(null);
+
+  // Load saved transactions and active debts on initial screen mount
   useEffect(() => {
     loadSavedTransactions();
-  }, [loadSavedTransactions]);
+    if (activeBusiness?.id) {
+      fetchDebts(activeBusiness.id, activeBranch?.id).catch(() => {});
+    }
+  }, [loadSavedTransactions, fetchDebts, activeBusiness?.id, activeBranch?.id]);
 
   // Trigger scan with user feedback
   const handleScan = useCallback(async () => {
@@ -59,43 +74,17 @@ export default function TextFetchingScreen() {
     }
   }, [scanInbox]);
 
-  const handleConvertToSale = useCallback(
-    (txn: ParsedBankTransaction) => {
-      Alert.alert(
-        'Convert to Sale',
-        `Record deposit of ETB ${txn.amount} from ${txn.counterparty || 'Customer'} as a confirmed sale?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Confirm Sale',
-            onPress: () => {
-              markTransactionConverted(txn.id, 'converted_sale');
-            },
-          },
-        ]
-      );
-    },
-    [markTransactionConverted]
-  );
+  const handleConvertToSale = useCallback((txn: ParsedBankTransaction) => {
+    setSaleModalTxn(txn);
+  }, []);
 
-  const handleConvertToExpense = useCallback(
-    (txn: ParsedBankTransaction) => {
-      Alert.alert(
-        'Convert to Expense',
-        `Record outgoing transfer of ETB ${txn.amount} to ${txn.counterparty || 'Recipient'} as a business expense?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Confirm Expense',
-            onPress: () => {
-              markTransactionConverted(txn.id, 'converted_expense');
-            },
-          },
-        ]
-      );
-    },
-    [markTransactionConverted]
-  );
+  const handleConvertToExpense = useCallback((txn: ParsedBankTransaction) => {
+    setExpenseModalTxn(txn);
+  }, []);
+
+  const handleMatchBidr = useCallback((txn: ParsedBankTransaction) => {
+    setBidrModalTxn(txn);
+  }, []);
 
   const handleDismiss = useCallback(
     (txn: ParsedBankTransaction) => {
@@ -146,6 +135,7 @@ export default function TextFetchingScreen() {
                 transaction={txn}
                 onConvertToSale={handleConvertToSale}
                 onConvertToExpense={handleConvertToExpense}
+                onMatchBidr={handleMatchBidr}
                 onDismiss={handleDismiss}
               />
             ))
@@ -202,6 +192,25 @@ export default function TextFetchingScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Bookkeeping Conversion Modals */}
+      <ConvertSaleModal
+        visible={Boolean(saleModalTxn)}
+        transaction={saleModalTxn}
+        onClose={() => setSaleModalTxn(null)}
+      />
+
+      <ConvertExpenseModal
+        visible={Boolean(expenseModalTxn)}
+        transaction={expenseModalTxn}
+        onClose={() => setExpenseModalTxn(null)}
+      />
+
+      <MatchBidrModal
+        visible={Boolean(bidrModalTxn)}
+        transaction={bidrModalTxn}
+        onClose={() => setBidrModalTxn(null)}
+      />
     </SafeAreaView>
   );
 }

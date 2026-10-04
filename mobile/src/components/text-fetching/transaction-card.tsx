@@ -15,6 +15,7 @@ interface TransactionCardProps {
   transaction: ParsedBankTransaction;
   onConvertToSale: (txn: ParsedBankTransaction) => void;
   onConvertToExpense: (txn: ParsedBankTransaction) => void;
+  onMatchBidr?: (txn: ParsedBankTransaction) => void;
   onDismiss: (txn: ParsedBankTransaction) => void;
 }
 
@@ -48,6 +49,7 @@ export function TransactionCard({
   transaction,
   onConvertToSale,
   onConvertToExpense,
+  onMatchBidr,
   onDismiss,
 }: TransactionCardProps) {
   const colors = useTheme();
@@ -189,18 +191,33 @@ export function TransactionCard({
               <Text className="text-xs font-semibold text-slate-400">Ignore</Text>
             </Pressable>
 
-            {/* Main Action Button */}
+            {/* Action Buttons */}
             {isDeposit ? (
-              <Pressable
-                onPress={() => onConvertToSale(transaction)}
-                className="flex-row items-center gap-1.5 px-4 py-2 rounded-xl active:opacity-80"
-                style={{ backgroundColor: colors.primary }}
-              >
-                <PlusIcon size={16} color="#FFFFFF" strokeWidth={2.5} />
-                <Text className="text-xs font-black text-white tracking-wide">
-                  Convert to Sale
-                </Text>
-              </Pressable>
+              <View className="flex-row items-center gap-2">
+                {onMatchBidr && (
+                  <Pressable
+                    onPress={() => onMatchBidr(transaction)}
+                    className="flex-row items-center gap-1 px-3 py-2 rounded-xl border border-emerald-300 dark:border-emerald-800 active:opacity-80"
+                    style={{ backgroundColor: '#ECFDF5' }}
+                  >
+                    <Text style={{ fontSize: 13 }}>🤝</Text>
+                    <Text className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                      Settle Debt
+                    </Text>
+                  </Pressable>
+                )}
+
+                <Pressable
+                  onPress={() => onConvertToSale(transaction)}
+                  className="flex-row items-center gap-1.5 px-3.5 py-2 rounded-xl active:opacity-80"
+                  style={{ backgroundColor: colors.primary }}
+                >
+                  <PlusIcon size={15} color="#FFFFFF" strokeWidth={2.5} />
+                  <Text className="text-xs font-black text-white tracking-wide">
+                    Record Sale
+                  </Text>
+                </Pressable>
+              </View>
             ) : (
               <Pressable
                 onPress={() => onConvertToExpense(transaction)}
@@ -209,7 +226,7 @@ export function TransactionCard({
               >
                 <PlusIcon size={16} color="#FFFFFF" strokeWidth={2.5} />
                 <Text className="text-xs font-black text-white tracking-wide">
-                  Convert to Expense
+                  Record Expense
                 </Text>
               </Pressable>
             )}
