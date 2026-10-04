@@ -1,0 +1,58 @@
+import type { BankProvider, BankProviderConfig } from '@/types/text-fetching';
+
+export const BANK_PROVIDERS: Record<BankProvider, BankProviderConfig> = {
+  telebirr: {
+    id: 'telebirr',
+    displayName: 'telebirr',
+    brandColor: '#00A3E0',
+    badgeBg: '#E0F2FE',
+    badgeTextColor: '#0284C7',
+    icon: '📱',
+    identifiers: ['127', 'telebirr', 'Telebirr', 'TELEBIRR'],
+  },
+  cbe: {
+    id: 'cbe',
+    displayName: 'CBE / CBEBirr',
+    brandColor: '#6A1B9A',
+    badgeBg: '#F3E8FF',
+    badgeTextColor: '#7E22CE',
+    icon: '🏦',
+    identifiers: ['CBE', 'CBEBirr', 'cbebirr', '889', '829'],
+  },
+  awash: {
+    id: 'awash',
+    displayName: 'Awash Bank',
+    brandColor: '#FF6600',
+    badgeBg: '#FFF7ED',
+    badgeTextColor: '#C2410C',
+    icon: '🏛️',
+    identifiers: ['AWASH', 'AwashBank', 'Awash Bank', 'awash'],
+  },
+  boa: {
+    id: 'boa',
+    displayName: 'Bank of Abyssinia',
+    brandColor: '#B45309',
+    badgeBg: '#FEF3C7',
+    badgeTextColor: '#92400E',
+    icon: '🪙',
+    identifiers: ['BOA', 'Abyssinia', 'Bank of Abyssinia', 'boa'],
+  },
+  dashen: {
+    id: 'dashen',
+    displayName: 'Dashen Bank',
+    brandColor: '#1E3A8A',
+    badgeBg: '#EFF6FF',
+    badgeTextColor: '#1D4ED8',
+    icon: '💳',
+    identifiers: ['DashenBank', 'Dashen', 'Amole', 'amole'],
+  },
+  unknown: {
+    id: 'unknown',
+    displayName: 'Other Bank',
+    brandColor: '#64748B',
+    badgeBg: '#F1F5F9',
+    badgeTextColor: '#475569',
+    icon: '✉️',
+    identifiers: [],
+  },
+};
