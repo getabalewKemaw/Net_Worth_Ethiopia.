@@ -14,7 +14,6 @@ export interface ScanResult {
   scanned: number;
   parsed: number;
   inserted: number;
-  isMock: boolean;
   transactions: ParsedBankTransaction[];
 }
 
@@ -51,7 +50,7 @@ export function computeSummariesFromTransactions(
 
 export const textFetchingService = {
   /**
-   * Scans native SMS inbox or mock engine, parses with registry,
+   * Scans native SMS inbox, parses with registry,
    * deduplicates and stores into local SQLite.
    */
   async scanAndProcessInbox(
@@ -59,8 +58,8 @@ export const textFetchingService = {
     branchId: string,
     options: SmsFetchOptions = {}
   ): Promise<ScanResult> {
-    // 1. Fetch raw messages from native Android provider (or mock data)
-    const { messages, isMock } = await fetchRawBankSms(options);
+    // 1. Fetch raw messages from native Android provider
+    const { messages } = await fetchRawBankSms(options);
 
     // 2. Parse using deterministic Ethiopian bank regex registry
     const parsedTransactions = bankParserRegistry.parseBatch(messages);
@@ -79,7 +78,6 @@ export const textFetchingService = {
       scanned: messages.length,
       parsed: parsedTransactions.length,
       inserted,
-      isMock,
       transactions: transactions.length > 0 ? transactions : parsedTransactions,
     };
   },

@@ -17,7 +17,6 @@ export interface ScanSummary {
   scanned: number;
   parsed: number;
   inserted: number;
-  isMock: boolean;
 }
 
 export interface TextFetchingState {
@@ -29,20 +28,17 @@ export interface TextFetchingState {
   isScanning: boolean;
   isLoading: boolean;
   lastScanTime: string | null;
-  useMockData: boolean;
   error: string | null;
 
   // Filter and mode setters
   setProviderFilter: (provider: BankProvider | 'all') => void;
   setStatusFilter: (status: SmsImportStatus | 'all') => void;
-  toggleMockMode: (force?: boolean) => void;
   setError: (error: string | null) => void;
 
   // Core Actions
   scanInbox: (options?: {
     businessId?: string;
     branchId?: string;
-    forceMock?: boolean;
     limit?: number;
   }) => Promise<ScanSummary>;
   loadSavedTransactions: (businessId?: string) => Promise<void>;
@@ -101,35 +97,26 @@ export const useTextFetchingStore = create<TextFetchingState>((set, get) => ({
   isScanning: false,
   isLoading: false,
   lastScanTime: null,
-  useMockData: !isNativeSmsAvailable(),
   error: null,
 
   setProviderFilter: (provider) => set({ selectedProvider: provider }),
   setStatusFilter: (status) => set({ selectedStatus: status }),
-  toggleMockMode: (force) =>
-    set((state) => ({
-      useMockData: typeof force === 'boolean' ? force : !state.useMockData,
-    })),
   setError: (error) => set({ error }),
 
   /**
-   * Scans bank SMS inbox (native or mock), parses with regex registry,
+   * Scans bank SMS inbox from native SIM card, parses with regex registry,
    * persists to local SQLite with deduplication, and updates reactive store.
    */
   scanInbox: async (options) => {
     set({ isScanning: true, error: null });
     try {
       const { businessId, branchId } = getActiveContext(options?.businessId, options?.branchId);
-      const forceMock = options?.forceMock ?? get().useMockData;
       const limit = options?.limit ?? 200;
 
       const result: ScanResult = await textFetchingService.scanAndProcessInbox(
         businessId,
         branchId,
-        {
-          forceMock,
-          limit,
-        }
+        { limit }
       );
 
       // Hydrate provider summaries from SQLite, with in-memory fallback
@@ -153,7 +140,6 @@ export const useTextFetchingStore = create<TextFetchingState>((set, get) => ({
         scanned: result.scanned,
         parsed: result.parsed,
         inserted: result.inserted,
-        isMock: result.isMock,
       };
     } catch (err: any) {
       const errorMsg = err?.message || 'Failed to scan bank SMS';

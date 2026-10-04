@@ -120,14 +120,14 @@ export default function TextFetchingScreen() {
         {/* Top Scan Controls & Status */}
         <ScanHeader onScan={handleScan} />
 
-        {/* Bank Accounts Summary Carousel */}
+        {/* Compact Cashflow Strip (Only when records exist) */}
         <ProviderCarousel />
 
-        {/* Filter Pills */}
+        {/* Minimalist Filter Bar (Only when records exist) */}
         <FilterPillBar />
 
         {/* Transaction Cards List */}
-        <View className="mt-2">
+        <View className="mt-1">
           {filteredTransactions.length > 0 ? (
             filteredTransactions.map((txn) => (
               <TransactionCard
@@ -140,39 +140,39 @@ export default function TextFetchingScreen() {
               />
             ))
           ) : (
-            /* Empty State */
+            /* Clean Empty State */
             <View
-              className="mx-4 mt-4 p-8 rounded-3xl items-center border"
+              className="mx-4 mt-6 p-8 rounded-3xl items-center border"
               style={{
                 backgroundColor: colors.backgroundElement,
                 borderColor: colors.backgroundSelected,
               }}
             >
-              <View className="w-14 h-14 rounded-full items-center justify-center bg-slate-100 dark:bg-slate-800 mb-3">
-                <Text style={{ fontSize: 28 }}>💬</Text>
+              <View className="w-16 h-16 rounded-2xl items-center justify-center bg-slate-100 dark:bg-slate-800 mb-4">
+                <Text style={{ fontSize: 32 }}>📬</Text>
               </View>
 
-              <Text className="text-base font-extrabold text-slate-800 dark:text-slate-200 text-center mb-1">
+              <Text className="text-base font-black text-slate-800 dark:text-slate-100 text-center mb-1.5">
                 {transactions.length === 0
-                  ? 'No Bank SMS Transactions Yet'
+                  ? 'No Bank SMS Transactions'
                   : 'No Matching Transactions'}
               </Text>
 
-              <Text className="text-xs font-medium text-slate-500 text-center max-w-xs mb-4 leading-5">
+              <Text className="text-xs text-slate-500 dark:text-slate-400 text-center max-w-xs mb-5 leading-5">
                 {transactions.length === 0
-                  ? 'Scan your SMS inbox to automatically detect customer payments and outgoing bank transfers.'
+                  ? 'Sync your SIM card SMS inbox to automatically import customer payments and bank transfers from telebirr, CBE, Awash, BOA, and Dashen.'
                   : 'Try clearing your bank or status filters to view all imported transactions.'}
               </Text>
 
               {transactions.length === 0 ? (
                 <Pressable
                   onPress={handleScan}
-                  className="flex-row items-center gap-2 px-5 py-3 rounded-2xl active:opacity-85"
+                  className="flex-row items-center gap-2 px-5 py-3 rounded-2xl active:opacity-85 shadow-sm"
                   style={{ backgroundColor: colors.primary }}
                 >
-                  <PlusIcon size={18} color="#FFFFFF" strokeWidth={2.5} />
+                  <PlusIcon size={16} color="#FFFFFF" strokeWidth={2.5} />
                   <Text className="text-xs font-black text-white uppercase tracking-wider">
-                    Scan SMS Inbox Now
+                    Scan SMS Inbox
                   </Text>
                 </Pressable>
               ) : hasActiveFilter ? (

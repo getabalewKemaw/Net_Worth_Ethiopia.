@@ -1,5 +1,4 @@
 import { ExpoSmsInbox, type NativeSmsRecord } from '../../modules/expo-sms-inbox';
-import { MOCK_BANK_SMS_MESSAGES } from '@/mocks/mock-bank-sms';
 
 // Safe retrieval of React Native primitives to support test runners and non-Android targets
 let Platform: any = { OS: 'web' };
@@ -18,7 +17,6 @@ try {
 
 export interface SmsFetchOptions {
   limit?: number;
-  forceMock?: boolean;
 }
 
 /**
@@ -73,19 +71,22 @@ export async function hasSmsPermission(): Promise<boolean> {
 }
 
 /**
- * Fetches banking text messages from the native Android inbox or falls back to
- * mock demo data when running in simulator, Web, iOS, or when mock mode is forced.
+ * Fetches banking text messages from the native Android inbox.
+ * Never returns mock data; returns empty array if unavailable or unpermitted.
  */
 export async function fetchRawBankSms(options: SmsFetchOptions = {}): Promise<{
   messages: NativeSmsRecord[];
-  isMock: boolean;
+  isNative: boolean;
 }> {
-  const { limit = 200, forceMock = false } = options;
+  const { limit = 200 } = options;
 
-  if (forceMock || !isNativeSmsAvailable()) {
+  if (!isNativeSmsAvailable()) {
+    console.warn(
+      '[SMS Reader] Native module ExpoSmsInbox is not installed in the currently running APK. Rebuild with `npx expo run:android`.'
+    );
     return {
-      messages: MOCK_BANK_SMS_MESSAGES.slice(0, limit),
-      isMock: true,
+      messages: [],
+      isNative: false,
     };
   }
 
@@ -94,10 +95,10 @@ export async function fetchRawBankSms(options: SmsFetchOptions = {}): Promise<{
     if (!permitted) {
       const requested = await requestSmsPermission();
       if (!requested) {
-        console.warn('[SMS Reader] READ_SMS permission not granted, falling back to mock data');
+        console.warn('[SMS Reader] READ_SMS permission not granted by user.');
         return {
-          messages: MOCK_BANK_SMS_MESSAGES.slice(0, limit),
-          isMock: true,
+          messages: [],
+          isNative: true,
         };
       }
     }
@@ -105,13 +106,14 @@ export async function fetchRawBankSms(options: SmsFetchOptions = {}): Promise<{
     const messages = await ExpoSmsInbox!.fetchBankSmsMessages(limit);
     return {
       messages: messages || [],
-      isMock: false,
+      isNative: true,
     };
   } catch (error) {
-    console.error('[SMS Reader] Native fetch failed, using fallback:', error);
+    console.error('[SMS Reader] Native fetch failed:', error);
     return {
-      messages: MOCK_BANK_SMS_MESSAGES.slice(0, limit),
-      isMock: true,
+      messages: [],
+      isNative: true,
     };
   }
 }
+

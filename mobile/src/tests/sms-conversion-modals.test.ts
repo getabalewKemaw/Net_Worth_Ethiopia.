@@ -132,7 +132,7 @@ export async function runConversionModalTests() {
 
   // Test 3: Settle debt conversion in store
   console.log('Test 3: Testing store markTransactionConverted as settled_debt...');
-  await useTextFetchingStore.getState().scanInbox({ forceMock: true });
+  useTextFetchingStore.setState({ transactions: txns });
   const pendingDeposit = useTextFetchingStore.getState().transactions.find(
     (t) => t.transactionRef === depositTxn.transactionRef
   );

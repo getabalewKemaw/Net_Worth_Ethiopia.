@@ -5,26 +5,10 @@ import { useTextFetchingStore } from '@/store/text-fetching-store';
 import { BANK_PROVIDERS } from '@/constants/text-fetching';
 import type { BankProvider, SmsImportStatus } from '@/types/text-fetching';
 
-const STATUS_PILLS: Array<{ id: SmsImportStatus | 'all'; label: string }> = [
-  { id: 'all', label: 'All Items' },
-  { id: 'pending', label: 'Pending Action' },
-  { id: 'converted_sale', label: 'Sales' },
-  { id: 'converted_expense', label: 'Expenses' },
-  { id: 'ignored', label: 'Ignored' },
-];
-
-const PROVIDER_PILLS: Array<{ id: BankProvider | 'all'; label: string; icon?: string }> = [
-  { id: 'all', label: 'All Banks' },
-  { id: 'telebirr', label: 'telebirr', icon: '📱' },
-  { id: 'cbe', label: 'CBE', icon: '🏦' },
-  { id: 'awash', label: 'Awash', icon: '🏛️' },
-  { id: 'boa', label: 'BOA', icon: '🪙' },
-  { id: 'dashen', label: 'Dashen', icon: '💳' },
-];
-
 export function FilterPillBar() {
   const colors = useTheme();
   const {
+    transactions,
     selectedProvider,
     selectedStatus,
     setProviderFilter,
@@ -34,72 +18,120 @@ export function FilterPillBar() {
 
   const pendingCount = getPendingCount();
 
-  return (
-    <View className="mb-2 gap-2">
-      {/* Row 1: Status Filters */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
-      >
-        {STATUS_PILLS.map((pill) => {
-          const isSelected = selectedStatus === pill.id;
-          const isPendingPill = pill.id === 'pending';
+  // If no transactions exist, hide filter bar to keep page completely clean
+  if (transactions.length === 0) {
+    return null;
+  }
 
-          return (
-            <Pressable
-              key={pill.id}
-              onPress={() => setStatusFilter(pill.id)}
-              className="flex-row items-center gap-1.5 px-3.5 py-1.5 rounded-full border active:opacity-80"
-              style={{
-                backgroundColor: isSelected ? colors.primary : colors.backgroundElement,
-                borderColor: isSelected ? colors.primary : colors.backgroundSelected,
-              }}
+  const providers: Array<{ id: BankProvider | 'all'; label: string; icon?: string }> = [
+    { id: 'all', label: 'All Banks' },
+    { id: 'telebirr', label: 'telebirr', icon: '📱' },
+    { id: 'cbe', label: 'CBE', icon: '🏦' },
+    { id: 'awash', label: 'Awash', icon: '🏛️' },
+    { id: 'boa', label: 'BOA', icon: '🪙' },
+    { id: 'dashen', label: 'Dashen', icon: '💳' },
+  ];
+
+  return (
+    <View className="mb-2">
+      {/* Primary Status Quick Tabs */}
+      <View className="flex-row items-center justify-between px-4 mb-2">
+        <View className="flex-row items-center gap-2">
+          <Pressable
+            onPress={() => setStatusFilter('all')}
+            className="px-3 py-1 rounded-full"
+            style={{
+              backgroundColor: selectedStatus === 'all' ? colors.primary : 'transparent',
+            }}
+          >
+            <Text
+              className="text-xs font-bold"
+              style={{ color: selectedStatus === 'all' ? '#FFFFFF' : '#64748B' }}
             >
-              <Text
-                className="text-xs font-bold"
-                style={{ color: isSelected ? '#FFFFFF' : '#64748B' }}
+              All Items
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setStatusFilter('pending')}
+            className="flex-row items-center gap-1.5 px-3 py-1 rounded-full"
+            style={{
+              backgroundColor: selectedStatus === 'pending' ? colors.primary : 'transparent',
+            }}
+          >
+            <Text
+              className="text-xs font-bold"
+              style={{ color: selectedStatus === 'pending' ? '#FFFFFF' : '#64748B' }}
+            >
+              Pending
+            </Text>
+            {pendingCount > 0 && (
+              <View
+                className="px-1.5 py-0.2 rounded-full"
+                style={{
+                  backgroundColor: selectedStatus === 'pending' ? '#047857' : '#DCFCE7',
+                }}
               >
-                {pill.label}
-              </Text>
-              {isPendingPill && pendingCount > 0 && (
-                <View
-                  className="px-1.5 py-0.2 rounded-full"
+                <Text
                   style={{
-                    backgroundColor: isSelected ? '#047857' : '#DCFCE7',
+                    fontSize: 10,
+                    fontWeight: '800',
+                    color: selectedStatus === 'pending' ? '#FFFFFF' : '#15803D',
                   }}
                 >
-                  <Text
-                    style={{
-                      fontSize: 10,
-                      fontWeight: '800',
-                      color: isSelected ? '#FFFFFF' : '#15803D',
-                    }}
-                  >
-                    {pendingCount}
-                  </Text>
-                </View>
-              )}
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+                  {pendingCount}
+                </Text>
+              </View>
+            )}
+          </Pressable>
 
-      {/* Row 2: Provider Filters */}
+          <Pressable
+            onPress={() => setStatusFilter('converted_sale')}
+            className="px-3 py-1 rounded-full"
+            style={{
+              backgroundColor: selectedStatus === 'converted_sale' ? colors.primary : 'transparent',
+            }}
+          >
+            <Text
+              className="text-xs font-bold"
+              style={{ color: selectedStatus === 'converted_sale' ? '#FFFFFF' : '#64748B' }}
+            >
+              Sales
+            </Text>
+          </Pressable>
+
+          <Pressable
+            onPress={() => setStatusFilter('converted_expense')}
+            className="px-3 py-1 rounded-full"
+            style={{
+              backgroundColor: selectedStatus === 'converted_expense' ? colors.primary : 'transparent',
+            }}
+          >
+            <Text
+              className="text-xs font-bold"
+              style={{ color: selectedStatus === 'converted_expense' ? '#FFFFFF' : '#64748B' }}
+            >
+              Expenses
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Bank Provider Chips */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 6 }}
       >
-        {PROVIDER_PILLS.map((pill) => {
-          const isSelected = selectedProvider === pill.id;
-          const config = pill.id !== 'all' ? BANK_PROVIDERS[pill.id] : null;
+        {providers.map((p) => {
+          const isSelected = selectedProvider === p.id;
+          const config = p.id !== 'all' ? BANK_PROVIDERS[p.id] : null;
 
           return (
             <Pressable
-              key={pill.id}
-              onPress={() => setProviderFilter(pill.id)}
-              className="flex-row items-center gap-1.5 px-3 py-1 rounded-xl border active:opacity-80"
+              key={p.id}
+              onPress={() => setProviderFilter(p.id)}
+              className="flex-row items-center gap-1 px-3 py-1 rounded-full border active:opacity-80"
               style={{
                 backgroundColor: isSelected
                   ? config?.badgeBg || '#0F172A'
@@ -109,16 +141,16 @@ export function FilterPillBar() {
                   : colors.backgroundSelected,
               }}
             >
-              {pill.icon && <Text style={{ fontSize: 12 }}>{pill.icon}</Text>}
+              {p.icon && <Text style={{ fontSize: 11 }}>{p.icon}</Text>}
               <Text
-                className="text-xs font-semibold"
+                className="text-xs font-medium"
                 style={{
                   color: isSelected
                     ? config?.badgeTextColor || '#FFFFFF'
                     : '#64748B',
                 }}
               >
-                {pill.label}
+                {p.label}
               </Text>
             </Pressable>
           );

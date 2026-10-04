@@ -3,6 +3,7 @@
 
 import { useTextFetchingStore } from '../store/text-fetching-store';
 import { textFetchingService, computeSummariesFromTransactions } from '../service/text-fetching';
+import { bankParserRegistry } from '../features/text-fetching/parsers/parser-registry';
 import { MOCK_BANK_SMS_MESSAGES } from '../mocks/mock-bank-sms';
 
 function assert(condition: boolean, message: string) {
@@ -17,23 +18,22 @@ export async function runServiceAndStoreTests() {
   console.log('STARTING PHASE 4: SERVICE & STORE TESTS');
   console.log('==============================================\n');
 
-  // Test 1: textFetchingService.scanAndProcessInbox with mock data
-  console.log('Test 1: Testing textFetchingService.scanAndProcessInbox()...');
+  // Test 1: textFetchingService.scanAndProcessInbox without native SMS binary (clean fallback)
+  console.log('Test 1: Testing textFetchingService.scanAndProcessInbox() in non-native environment...');
   const serviceResult = await textFetchingService.scanAndProcessInbox(
     'test_biz_1',
-    'test_branch_1',
-    { forceMock: true }
+    'test_branch_1'
   );
 
-  assert(serviceResult.scanned === MOCK_BANK_SMS_MESSAGES.length, 'Should scan all mock messages');
-  assert(serviceResult.parsed === 8, `Expected 8 parsed transactions, got ${serviceResult.parsed}`);
-  assert(serviceResult.isMock === true, 'isMock should be true');
-  assert(serviceResult.transactions.length === 8, 'Should return 8 transactions');
-  console.log(`PASS: Scanned ${serviceResult.scanned}, parsed ${serviceResult.parsed} transactions.\n`);
+  // In Node test environment, native SMS is not present so it returns 0 scanned messages cleanly
+  assert(serviceResult.scanned === 0, 'Should return 0 scanned without native binary');
+  assert(serviceResult.parsed === 0, 'Should return 0 parsed without native binary');
+  console.log('PASS: Gracefully returned 0 messages when native module is absent without mock pollution.\n');
 
   // Test 2: computeSummariesFromTransactions
   console.log('Test 2: Testing computeSummariesFromTransactions()...');
-  const computedSummaries = computeSummariesFromTransactions(serviceResult.transactions);
+  const sampleTransactions = bankParserRegistry.parseBatch(MOCK_BANK_SMS_MESSAGES);
+  const computedSummaries = computeSummariesFromTransactions(sampleTransactions);
 
   assert(computedSummaries.telebirr.depositCount === 2, 'telebirr should have 2 deposits');
   assert(computedSummaries.telebirr.expenseCount === 1, 'telebirr should have 1 expense');
@@ -49,29 +49,22 @@ export async function runServiceAndStoreTests() {
   assert(computedSummaries.cbe.expenseCount === 1, 'CBE should have 1 expense');
   assert(computedSummaries.cbe.totalDeposits === 1800, 'CBE deposit should equal 1800');
   assert(computedSummaries.cbe.totalExpenses === 1200, 'CBE expense should equal 1200');
-  console.log('PASS: Provider summary calculations match mock data.\n');
+  console.log('PASS: Provider summary calculations computed accurately.\n');
 
-  // Test 3: useTextFetchingStore initial state & scanInbox action
-  console.log('Test 3: Testing useTextFetchingStore.getState().scanInbox()...');
-  const store = useTextFetchingStore.getState();
-
-  assert(store.transactions.length === 0, 'Initial transactions should be empty');
-  assert(store.selectedProvider === 'all', 'Default provider filter should be "all"');
-  assert(store.selectedStatus === 'all', 'Default status filter should be "all"');
-
-  const scanResult = await useTextFetchingStore.getState().scanInbox({
-    businessId: 'test_biz_1',
-    branchId: 'test_branch_1',
-    forceMock: true,
+  // Test 3: Hydrating store with parsed transactions
+  console.log('Test 3: Testing store state & pending count calculation...');
+  useTextFetchingStore.setState({
+    transactions: sampleTransactions,
+    providerSummaries: computedSummaries,
+    selectedProvider: 'all',
+    selectedStatus: 'all',
+    lastScanTime: new Date().toISOString(),
   });
 
-  const stateAfterScan = useTextFetchingStore.getState();
-  assert(scanResult.parsed === 8, `Store scan should parse 8, got ${scanResult.parsed}`);
-  assert(stateAfterScan.transactions.length === 8, 'Store should hold 8 transactions');
-  assert(stateAfterScan.isScanning === false, 'isScanning should reset to false');
-  assert(stateAfterScan.lastScanTime !== null, 'lastScanTime should be recorded');
-  assert(stateAfterScan.getPendingCount() === 8, 'All 8 transactions should initially be pending');
-  console.log(`PASS: Store scanned and populated 8 transactions (pending count = ${stateAfterScan.getPendingCount()}).\n`);
+  const state = useTextFetchingStore.getState();
+  assert(state.transactions.length === 8, `Store should hold 8 transactions, got ${state.transactions.length}`);
+  assert(state.getPendingCount() === 8, 'All 8 transactions should initially be pending');
+  console.log(`PASS: Store populated 8 transactions (pending count = ${state.getPendingCount()}).\n`);
 
   // Test 4: Provider & Status Filtering Selectors
   console.log('Test 4: Testing store filtering selectors...');
@@ -117,15 +110,6 @@ export async function runServiceAndStoreTests() {
   assert(useTextFetchingStore.getState().getPendingCount() === 6, 'Pending count should decrease to 6');
   console.log('PASS: Dismiss and conversion actions update store reactively.\n');
 
-  // Test 6: Toggle Mock Mode
-  console.log('Test 6: Testing toggleMockMode...');
-  const currentMockState = useTextFetchingStore.getState().useMockData;
-  useTextFetchingStore.getState().toggleMockMode();
-  assert(useTextFetchingStore.getState().useMockData !== currentMockState, 'Mock state should toggle');
-  useTextFetchingStore.getState().toggleMockMode(true);
-  assert(useTextFetchingStore.getState().useMockData === true, 'Mock state forced to true');
-  console.log('PASS: toggleMockMode switches state correctly.\n');
-
   console.log('==============================================');
   console.log('ALL PHASE 4 SERVICE & STORE TESTS PASSED!');
   console.log('==============================================');
@@ -137,4 +121,3 @@ if (typeof require !== 'undefined' && (require as any).main === module) {
     process.exit(1);
   });
 }
-
