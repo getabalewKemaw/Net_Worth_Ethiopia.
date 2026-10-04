@@ -46,8 +46,21 @@ export const localSmsRepo = {
     const now = new Date().toISOString();
     let insertedCount = 0;
 
-    await db.withTransactionAsync(async () => {
-      for (const txn of transactions) {
+    for (const txn of transactions) {
+      // 1. Sanitize & validate required fields to prevent SQLite constraint failures
+      const amount = typeof txn.amount === 'number' && !isNaN(txn.amount) ? txn.amount : 0;
+      const ref = (txn.transactionRef || '').trim() || `REF_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      const timestamp = txn.timestamp && !isNaN(new Date(txn.timestamp).getTime())
+        ? new Date(txn.timestamp).toISOString()
+        : now;
+      const flow = (['deposit', 'expense', 'unknown'] as const).includes(txn.transactionFlow as any)
+        ? txn.transactionFlow
+        : 'unknown';
+      const status = (['pending', 'converted_sale', 'converted_expense', 'settled_debt', 'ignored'] as const).includes(txn.importStatus as any)
+        ? txn.importStatus
+        : 'pending';
+
+      try {
         const result = await db.runAsync(
           `INSERT OR IGNORE INTO local_bank_sms (
             id, raw_sms_id, provider, sender_address, transaction_flow,
@@ -57,24 +70,24 @@ export const localSmsRepo = {
             created_at, updated_at
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);`,
           [
-            txn.id,
+            txn.id || `sms_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
             txn.rawSmsId || null,
-            txn.provider,
-            txn.senderAddress,
-            txn.transactionFlow,
-            txn.amount,
+            txn.provider || 'unknown',
+            txn.senderAddress || 'unknown',
+            flow,
+            amount,
             txn.currency || 'ETB',
-            txn.transactionRef,
+            ref,
             txn.counterparty || null,
             txn.accountMasked || null,
-            txn.currentBalance !== null ? txn.currentBalance : null,
-            txn.rawBody,
-            txn.timestamp,
-            txn.confidenceScore || 1.0,
-            txn.importStatus || 'pending',
+            typeof txn.currentBalance === 'number' && !isNaN(txn.currentBalance) ? txn.currentBalance : null,
+            txn.rawBody || '',
+            timestamp,
+            typeof txn.confidenceScore === 'number' && !isNaN(txn.confidenceScore) ? txn.confidenceScore : 1.0,
+            status,
             txn.convertedEntityId || null,
-            businessId,
-            branchId,
+            businessId || 'default_business',
+            branchId || 'default_branch',
             now,
             now,
           ]
@@ -83,8 +96,10 @@ export const localSmsRepo = {
         if (result.changes > 0) {
           insertedCount += result.changes;
         }
+      } catch (rowErr) {
+        console.warn('[LocalSmsRepo] Skipping malformed SMS record:', txn.transactionRef, rowErr);
       }
-    });
+    }
 
     return insertedCount;
   },
