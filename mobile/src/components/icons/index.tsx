@@ -289,3 +289,26 @@ export function PlusIcon({ size = 20, color = '#065F46', strokeWidth = 2.5 }: Ic
     </SafeSvg>
   );
 }
+
+export function ArrowDownLeftIcon({ size = 18, color = '#10B981', strokeWidth = 2.5 }: IconProps) {
+  return (
+    <SafeSvg size={size} fallbackSymbol="↙" fallbackColor={color}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Line x1="17" y1="7" x2="7" y2="17" />
+        <Polyline points="17 17 7 17 7 7" />
+      </Svg>
+    </SafeSvg>
+  );
+}
+
+export function ArrowUpRightIcon({ size = 18, color = '#EF4444', strokeWidth = 2.5 }: IconProps) {
+  return (
+    <SafeSvg size={size} fallbackSymbol="↗" fallbackColor={color}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Line x1="7" y1="17" x2="17" y2="7" />
+        <Polyline points="7 7 17 7 17 17" />
+      </Svg>
+    </SafeSvg>
+  );
+}
+
