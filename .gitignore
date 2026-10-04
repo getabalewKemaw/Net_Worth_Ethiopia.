@@ -1,4 +1,4 @@
-﻿# Expo
+# Expo
 .expo/
 dist/
 node_modules/
@@ -35,8 +35,12 @@ Thumbs.db
 
 # Build outputs
 build/
-android/
-ios/
+/android/
+/mobile/android/
+/ios/
+/mobile/ios/
+!**/modules/**/android/
+!**/modules/**/ios/
 
 # Package managers
 package-lock.json

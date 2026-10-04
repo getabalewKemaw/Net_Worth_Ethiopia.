@@ -12,6 +12,9 @@
     },
     "android": {
       "package": "com.networthethiopia.app",
+      "permissions": [
+        "android.permission.READ_SMS"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
