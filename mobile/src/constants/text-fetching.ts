@@ -7,11 +7,11 @@ let boaLogo: any = null;
 let dashenLogo: any = null;
 
 try {
-  telebirrLogo = require('../../assets/images/banks/telebirr.jpg');
-  cbeLogo = require('../../assets/images/banks/cbe.jpg');
-  awashLogo = require('../../assets/images/banks/awash.jpg');
-  boaLogo = require('../../assets/images/banks/boa.jpg');
-  dashenLogo = require('../../assets/images/banks/dashen.jpg');
+  telebirrLogo = require('../../assets/images/banks/telebirr.png');
+  cbeLogo = require('../../assets/images/banks/cbe.png');
+  awashLogo = require('../../assets/images/banks/awash.png');
+  boaLogo = require('../../assets/images/banks/boa.png');
+  dashenLogo = require('../../assets/images/banks/dashen.png');
 } catch {
   // In Node test runners, assets are safely skipped
 }
