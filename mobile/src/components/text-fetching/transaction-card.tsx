@@ -110,19 +110,19 @@ export function TransactionCard({
         <View
           className="flex-row items-center gap-1 px-2 py-0.5 rounded-full"
           style={{
-            backgroundColor: isDeposit ? '#ECFDF5' : '#FEF2F2',
+            backgroundColor: isDeposit ? '#ECFDF5' : '#FFFBEB',
           }}
         >
           {isDeposit ? (
             <ArrowDownLeftIcon size={14} color="#059669" strokeWidth={2.5} />
           ) : (
-            <ArrowUpRightIcon size={14} color="#DC2626" strokeWidth={2.5} />
+            <ArrowUpRightIcon size={14} color="#D97706" strokeWidth={2.5} />
           )}
           <Text
             style={{
               fontSize: 11,
               fontWeight: '800',
-              color: isDeposit ? '#059669' : '#DC2626',
+              color: isDeposit ? '#059669' : '#D97706',
             }}
           >
             {isDeposit ? 'Received' : 'Sent'}
@@ -160,7 +160,7 @@ export function TransactionCard({
             style={{
               fontSize: 17,
               fontWeight: '900',
-              color: isDeposit ? '#059669' : '#DC2626',
+              color: isDeposit ? '#059669' : '#D97706',
             }}
           >
             {isDeposit ? '+' : '-'}ETB {formatMoney(transaction.amount)}

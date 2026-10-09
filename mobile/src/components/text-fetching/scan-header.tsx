@@ -26,22 +26,22 @@ export function ScanHeader({ onScan }: ScanHeaderProps) {
   const pendingCount = getPendingCount();
 
   return (
-    <View className="px-4 pt-1 pb-3 flex-row items-center justify-between">
+    <View className="px-4 pt-1 pb-2 flex-row items-center justify-between">
       {/* Title & Sync Status */}
       <View className="flex-1 pr-3">
         <View className="flex-row items-center gap-2">
-          <Text className="text-xl font-black text-slate-900 dark:text-slate-100">
+          <Text className="text-lg font-black text-slate-900 dark:text-slate-100">
             Bank SMS Inbox
           </Text>
           {pendingCount > 0 && (
             <View className="bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full">
-              <Text className="text-[11px] font-black text-emerald-700 dark:text-emerald-300">
+              <Text className="text-[10.5px] font-black text-emerald-700 dark:text-emerald-300">
                 {pendingCount} new
               </Text>
             </View>
           )}
         </View>
-        <Text className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+        <Text className="text-[11px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">
           Last scan: {formatRelativeTime(lastScanTime)}
         </Text>
       </View>
@@ -52,17 +52,17 @@ export function ScanHeader({ onScan }: ScanHeaderProps) {
         disabled={isScanning}
         className="flex-row items-center gap-1.5 px-3.5 py-2 rounded-xl active:opacity-80"
         style={{
-          backgroundColor: isScanning ? '#E2E8F0' : colors.primary,
+          backgroundColor: isScanning ? '#E2E8F0' : '#065F46',
         }}
       >
         {isScanning ? (
-          <ActivityIndicator size="small" color="#0F172A" />
+          <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
-          <RefreshCwIcon size={14} color="#FFFFFF" strokeWidth={2.5} />
+          <RefreshCwIcon size={13} color="#FFFFFF" strokeWidth={2.5} />
         )}
         <Text
-          className="text-xs font-bold"
-          style={{ color: isScanning ? '#64748B' : '#FFFFFF' }}
+          className="text-xs font-bold text-white"
+          style={{ color: isScanning ? '#94A3B8' : '#FFFFFF' }}
         >
           {isScanning ? 'Scanning...' : 'Sync SMS'}
         </Text>

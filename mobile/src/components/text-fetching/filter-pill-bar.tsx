@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable, Image } from 'react-native';
+import { View, Text, ScrollView, Pressable, Image, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/use-theme';
 import { useTextFetchingStore } from '@/store/text-fetching-store';
 import { BANK_PROVIDERS } from '@/constants/text-fetching';
@@ -18,12 +18,19 @@ export function FilterPillBar() {
 
   const pendingCount = getPendingCount();
 
-  // If no transactions exist, hide filter bar to keep page completely clean
+  // If no transactions exist, hide filter bar to keep page clean
   if (transactions.length === 0) {
     return null;
   }
 
-  const providers: Array<{ id: BankProvider | 'all'; label: string; icon?: string }> = [
+  const statusOptions: Array<{ id: SmsImportStatus | 'all'; label: string; count?: number }> = [
+    { id: 'pending', label: 'Pending', count: pendingCount },
+    { id: 'all', label: 'All' },
+    { id: 'converted_sale', label: 'Sales' },
+    { id: 'converted_expense', label: 'Expenses' },
+  ];
+
+  const providers: Array<{ id: BankProvider | 'all'; label: string }> = [
     { id: 'all', label: 'All Banks' },
     { id: 'telebirr', label: 'telebirr' },
     { id: 'cbe', label: 'CBE' },
@@ -33,95 +40,70 @@ export function FilterPillBar() {
   ];
 
   return (
-    <View className="mb-2">
-      {/* Primary Status Quick Tabs */}
-      <View className="flex-row items-center justify-between px-4 mb-2">
-        <View className="flex-row items-center gap-2">
-          <Pressable
-            onPress={() => setStatusFilter('all')}
-            className="px-3 py-1 rounded-full"
-            style={{
-              backgroundColor: selectedStatus === 'all' ? colors.primary : 'transparent',
-            }}
-          >
-            <Text
-              className="text-xs font-bold"
-              style={{ color: selectedStatus === 'all' ? '#FFFFFF' : '#64748B' }}
+    <View style={styles.container}>
+      {/* 1. Sleek Status Segmented Control */}
+      <View
+        style={[
+          styles.segmentedContainer,
+          { backgroundColor: colors.backgroundSelected },
+        ]}
+      >
+        {statusOptions.map((opt) => {
+          const isSelected = selectedStatus === opt.id;
+          return (
+            <Pressable
+              key={opt.id}
+              onPress={() => setStatusFilter(opt.id)}
+              style={[
+                styles.segmentBtn,
+                isSelected && [
+                  styles.segmentBtnActive,
+                  { backgroundColor: colors.backgroundElement },
+                ],
+              ]}
             >
-              All Items
-            </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => setStatusFilter('pending')}
-            className="flex-row items-center gap-1.5 px-3 py-1 rounded-full"
-            style={{
-              backgroundColor: selectedStatus === 'pending' ? colors.primary : 'transparent',
-            }}
-          >
-            <Text
-              className="text-xs font-bold"
-              style={{ color: selectedStatus === 'pending' ? '#FFFFFF' : '#64748B' }}
-            >
-              Pending
-            </Text>
-            {pendingCount > 0 && (
-              <View
-                className="px-1.5 py-0.2 rounded-full"
-                style={{
-                  backgroundColor: selectedStatus === 'pending' ? '#047857' : '#DCFCE7',
-                }}
-              >
+              <View style={styles.segmentInner}>
                 <Text
-                  style={{
-                    fontSize: 10,
-                    fontWeight: '800',
-                    color: selectedStatus === 'pending' ? '#FFFFFF' : '#15803D',
-                  }}
+                  style={[
+                    styles.segmentText,
+                    {
+                      color: isSelected ? '#065F46' : colors.textSecondary,
+                      fontWeight: isSelected ? '800' : '600',
+                    },
+                  ]}
                 >
-                  {pendingCount}
+                  {opt.label}
                 </Text>
+                {Boolean(opt.count && opt.count > 0) && (
+                  <View
+                    style={[
+                      styles.segmentBadge,
+                      {
+                        backgroundColor: isSelected ? '#ECFDF5' : '#E2E8F0',
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.segmentBadgeText,
+                        { color: isSelected ? '#065F46' : '#64748B' },
+                      ]}
+                    >
+                      {opt.count}
+                    </Text>
+                  </View>
+                )}
               </View>
-            )}
-          </Pressable>
-
-          <Pressable
-            onPress={() => setStatusFilter('converted_sale')}
-            className="px-3 py-1 rounded-full"
-            style={{
-              backgroundColor: selectedStatus === 'converted_sale' ? colors.primary : 'transparent',
-            }}
-          >
-            <Text
-              className="text-xs font-bold"
-              style={{ color: selectedStatus === 'converted_sale' ? '#FFFFFF' : '#64748B' }}
-            >
-              Sales
-            </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={() => setStatusFilter('converted_expense')}
-            className="px-3 py-1 rounded-full"
-            style={{
-              backgroundColor: selectedStatus === 'converted_expense' ? colors.primary : 'transparent',
-            }}
-          >
-            <Text
-              className="text-xs font-bold"
-              style={{ color: selectedStatus === 'converted_expense' ? '#FFFFFF' : '#64748B' }}
-            >
-              Expenses
-            </Text>
-          </Pressable>
-        </View>
+            </Pressable>
+          );
+        })}
       </View>
 
-      {/* Bank Provider Chips */}
+      {/* 2. Compact Horizontal Bank Selector Chips */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, gap: 6 }}
+        contentContainerStyle={styles.bankScrollContent}
       >
         {providers.map((p) => {
           const isSelected = selectedProvider === p.id;
@@ -131,30 +113,33 @@ export function FilterPillBar() {
             <Pressable
               key={p.id}
               onPress={() => setProviderFilter(p.id)}
-              className="flex-row items-center gap-1.5 px-3 py-1 rounded-full border active:opacity-80"
-              style={{
-                backgroundColor: isSelected
-                  ? config?.badgeBg || '#0F172A'
-                  : colors.backgroundElement,
-                borderColor: isSelected
-                  ? config?.brandColor || '#0F172A'
-                  : colors.backgroundSelected,
-              }}
+              style={[
+                styles.bankChip,
+                {
+                  backgroundColor: isSelected
+                    ? '#ECFDF5'
+                    : colors.backgroundElement,
+                  borderColor: isSelected
+                    ? '#065F46'
+                    : colors.backgroundSelected,
+                },
+              ]}
             >
               {config?.logo ? (
                 <Image
                   source={config.logo}
-                  style={{ width: 14, height: 14, borderRadius: 3 }}
+                  style={styles.bankLogo}
                   resizeMode="cover"
                 />
               ) : null}
               <Text
-                className="text-xs font-medium"
-                style={{
-                  color: isSelected
-                    ? config?.badgeTextColor || '#FFFFFF'
-                    : '#64748B',
-                }}
+                style={[
+                  styles.bankChipText,
+                  {
+                    color: isSelected ? '#065F46' : colors.textSecondary,
+                    fontWeight: isSelected ? '800' : '500',
+                  },
+                ]}
               >
                 {p.label}
               </Text>
@@ -165,3 +150,68 @@ export function FilterPillBar() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 8,
+  },
+  segmentedContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 12,
+    padding: 3,
+  },
+  segmentBtn: {
+    flex: 1,
+    paddingVertical: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 9,
+  },
+  segmentBtnActive: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  segmentInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  segmentText: {
+    fontSize: 12,
+  },
+  segmentBadge: {
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    borderRadius: 8,
+  },
+  segmentBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  bankScrollContent: {
+    paddingHorizontal: 16,
+    gap: 6,
+  },
+  bankChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  bankLogo: {
+    width: 14,
+    height: 14,
+    borderRadius: 3,
+  },
+  bankChipText: {
+    fontSize: 11.5,
+  },
+});
