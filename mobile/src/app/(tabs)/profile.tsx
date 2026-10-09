@@ -10,13 +10,25 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
-
 import { ThemedText } from '@/components/themed-text';
 import { HamburgerHeader } from '@/components/navigation/hamburger-drawer';
 import { useTheme } from '@/hooks/use-theme';
 import { useBusinessStore } from '@/store/business-store';
 import { authClient } from '@/lib/auth-client';
 import { useNetworkSync } from '@/hooks/use-network-sync';
+import {
+  BuildingIcon,
+  SettingsIcon,
+  LogOutIcon,
+  CloudIcon,
+  ShieldCheckIcon,
+  ChevronRightIcon,
+  PlusIcon,
+  MapPinIcon,
+  BanknoteIcon,
+  CheckCircleIcon,
+  RefreshCwIcon,
+} from '@/components/icons';
 
 export default function ProfileScreen() {
   const colors = useTheme();
@@ -30,14 +42,16 @@ export default function ProfileScreen() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const user = session?.user;
-  const displayName = user?.name || 'Merchant User';
-  const displayEmail = user?.email || 'user@networth.et';
-  const initials = displayName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase();
+  const displayName = user?.name || activeBusiness?.name || 'Merchant Owner';
+  const displayEmail = user?.email || 'merchant@networth.et';
+  const initials =
+    displayName
+      .split(' ')
+      .filter(Boolean)
+      .map((n: string) => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase() || 'NW';
 
   const handleSignOut = () => {
     Alert.alert(
@@ -65,355 +79,802 @@ export default function ProfileScreen() {
     );
   };
 
+  const handleSyncPress = () => {
+    if (isSyncing) {
+      Alert.alert('Syncing', 'A database synchronization is already underway.');
+    } else if (!isOnline) {
+      Alert.alert(
+        'Offline Mode',
+        'Device is offline. Changes are saved locally and will auto-sync once connected to the internet.'
+      );
+    } else if (pendingCount > 0) {
+      Alert.alert(
+        'Sync Pending Updates',
+        `You have ${pendingCount} offline update(s) ready to sync with the server.`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sync Now', onPress: () => triggerSync() },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'All Data Synced',
+        'Your local database is fully up to date with the server.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
+      {/* Top Header Drawer Bar */}
       <HamburgerHeader activeTabId="profile" />
 
       <ScrollView
-        className="flex-1 px-4 py-3"
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 110 }}
       >
-        {/* 1. USER IDENTITY CARD */}
-        <View style={styles.userCard}>
-          <View className="flex-row items-center gap-4">
-            <View style={styles.avatarCircle}>
-              <ThemedText className="text-[18px] font-black text-white">
-                {initials}
-              </ThemedText>
+        {/* 1. HERO USER PROFILE CARD */}
+        <View style={[styles.card, { backgroundColor: colors.backgroundElement, borderColor: colors.backgroundSelected }]}>
+          <View style={styles.heroRow}>
+            {/* Avatar with Ethiopian Emerald Ring */}
+            <View style={styles.avatarWrapper}>
+              <View style={styles.avatarCircle}>
+                <ThemedText style={styles.avatarText}>{initials}</ThemedText>
+              </View>
+              <View style={styles.onlineBadge}>
+                <View style={styles.onlineDot} />
+              </View>
             </View>
 
-            <View className="flex-1 gap-0.5">
-              <View className="flex-row items-center gap-2">
-                <ThemedText className="text-[18px] font-black text-gray-900" numberOfLines={1}>
+            {/* User Credentials & Role Badge */}
+            <View style={styles.heroInfo}>
+              <View style={styles.heroNameRow}>
+                <ThemedText style={[styles.heroName, { color: colors.text }]} numberOfLines={1}>
                   {displayName}
                 </ThemedText>
                 <View style={styles.roleBadge}>
-                  <ThemedText className="text-[10px] font-extrabold text-brand uppercase">
-                    Owner
-                  </ThemedText>
+                  <ThemedText style={styles.roleBadgeText}>Owner</ThemedText>
                 </View>
               </View>
-              <ThemedText className="text-[13px] font-medium text-gray-500" numberOfLines={1}>
+
+              <ThemedText style={styles.heroEmail} numberOfLines={1}>
                 {displayEmail}
               </ThemedText>
+
+              {/* Business Entity Subtitle */}
+              <View style={styles.heroEntityPill}>
+                <BuildingIcon size={12} color="#065F46" strokeWidth={2.2} />
+                <ThemedText style={styles.heroEntityText} numberOfLines={1}>
+                  {activeBusiness?.name || 'NetWorth Ethiopia'}
+                </ThemedText>
+              </View>
             </View>
           </View>
         </View>
 
-        {/* 2. OPERATING BUSINESS CARD */}
-        <View className="mt-4 p-5 rounded-3xl bg-white border border-gray-100 shadow-sm gap-3.5">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-2.5">
-              <View className="w-8 h-8 rounded-xl bg-brand-soft items-center justify-center border border-brand-light">
-                <ThemedText className="text-[16px]">🏬</ThemedText>
+        {/* 2. OPERATING BUSINESS & BRANCH MANAGEMENT */}
+        <View style={[styles.card, { backgroundColor: colors.backgroundElement, borderColor: colors.backgroundSelected }]}>
+          {/* Card Header */}
+          <View style={styles.cardHeaderRow}>
+            <View style={styles.cardHeaderLeft}>
+              <View style={[styles.iconBox, { backgroundColor: '#ECFDF5' }]}>
+                <BuildingIcon size={17} color="#065F46" strokeWidth={2.2} />
               </View>
-              <ThemedText className="text-[15px] font-extrabold text-gray-900">
-                Business & Operating Branch
-              </ThemedText>
+              <View>
+                <ThemedText style={[styles.cardSectionTitle, { color: colors.text }]}>
+                  Business & Branches
+                </ThemedText>
+                <ThemedText style={styles.cardSectionSubtitle}>
+                  Operational entity & locations
+                </ThemedText>
+              </View>
             </View>
 
             <Pressable
               onPress={() => router.push('/(business)/business-profile' as any)}
-              className="px-2.5 py-1 rounded-lg bg-gray-50 border border-gray-200 active:opacity-70"
+              style={styles.editBtn}
+              accessibilityLabel="Edit Business Profile"
             >
-              <ThemedText className="text-[11px] font-bold text-gray-700">Edit</ThemedText>
+              <ThemedText style={styles.editBtnText}>Manage</ThemedText>
             </Pressable>
           </View>
 
-          <View className="p-3.5 rounded-2xl bg-[#F9FAFB] border border-gray-100 gap-1.5">
-            <ThemedText className="text-[11px] font-bold uppercase tracking-wider text-gray-400">
-              Registered Entity
-            </ThemedText>
-            <ThemedText className="text-[16px] font-black text-gray-900">
-              {activeBusiness?.name || 'NetWorth Ethiopia'}
-            </ThemedText>
-            <View className="flex-row items-center gap-3 mt-1">
-              <ThemedText className="text-[12px] font-medium text-gray-500">
-                TIN: {activeBusiness?.tinNumber || '0049182390'}
+          {/* Business Entity Overview Box */}
+          <View style={[styles.entityBox, { backgroundColor: colors.backgroundSelected }]}>
+            <View style={styles.entityNameRow}>
+              <ThemedText style={[styles.entityName, { color: colors.text }]} numberOfLines={1}>
+                {activeBusiness?.name || 'NetWorth Ethiopia'}
               </ThemedText>
-              <ThemedText className="text-[12px] font-medium text-gray-400">·</ThemedText>
-              <ThemedText className="text-[12px] font-medium text-gray-500">
-                Category: Retail & Trade
+              <View style={styles.verifiedBadge}>
+                <ShieldCheckIcon size={12} color="#065F46" strokeWidth={2.2} />
+                <ThemedText style={styles.verifiedBadgeText}>Verified</ThemedText>
+              </View>
+            </View>
+
+            <View style={styles.entityMetaRow}>
+              <ThemedText style={styles.entityMetaLabel}>
+                TIN: <ThemedText style={[styles.entityMetaValue, { color: colors.text }]}>{activeBusiness?.tinNumber || '0049182390'}</ThemedText>
+              </ThemedText>
+              <ThemedText style={styles.entityMetaDivider}>•</ThemedText>
+              <ThemedText style={styles.entityMetaLabel}>
+                Category: <ThemedText style={[styles.entityMetaValue, { color: colors.text }]}>Retail & Trade</ThemedText>
               </ThemedText>
             </View>
           </View>
 
-          {/* Active Branch Switcher */}
-          <View className="gap-2">
-            <View className="flex-row items-center justify-between">
-              <ThemedText className="text-[12px] font-bold uppercase tracking-wider text-gray-500">
-                Active Branch: {activeBranch?.name || 'Main Branch'}
-              </ThemedText>
-              <Pressable onPress={() => router.push('/(business)/branches' as any)}>
-                <ThemedText className="text-[12px] font-bold text-brand">
-                  Manage ({branches.length})
+          {/* Active Branch Quick Selector */}
+          <View style={styles.branchSelectorSection}>
+            <View style={styles.branchSelectorHeader}>
+              <View style={styles.branchLabelGroup}>
+                <MapPinIcon size={13} color="#64748B" strokeWidth={2} />
+                <ThemedText style={styles.branchSelectorTitle}>
+                  Active Branch: <ThemedText style={[styles.branchSelectorActiveName, { color: colors.text }]}>{activeBranch?.name || 'Main Branch'}</ThemedText>
+                </ThemedText>
+              </View>
+
+              <Pressable
+                onPress={() => router.push('/(business)/branches' as any)}
+                hitSlop={8}
+              >
+                <ThemedText style={styles.branchCountLink}>
+                  All Branches ({branches.length})
                 </ThemedText>
               </Pressable>
             </View>
 
-            {/* Quick Branch Switcher Chips */}
-            {branches.length > 0 ? (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-2 py-1">
-                {branches.map((branch: any) => {
-                  const isCurrent = activeBranch?.id === branch.id;
-                  return (
-                    <Pressable
-                      key={branch.id}
-                      onPress={() => switchBranch(branch.id)}
+            {/* Branch Selector Chips Horizontal Bar */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.branchChipsContainer}
+            >
+              {branches.map((branch: any) => {
+                const isCurrent = activeBranch?.id === branch.id;
+                return (
+                  <Pressable
+                    key={branch.id}
+                    onPress={() => switchBranch(branch.id)}
+                    style={[
+                      styles.branchChip,
+                      {
+                        backgroundColor: isCurrent ? '#ECFDF5' : colors.backgroundSelected,
+                        borderColor: isCurrent ? '#065F46' : 'transparent',
+                      },
+                    ]}
+                  >
+                    <View
                       style={[
-                        styles.branchChip,
-                        isCurrent && styles.branchChipActive,
+                        styles.branchChipDot,
+                        { backgroundColor: isCurrent ? '#065F46' : '#94A3B8' },
+                      ]}
+                    />
+                    <ThemedText
+                      style={[
+                        styles.branchChipText,
+                        {
+                          color: isCurrent ? '#065F46' : colors.textSecondary,
+                          fontWeight: isCurrent ? '800' : '600',
+                        },
                       ]}
                     >
-                      <View
-                        className={`w-2 h-2 rounded-full ${isCurrent ? 'bg-brand' : 'bg-gray-300'}`}
-                      />
-                      <ThemedText
-                        className={`text-[13px] ${isCurrent ? 'font-black text-brand-dark' : 'font-medium text-gray-700'}`}
-                      >
-                        {branch.name}
-                      </ThemedText>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            ) : null}
+                      {branch.name}
+                    </ThemedText>
+                  </Pressable>
+                );
+              })}
+
+              {/* Add New Branch Chip */}
+              <Pressable
+                onPress={() => router.push('/(business)/create-branch' as any)}
+                style={[styles.addBranchChip, { borderColor: colors.backgroundSelected }]}
+              >
+                <PlusIcon size={13} color="#065F46" strokeWidth={2.5} />
+                <ThemedText style={styles.addBranchChipText}>Add Branch</ThemedText>
+              </Pressable>
+            </ScrollView>
           </View>
         </View>
 
-        {/* 3. MANAGEMENT SHORTCUTS */}
-        <View className="mt-4 p-4 rounded-3xl bg-white border border-gray-100 shadow-sm gap-1">
-          <ThemedText className="text-[11px] font-extrabold uppercase tracking-wider text-gray-400 px-2 mb-1">
-            Quick Actions
+        {/* 3. BUSINESS MANAGEMENT & SHORTCUTS */}
+        <View style={[styles.card, { backgroundColor: colors.backgroundElement, borderColor: colors.backgroundSelected }]}>
+          <ThemedText style={styles.sectionHeaderLabel}>
+            Business Settings
           </ThemedText>
 
+          {/* Action: Branch Management */}
           <Pressable
             onPress={() => router.push('/(business)/branches' as any)}
-            style={styles.actionRow}
+            style={({ pressed }) => [
+              styles.menuItem,
+              pressed && { backgroundColor: colors.backgroundSelected },
+            ]}
           >
-            <View className="flex-row items-center gap-3">
-              <View className="w-8 h-8 rounded-xl bg-blue-50 items-center justify-center">
-                <ThemedText className="text-[15px]">🏢</ThemedText>
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.iconBox, { backgroundColor: '#EFF6FF' }]}>
+                <BuildingIcon size={17} color="#2563EB" strokeWidth={2.2} />
               </View>
-              <ThemedText className="text-[14px] font-bold text-gray-800">
-                Branch Management
-              </ThemedText>
+              <View>
+                <ThemedText style={[styles.menuItemTitle, { color: colors.text }]}>
+                  Branch Locations
+                </ThemedText>
+                <ThemedText style={styles.menuItemSubtitle}>
+                  View and manage store locations
+                </ThemedText>
+              </View>
             </View>
-            <ThemedText className="text-[16px] text-gray-400 font-bold">›</ThemedText>
+            <ChevronRightIcon size={17} color="#94A3B8" />
           </Pressable>
 
-          <Pressable
-            onPress={() => router.push('/(business)/create-branch' as any)}
-            style={styles.actionRow}
-          >
-            <View className="flex-row items-center gap-3">
-              <View className="w-8 h-8 rounded-xl bg-brand-soft items-center justify-center">
-                <ThemedText className="text-[15px]">➕</ThemedText>
-              </View>
-              <ThemedText className="text-[14px] font-bold text-gray-800">
-                Add New Branch
-              </ThemedText>
-            </View>
-            <ThemedText className="text-[16px] text-gray-400 font-bold">›</ThemedText>
-          </Pressable>
+          <View style={[styles.menuDivider, { backgroundColor: colors.backgroundSelected }]} />
 
+          {/* Action: Business Profile & Tax */}
           <Pressable
             onPress={() => router.push('/(business)/business-profile' as any)}
-            style={styles.actionRow}
+            style={({ pressed }) => [
+              styles.menuItem,
+              pressed && { backgroundColor: colors.backgroundSelected },
+            ]}
           >
-            <View className="flex-row items-center gap-3">
-              <View className="w-8 h-8 rounded-xl bg-purple-50 items-center justify-center">
-                <ThemedText className="text-[15px]">⚙️</ThemedText>
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.iconBox, { backgroundColor: '#F5F3FF' }]}>
+                <SettingsIcon size={17} color="#7C3AED" strokeWidth={2.2} />
               </View>
-              <ThemedText className="text-[14px] font-bold text-gray-800">
-                Business Settings & Profile
-              </ThemedText>
+              <View>
+                <ThemedText style={[styles.menuItemTitle, { color: colors.text }]}>
+                  Business Profile & TIN
+                </ThemedText>
+                <ThemedText style={styles.menuItemSubtitle}>
+                  Legal name, tax number, registration
+                </ThemedText>
+              </View>
             </View>
-            <ThemedText className="text-[16px] text-gray-400 font-bold">›</ThemedText>
+            <ChevronRightIcon size={17} color="#94A3B8" />
+          </Pressable>
+
+          <View style={[styles.menuDivider, { backgroundColor: colors.backgroundSelected }]} />
+
+          {/* Action: Add New Branch */}
+          <Pressable
+            onPress={() => router.push('/(business)/create-branch' as any)}
+            style={({ pressed }) => [
+              styles.menuItem,
+              pressed && { backgroundColor: colors.backgroundSelected },
+            ]}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.iconBox, { backgroundColor: '#ECFDF5' }]}>
+                <PlusIcon size={17} color="#065F46" strokeWidth={2.5} />
+              </View>
+              <View>
+                <ThemedText style={[styles.menuItemTitle, { color: colors.text }]}>
+                  Create New Branch
+                </ThemedText>
+                <ThemedText style={styles.menuItemSubtitle}>
+                  Expand with a new branch location
+                </ThemedText>
+              </View>
+            </View>
+            <ChevronRightIcon size={17} color="#94A3B8" />
           </Pressable>
         </View>
 
-        {/* 4. SYSTEM & PREFERENCES */}
-        <View className="mt-4 p-4 rounded-3xl bg-white border border-gray-100 shadow-sm gap-2">
-          <ThemedText className="text-[11px] font-extrabold uppercase tracking-wider text-gray-400 px-2 mb-1">
-            System & Currency
+        {/* 4. SYSTEM, SYNC & PREFERENCES */}
+        <View style={[styles.card, { backgroundColor: colors.backgroundElement, borderColor: colors.backgroundSelected }]}>
+          <ThemedText style={styles.sectionHeaderLabel}>
+            System & Sync
           </ThemedText>
 
-          <View style={styles.preferenceRow}>
-            <ThemedText className="text-[13px] font-semibold text-gray-700">
-              Primary Currency
-            </ThemedText>
-            <View className="px-2.5 py-1 rounded-lg bg-brand-soft border border-brand-light">
-              <ThemedText className="text-[11px] font-bold text-brand-dark">
-                ETB (Ethiopian Birr)
-              </ThemedText>
+          {/* Cloud Sync Row */}
+          <Pressable
+            onPress={handleSyncPress}
+            style={({ pressed }) => [
+              styles.menuItem,
+              pressed && { backgroundColor: colors.backgroundSelected },
+            ]}
+          >
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.iconBox, { backgroundColor: '#F0FDF4' }]}>
+                {isSyncing ? (
+                  <ActivityIndicator size="small" color="#065F46" />
+                ) : (
+                  <CloudIcon size={17} color="#065F46" strokeWidth={2.2} />
+                )}
+              </View>
+              <View>
+                <ThemedText style={[styles.menuItemTitle, { color: colors.text }]}>
+                  Cloud Synchronization
+                </ThemedText>
+                <ThemedText style={styles.menuItemSubtitle}>
+                  Tap to check sync status
+                </ThemedText>
+              </View>
             </View>
-          </View>
 
-          <View style={styles.preferenceRow}>
-            <View className="flex-row items-center gap-2">
-              <ThemedText className="text-[15px]">☁️</ThemedText>
-              <ThemedText className="text-[13px] font-semibold text-gray-700">
-                Cloud Sync Status
-              </ThemedText>
-            </View>
-
-            <Pressable
-              onPress={() => {
-                if (isSyncing) {
-                  Alert.alert('Sync in Progress', 'Currently syncing pending changes with the server.');
-                } else if (!isOnline) {
-                  Alert.alert(
-                    'Offline Mode',
-                    'You are currently offline. Changes are saved locally and will automatically sync once your connection is restored.'
-                  );
-                } else if (pendingCount > 0) {
-                  Alert.alert(
-                    'Unsynced Changes',
-                    `You have ${pendingCount} pending offline update(s). Tap Sync Now to push them immediately.`,
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      { text: 'Sync Now', onPress: () => triggerSync() },
-                    ]
-                  );
-                } else {
-                  Alert.alert(
-                    'Cloud Sync Status',
-                    'Your device is connected and all data is fully synchronized with the server.',
-                    [{ text: 'OK' }]
-                  );
-                }
-              }}
+            <View
               style={[
-                styles.syncStatusBadge,
-                !isOnline && styles.syncStatusOffline,
-                pendingCount > 0 && styles.syncStatusPending,
+                styles.syncPill,
+                !isOnline && styles.syncPillOffline,
+                pendingCount > 0 && styles.syncPillPending,
               ]}
             >
               <View
                 style={[
-                  styles.syncDotGreen,
+                  styles.syncDot,
                   !isOnline && styles.syncDotOffline,
                   pendingCount > 0 && styles.syncDotPending,
                 ]}
               />
               <ThemedText
                 style={[
-                  styles.syncTextGreen,
-                  !isOnline && styles.syncTextOffline,
-                  pendingCount > 0 && styles.syncTextPending,
+                  styles.syncPillText,
+                  !isOnline && styles.syncPillTextOffline,
+                  pendingCount > 0 && styles.syncPillTextPending,
                 ]}
               >
                 {isSyncing
-                  ? '🔄 Syncing...'
+                  ? 'Syncing...'
                   : !isOnline
-                  ? '📶 Offline'
+                  ? 'Offline'
                   : pendingCount > 0
-                  ? `🟡 ${pendingCount} Unsynced`
-                  : '🟢 Synced'}
+                  ? `${pendingCount} Unsynced`
+                  : 'Synced'}
               </ThemedText>
-            </Pressable>
-          </View>
+            </View>
+          </Pressable>
 
-          <View style={styles.preferenceRow}>
-            <ThemedText className="text-[13px] font-semibold text-gray-700">
-              App Version
-            </ThemedText>
-            <ThemedText className="text-[12px] font-medium text-gray-400">
-              1.0.0 (Expo SDK 57)
-            </ThemedText>
-          </View>
-        </View>
+          <View style={[styles.menuDivider, { backgroundColor: colors.backgroundSelected }]} />
 
-        {/* 5. SIGN OUT BUTTON */}
-        <View className="mt-6">
-          <Pressable
-            onPress={handleSignOut}
-            disabled={isLoggingOut}
-            style={styles.signOutBtn}
-          >
-            {isLoggingOut ? (
-              <ActivityIndicator color="#EF4444" />
-            ) : (
-              <View className="flex-row items-center gap-2">
-                <ThemedText style={{ fontSize: 16 }}>🚪</ThemedText>
-                <ThemedText className="text-[14px] font-bold text-[#EF4444]">
-                  Sign Out of NetWorth
+          {/* Currency Row */}
+          <View style={styles.menuItem}>
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.iconBox, { backgroundColor: '#FEF3C7' }]}>
+                <BanknoteIcon size={17} color="#B45309" strokeWidth={2.2} />
+              </View>
+              <View>
+                <ThemedText style={[styles.menuItemTitle, { color: colors.text }]}>
+                  Base Currency
+                </ThemedText>
+                <ThemedText style={styles.menuItemSubtitle}>
+                  Ethiopian Birr
                 </ThemedText>
               </View>
-            )}
-          </Pressable>
+            </View>
+            <View style={styles.currencyBadge}>
+              <ThemedText style={styles.currencyBadgeText}>ETB</ThemedText>
+            </View>
+          </View>
+
+          <View style={[styles.menuDivider, { backgroundColor: colors.backgroundSelected }]} />
+
+          {/* Version Info Row */}
+          <View style={styles.menuItem}>
+            <View style={styles.menuItemLeft}>
+              <View style={[styles.iconBox, { backgroundColor: colors.backgroundSelected }]}>
+                <CheckCircleIcon size={17} color="#64748B" strokeWidth={2.2} />
+              </View>
+              <View>
+                <ThemedText style={[styles.menuItemTitle, { color: colors.text }]}>
+                  App Version
+                </ThemedText>
+                <ThemedText style={styles.menuItemSubtitle}>
+                  NetWorth Ethiopia Mobile
+                </ThemedText>
+              </View>
+            </View>
+            <ThemedText style={styles.versionText}>1.0.0 (SDK 57)</ThemedText>
+          </View>
         </View>
+
+        {/* 5. LOGOUT BUTTON */}
+        <Pressable
+          onPress={handleSignOut}
+          disabled={isLoggingOut}
+          style={({ pressed }) => [
+            styles.signOutBtn,
+            pressed && { opacity: 0.8 },
+          ]}
+        >
+          {isLoggingOut ? (
+            <ActivityIndicator color="#DC2626" size="small" />
+          ) : (
+            <View style={styles.signOutInner}>
+              <LogOutIcon size={18} color="#DC2626" strokeWidth={2.2} />
+              <ThemedText style={styles.signOutText}>
+                Sign Out of NetWorth
+              </ThemedText>
+            </View>
+          )}
+        </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  userCard: {
-    padding: 18,
-    borderRadius: 24,
-    backgroundColor: '#FFFFFF',
+  safeArea: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 110,
+    gap: 12,
+  },
+
+  /* Base Cards */
+  card: {
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#F3F4F6',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    padding: 16,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 6,
     elevation: 2,
   },
+
+  /* 1. Hero User Profile Card */
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  avatarWrapper: {
+    position: 'relative',
+  },
   avatarCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: '#065F46',
+    width: 58,
+    height: 58,
+    borderRadius: 29,
+    backgroundColor: '#065F46', // Ethiopian Emerald
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: '#ECFDF5',
+    shadowColor: '#065F46',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  avatarText: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: -0.5,
+  },
+  onlineBadge: {
+    position: 'absolute',
+    bottom: -1,
+    right: -1,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  onlineDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#10B981',
+  },
+  heroInfo: {
+    flex: 1,
+    gap: 3,
+  },
+  heroNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  heroName: {
+    fontSize: 17,
+    fontWeight: '900',
+    letterSpacing: -0.3,
   },
   roleBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    backgroundColor: 'rgba(6, 95, 70, 0.1)',
+    paddingHorizontal: 7,
+    paddingVertical: 1.5,
+    borderRadius: 8,
+    backgroundColor: '#ECFDF5',
     borderWidth: 1,
-    borderColor: 'rgba(6, 95, 70, 0.2)',
+    borderColor: '#A7F3D0',
+  },
+  roleBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#065F46',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  heroEmail: {
+    fontSize: 12.5,
+    fontWeight: '500',
+    color: '#64748B',
+  },
+  heroEntityPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 2,
+  },
+  heroEntityText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#065F46',
+  },
+
+  /* 2. Business & Branches Card */
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  cardHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  cardSectionTitle: {
+    fontSize: 14.5,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+  },
+  cardSectionSubtitle: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#94A3B8',
+    marginTop: 0.5,
+  },
+  iconBox: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  editBtn: {
+    paddingHorizontal: 11,
+    paddingVertical: 5,
+    borderRadius: 10,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  editBtnText: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#065F46',
+  },
+
+  /* Entity Overview Box */
+  entityBox: {
+    padding: 12,
+    borderRadius: 14,
+    gap: 6,
+    marginBottom: 12,
+  },
+  entityNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  entityName: {
+    fontSize: 15,
+    fontWeight: '800',
+    flex: 1,
+    marginRight: 8,
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3.5,
+    paddingHorizontal: 6,
+    paddingVertical: 1.5,
+    borderRadius: 6,
+    backgroundColor: '#ECFDF5',
+  },
+  verifiedBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#065F46',
+  },
+  entityMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  entityMetaLabel: {
+    fontSize: 11.5,
+    fontWeight: '500',
+    color: '#64748B',
+  },
+  entityMetaValue: {
+    fontWeight: '700',
+  },
+  entityMetaDivider: {
+    fontSize: 10,
+    color: '#CBD5E1',
+  },
+
+  /* Branch Selector Section */
+  branchSelectorSection: {
+    gap: 8,
+  },
+  branchSelectorHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  branchLabelGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  branchSelectorTitle: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  branchSelectorActiveName: {
+    fontWeight: '800',
+  },
+  branchCountLink: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#065F46',
+  },
+  branchChipsContainer: {
+    gap: 6,
+    paddingVertical: 2,
   },
   branchChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
     borderRadius: 12,
-    backgroundColor: '#F3F4F6',
-    marginRight: 8,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
   },
-  branchChipActive: {
+  branchChipDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  branchChipText: {
+    fontSize: 12,
+  },
+  addBranchChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    backgroundColor: 'transparent',
+  },
+  addBranchChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#065F46',
+  },
+
+  /* 3 & 4. Grouped Menus */
+  sectionHeaderLabel: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#94A3B8',
+    textTransform: 'uppercase',
+    letterSpacing: 0.7,
+    marginBottom: 6,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 9,
+    paddingHorizontal: 4,
+    borderRadius: 12,
+  },
+  menuItemLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  menuItemTitle: {
+    fontSize: 13.5,
+    fontWeight: '700',
+  },
+  menuItemSubtitle: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: '#94A3B8',
+    marginTop: 1,
+  },
+  menuDivider: {
+    height: 1,
+    marginVertical: 2,
+  },
+
+  /* System Indicators */
+  syncPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 3.5,
+    borderRadius: 10,
     backgroundColor: '#ECFDF5',
+    borderWidth: 1,
     borderColor: '#A7F3D0',
   },
-  actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderRadius: 14,
+  syncPillOffline: {
+    backgroundColor: '#F1F5F9',
+    borderColor: '#E2E8F0',
   },
-  preferenceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 8,
+  syncPillPending: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
   },
+  syncDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
+  },
+  syncDotOffline: {
+    backgroundColor: '#94A3B8',
+  },
+  syncDotPending: {
+    backgroundColor: '#D97706',
+  },
+  syncPillText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#065F46',
+  },
+  syncPillTextOffline: {
+    color: '#64748B',
+  },
+  syncPillTextPending: {
+    color: '#92400E',
+  },
+  currencyBadge: {
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 8,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  currencyBadgeText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#B45309',
+  },
+  versionText: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+
+  /* 5. Sign Out Button */
   signOutBtn: {
-    paddingVertical: 14,
+    marginTop: 4,
+    paddingVertical: 13,
     borderRadius: 16,
     backgroundColor: '#FEF2F2',
     borderWidth: 1,
@@ -421,51 +882,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  syncStatusBadge: {
+  signOutInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    backgroundColor: '#ECFDF5',
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
+    gap: 8,
   },
-  syncStatusOffline: {
-    backgroundColor: '#F3F4F6',
-    borderColor: '#E5E7EB',
-  },
-  syncStatusPending: {
-    backgroundColor: '#FFFBEB',
-    borderColor: '#FDE68A',
-  },
-  syncDotGreen: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10B981',
-  },
-  syncDotOffline: {
-    backgroundColor: '#9CA3AF',
-  },
-  syncDotPending: {
-    backgroundColor: '#F59E0B',
-  },
-  syncTextGreen: {
-    fontSize: 11.5,
-    fontWeight: '700',
-    color: '#065F46',
-  },
-  syncTextOffline: {
-    fontSize: 11.5,
-    fontWeight: '700',
-    color: '#4B5563',
-  },
-  syncTextPending: {
-    fontSize: 11.5,
-    fontWeight: '700',
-    color: '#92400E',
+  signOutText: {
+    fontSize: 13.5,
+    fontWeight: '800',
+    color: '#DC2626',
   },
 });
-

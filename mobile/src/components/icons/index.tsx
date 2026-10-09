@@ -312,3 +312,70 @@ export function ArrowUpRightIcon({ size = 18, color = '#EF4444', strokeWidth = 2
   );
 }
 
+export function BuildingIcon({ size = 20, color = '#64748B', strokeWidth = 2 }: IconProps) {
+  return (
+    <SafeSvg size={size} fallbackSymbol="🏢" fallbackColor={color}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
+        <Path d="M9 22v-4h6v4" />
+        <Path d="M8 6h.01M16 6h.01M8 10h.01M16 10h.01M8 14h.01M16 14h.01" />
+      </Svg>
+    </SafeSvg>
+  );
+}
+
+export function SettingsIcon({ size = 20, color = '#64748B', strokeWidth = 2 }: IconProps) {
+  return (
+    <SafeSvg size={size} fallbackSymbol="⚙" fallbackColor={color}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Circle cx="12" cy="12" r="3" />
+        <Path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      </Svg>
+    </SafeSvg>
+  );
+}
+
+export function LogOutIcon({ size = 20, color = '#EF4444', strokeWidth = 2 }: IconProps) {
+  return (
+    <SafeSvg size={size} fallbackSymbol="⎋" fallbackColor={color}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+        <Polyline points="16 17 21 12 16 7" />
+        <Line x1="21" y1="12" x2="9" y2="12" />
+      </Svg>
+    </SafeSvg>
+  );
+}
+
+export function CloudIcon({ size = 20, color = '#64748B', strokeWidth = 2 }: IconProps) {
+  return (
+    <SafeSvg size={size} fallbackSymbol="☁" fallbackColor={color}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+      </Svg>
+    </SafeSvg>
+  );
+}
+
+export function ShieldCheckIcon({ size = 20, color = '#065F46', strokeWidth = 2 }: IconProps) {
+  return (
+    <SafeSvg size={size} fallbackSymbol="🛡" fallbackColor={color}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <Polyline points="9 12 11 14 15 10" />
+      </Svg>
+    </SafeSvg>
+  );
+}
+
+export function MapPinIcon({ size = 20, color = '#64748B', strokeWidth = 2 }: IconProps) {
+  return (
+    <SafeSvg size={size} fallbackSymbol="📍" fallbackColor={color}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+        <Circle cx="12" cy="10" r="3" />
+      </Svg>
+    </SafeSvg>
+  );
+}
+
