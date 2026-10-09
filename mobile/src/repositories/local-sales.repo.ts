@@ -221,6 +221,52 @@ export const localSalesRepo = {
   },
 
   /**
+   * Computes yesterday's sales revenue directly from SQLite.
+   */
+  async getYesterdayRevenueMetric(
+    businessId: string,
+    branchId?: string
+  ): Promise<{ revenue: number; saleCount: number }> {
+    const db = await getDatabase();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const year = yesterday.getFullYear();
+    const month = String(yesterday.getMonth() + 1).padStart(2, '0');
+    const day = String(yesterday.getDate()).padStart(2, '0');
+    const yesterdayPrefix = `${year}-${month}-${day}%`;
+
+    let query = `
+      SELECT 
+        COALESCE(SUM(amount), 0) AS revenue,
+        COUNT(*) AS count
+      FROM local_sale
+      WHERE business_id = ? 
+        AND sale_type = 'instant'
+        AND (
+          created_at LIKE ?
+          OR date(created_at, 'localtime') = date('now', '-1 day', 'localtime')
+          OR date(created_at) = date('now', '-1 day')
+        )
+    `;
+    const params: any[] = [businessId, yesterdayPrefix];
+
+    if (branchId) {
+      query += ` AND branch_id = ?`;
+      params.push(branchId);
+    }
+
+    const result = await db.getFirstAsync<{ revenue: number; count: number }>(
+      query,
+      params
+    );
+
+    return {
+      revenue: Number(result?.revenue ?? 0),
+      saleCount: Number(result?.count ?? 0),
+    };
+  },
+
+  /**
    * Bulk upserts remote sales pulled from backend sync.
    * Protects locally modified/pending records from overwrite.
    */

@@ -1,27 +1,42 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
+import type { DailyTrendPoint, PaymentChannelItem } from '@/types/dashboard';
+
+export type { DailyTrendPoint, PaymentChannelItem };
 
 // ==========================================
 // 1. WEEKLY SALES BAR CHART (Clean & Responsive)
 // ==========================================
 
-export function SalesTrendAreaChart() {
-  const dataPoints = [
-    { label: 'Mon', val: '12k', heightPct: 62 },
-    { label: 'Tue', val: '14.5k', heightPct: 75 },
-    { label: 'Wed', val: '9.8k', heightPct: 50 },
-    { label: 'Thu', val: '16.2k', heightPct: 84 },
-    { label: 'Fri', val: '19k', peak: true, heightPct: 100 },
-    { label: 'Sat', val: '15.4k', heightPct: 80 },
-    { label: 'Sun', val: '18.5k', active: true, heightPct: 95 },
+export interface SalesTrendChartProps {
+  dataPoints?: DailyTrendPoint[];
+  avgText?: string;
+  hasData?: boolean;
+}
+
+export function SalesTrendAreaChart({
+  dataPoints,
+  avgText,
+  hasData = true,
+}: SalesTrendChartProps) {
+  const defaultPoints: DailyTrendPoint[] = [
+    { label: 'Mon', val: '0', heightPct: 4 },
+    { label: 'Tue', val: '0', heightPct: 4 },
+    { label: 'Wed', val: '0', heightPct: 4 },
+    { label: 'Thu', val: '0', heightPct: 4 },
+    { label: 'Fri', val: '0', heightPct: 4 },
+    { label: 'Sat', val: '0', heightPct: 4 },
+    { label: 'Sun', val: '0', heightPct: 4, active: true },
   ];
+
+  const points = dataPoints && dataPoints.length > 0 ? dataPoints : defaultPoints;
 
   return (
     <View style={styles.chartContainer}>
       {/* Bars Row */}
       <View style={styles.barsRow}>
-        {dataPoints.map((pt, idx) => (
+        {points.map((pt, idx) => (
           <View key={idx} style={styles.barColumn}>
             {/* Value Label */}
             <ThemedText
@@ -30,6 +45,7 @@ export function SalesTrendAreaChart() {
                 pt.active && styles.activeValueText,
                 pt.peak && styles.peakValueText,
               ]}
+              numberOfLines={1}
             >
               {pt.val}
             </ThemedText>
@@ -40,12 +56,14 @@ export function SalesTrendAreaChart() {
                 style={[
                   styles.barFill,
                   {
-                    height: `${pt.heightPct}%`,
+                    height: `${Math.max(4, Math.min(100, pt.heightPct))}%`,
                     backgroundColor: pt.active
                       ? '#065F46'
                       : pt.peak
-                      ? '#F59E0B'
-                      : '#D1FAE5',
+                      ? '#D97706'
+                      : pt.heightPct > 4
+                      ? '#A7F3D0'
+                      : '#E2E8F0',
                   },
                 ]}
               />
@@ -72,13 +90,15 @@ export function SalesTrendAreaChart() {
             <ThemedText style={styles.legendText}>Today (Active)</ThemedText>
           </View>
           <View style={styles.legendItem}>
-            <View style={[styles.legendDot, { backgroundColor: '#F59E0B' }]} />
+            <View style={[styles.legendDot, { backgroundColor: '#D97706' }]} />
             <ThemedText style={styles.legendText}>Weekly Peak</ThemedText>
           </View>
         </View>
 
         <View style={styles.peakBadge}>
-          <ThemedText style={styles.peakBadgeText}>Avg: 15.2k ETB/day</ThemedText>
+          <ThemedText style={styles.peakBadgeText}>
+            {avgText || (hasData ? 'Avg: 0 ETB/day' : 'No sales this week')}
+          </ThemedText>
         </View>
       </View>
     </View>
@@ -89,47 +109,82 @@ export function SalesTrendAreaChart() {
 // 2. PAYMENT CHANNELS BREAKDOWN
 // ==========================================
 
-export function PaymentChannelDonutChart() {
+export interface PaymentChannelChartProps {
+  channels?: PaymentChannelItem[];
+  hasData?: boolean;
+}
+
+export function PaymentChannelDonutChart({
+  channels,
+  hasData = true,
+}: PaymentChannelChartProps) {
+  const defaultChannels: PaymentChannelItem[] = [
+    {
+      id: 'telebirr',
+      name: 'Telebirr',
+      percentage: 0,
+      amount: 0,
+      amountFormatted: '0 ETB',
+      color: '#0284C7',
+    },
+    {
+      id: 'cbe',
+      name: 'CBE Birr',
+      percentage: 0,
+      amount: 0,
+      amountFormatted: '0 ETB',
+      color: '#065F46',
+    },
+    {
+      id: 'cash',
+      name: 'Cash at Counter',
+      percentage: 0,
+      amount: 0,
+      amountFormatted: '0 ETB',
+      color: '#D97706',
+    },
+  ];
+
+  const displayChannels = channels && channels.length > 0 ? channels : defaultChannels;
+
+  // Filter channels that have percentage > 0 for progress bar
+  const activeSegments = displayChannels.filter((c) => c.percentage > 0);
+
   return (
     <View style={styles.paymentContainer}>
       {/* Multi-segment Progress Bar */}
       <View style={styles.segmentedBar}>
-        <View style={[styles.segment, { width: '55%', backgroundColor: '#0284C7' }]} />
-        <View style={[styles.segment, { width: '30%', backgroundColor: '#065F46' }]} />
-        <View style={[styles.segment, { width: '15%', backgroundColor: '#F59E0B' }]} />
+        {hasData && activeSegments.length > 0 ? (
+          activeSegments.map((c) => (
+            <View
+              key={c.id}
+              style={[
+                styles.segment,
+                {
+                  width: `${c.percentage}%`,
+                  backgroundColor: c.color,
+                },
+              ]}
+            />
+          ))
+        ) : (
+          <View style={[styles.segment, { width: '100%', backgroundColor: '#E2E8F0' }]} />
+        )}
       </View>
 
       {/* Channels Grid */}
       <View style={styles.channelsList}>
-        <View style={styles.channelRow}>
-          <View style={styles.channelLeft}>
-            <View style={[styles.channelDot, { backgroundColor: '#0284C7' }]} />
-            <ThemedText style={styles.channelName}>Telebirr</ThemedText>
+        {displayChannels.map((c) => (
+          <View key={c.id} style={styles.channelRow}>
+            <View style={styles.channelLeft}>
+              <View style={[styles.channelDot, { backgroundColor: c.color }]} />
+              <ThemedText style={styles.channelName}>{c.name}</ThemedText>
+            </View>
+            <ThemedText style={[styles.channelAmount, { color: c.color }]}>
+              {c.percentage}% · {c.amountFormatted}
+            </ThemedText>
           </View>
-          <ThemedText style={[styles.channelAmount, { color: '#0284C7' }]}>
-            55% · 10,147 ETB
-          </ThemedText>
-        </View>
-
-        <View style={styles.channelRow}>
-          <View style={styles.channelLeft}>
-            <View style={[styles.channelDot, { backgroundColor: '#065F46' }]} />
-            <ThemedText style={styles.channelName}>CBE Birr</ThemedText>
-          </View>
-          <ThemedText style={[styles.channelAmount, { color: '#065F46' }]}>
-            30% · 5,535 ETB
-          </ThemedText>
-        </View>
-
-        <View style={styles.channelRow}>
-          <View style={styles.channelLeft}>
-            <View style={[styles.channelDot, { backgroundColor: '#F59E0B' }]} />
-            <ThemedText style={styles.channelName}>Cash at Counter</ThemedText>
-          </View>
-          <ThemedText style={[styles.channelAmount, { color: '#D97706' }]}>
-            15% · 2,768 ETB
-          </ThemedText>
-        </View>
+        ))}
       </View>
     </View>
   );

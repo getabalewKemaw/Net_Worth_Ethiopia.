@@ -1,23 +1,30 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { ScrollView, View, ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import {
+  ScrollView,
+  View,
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  RefreshControl,
+} from 'react-native';
 import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { HamburgerHeader } from '@/components/navigation/hamburger-drawer';
 import { useBusinessStore } from '@/store/business-store';
+import { useSalesStore } from '@/store/sales-store';
+import { useBidrStore } from '@/store/bidr-store';
 import { useTheme } from '@/hooks/use-theme';
-import { localSalesRepo } from '@/repositories/local-sales.repo';
-import { localBidrRepo } from '@/repositories/local-bidr.repo';
-import { localExpensesRepo } from '@/repositories/local-expenses.repo';
 import { useNetworkSync } from '@/hooks/use-network-sync';
-import { isSQLiteAvailable } from '@/db/client';
-import { fetchSales } from '@/service/sales';
-import { fetchDebtSummary } from '@/service/bidr';
 import {
   SalesTrendAreaChart,
   PaymentChannelDonutChart,
 } from '@/components/charts/dashboard-charts';
+import {
+  fetchCompleteDashboardMetrics,
+  type DashboardMetricsResult,
+} from '@/service/dashboard';
 
 export default function HomeScreen() {
   const colors = useTheme();
@@ -25,100 +32,101 @@ export default function HomeScreen() {
   const activeBusiness = useBusinessStore((state) => state.activeBusiness);
   const branches = useBusinessStore((state) => state.branches);
   const activeBranch = useBusinessStore((state) => state.activeBranch);
-  const isPending = useBusinessStore((state) => state.isPending);
+  const switchBranch = useBusinessStore((state) => state.switchBranch);
+  const isBusinessPending = useBusinessStore((state) => state.isPending);
+  const refreshBusinessState = useBusinessStore((state) => state.refreshState);
 
   const { lastSyncTime } = useNetworkSync();
 
-  const [todayRevenue, setTodayRevenue] = useState<number>(0);
-  const [registeredDube, setRegisteredDube] = useState<number>(0);
-  const [todayExpense, setTodayExpense] = useState<number>(0);
+  const [metrics, setMetrics] = useState<DashboardMetricsResult | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // Load real metrics from SQLite / API
   const loadDashboardMetrics = useCallback(async () => {
-    if (!activeBusiness?.id) return;
-
-    if (!isSQLiteAvailable()) {
-      try {
-        const [salesList, dubeSummary] = await Promise.all([
-          fetchSales({ businessId: activeBusiness.id, branchId: activeBranch?.id }),
-          fetchDebtSummary(activeBusiness.id, activeBranch?.id),
-        ]);
-        const todayStr = new Date().toISOString().slice(0, 10);
-        const todaySales = (Array.isArray(salesList) ? salesList : []).filter(
-          (s: any) => s.createdAt && s.createdAt.startsWith(todayStr) && s.saleType !== 'dube'
-        );
-        const totalRev = todaySales.reduce((sum: number, s: any) => sum + (Number(s.amount) || 0), 0);
-        setTodayRevenue(totalRev);
-        setRegisteredDube(dubeSummary?.totalPendingAmount ?? 0);
-        setTodayExpense(0);
-      } catch (err) {
-        console.warn('[Dashboard] Online metrics fetch notice:', err);
-      }
+    if (!activeBusiness?.id) {
+      setMetrics(null);
+      setIsLoading(false);
       return;
     }
 
     try {
-      const [revData, dubeData, expData] = await Promise.all([
-        localSalesRepo.getTodayRevenueMetric(activeBusiness.id, activeBranch?.id),
-        localBidrRepo.getDebtSummaryMetric(activeBusiness.id, activeBranch?.id),
-        localExpensesRepo.getTodayExpenseMetric(activeBusiness.id, activeBranch?.id),
-      ]);
-      setTodayRevenue(revData.revenue);
-      setRegisteredDube(dubeData.totalPendingAmount);
-      setTodayExpense(expData.expenseTotal);
+      const data = await fetchCompleteDashboardMetrics(
+        activeBusiness.id,
+        activeBranch?.id,
+        branches,
+        {
+          sales: useSalesStore.getState().sales,
+          expenses: useSalesStore.getState().expenses,
+          debts: useBidrStore.getState().debts,
+        }
+      );
+      setMetrics(data);
     } catch (err) {
-      console.warn('[Dashboard] Failed to query local SQLite metrics:', err);
+      console.warn('[Dashboard] Metrics fetch notice:', err);
+    } finally {
+      setIsLoading(false);
     }
-  }, [activeBusiness?.id, activeBranch?.id]);
+  }, [activeBusiness?.id, activeBranch?.id, branches]);
 
-
+  // Initial and reactive load whenever business/branch or network sync changes
   useEffect(() => {
     loadDashboardMetrics();
   }, [loadDashboardMetrics, lastSyncTime]);
 
-  const displayBranches =
-    branches.length > 0
-      ? branches
-      : [
-          {
-            id: 'b1',
-            name: 'Main Branch (Piassa)',
-            city: 'Addis Ababa',
-            sales: '12,450 ETB',
-            debt: '18,200 ETB',
-            share: '67%',
-            active: true,
-          },
-          {
-            id: 'b2',
-            name: 'Bole Flagship Store',
-            city: 'Bole, Addis Ababa',
-            sales: '6,000 ETB',
-            debt: '14,600 ETB',
-            share: '33%',
-            active: false,
-          },
-        ];
+  // Pull-to-refresh with full store and backend sync
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      if (activeBusiness?.id) {
+        await Promise.all([
+          refreshBusinessState(),
+          useSalesStore.getState().refresh(activeBusiness.id, activeBranch?.id),
+          useBidrStore.getState().refresh(activeBusiness.id, activeBranch?.id),
+        ]);
+      }
+      await loadDashboardMetrics();
+    } catch (err) {
+      console.warn('[Dashboard] Refresh error:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [activeBusiness?.id, activeBranch?.id, refreshBusinessState, loadDashboardMetrics]);
+
+  const todayRevenue = metrics?.todayRevenue ?? 0;
+  const todayExpense = metrics?.todayExpense ?? 0;
+  const registeredDube = metrics?.registeredDube ?? 0;
+  const estimatedProfit = metrics?.estimatedProfit ?? 0;
+  const profitPercent = metrics?.profitPercent ?? 0;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Top Header */}
+      {/* Top Header Drawer Bar */}
       <HamburgerHeader activeTabId="dashboard" />
 
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor="#065F46"
+            colors={['#065F46']}
+          />
+        }
       >
-        {isPending ? (
+        {isLoading || isBusinessPending ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#065F46" />
             <ThemedText style={styles.loadingText}>
-              Loading operational metrics...
+              Loading live business metrics...
             </ThemedText>
           </View>
         ) : (
           <View style={{ gap: 12 }}>
-            {/* 1. HERO REVENUE CARD (Sleek, Balanced Ethiopian Emerald) */}
+            {/* 1. HERO REVENUE CARD (Live Ethiopian Forest Emerald) */}
             <View style={styles.heroCard}>
               {/* Card Top Row */}
               <View style={styles.heroTopRow}>
@@ -129,14 +137,20 @@ export default function HomeScreen() {
                   </ThemedText>
                 </View>
 
+                {/* Real Dynamic Growth / Activity Badge */}
                 <View style={styles.growthBadge}>
-                  <ThemedText style={styles.growthBadgeText}>
-                    ↑ +12.5%
+                  <ThemedText
+                    style={[
+                      styles.growthBadgeText,
+                      !metrics?.isGrowthPositive && { color: '#FCD34D' },
+                    ]}
+                  >
+                    {metrics?.growthBadgeText || 'Today'}
                   </ThemedText>
                 </View>
               </View>
 
-              {/* Main Balance Display - Reduced & Proportional */}
+              {/* Main Balance Display */}
               <View style={styles.heroAmountRow}>
                 <ThemedText style={styles.heroAmountText}>
                   {todayRevenue.toLocaleString('en-US', {
@@ -149,23 +163,23 @@ export default function HomeScreen() {
                 </ThemedText>
               </View>
 
-              {/* Card Bottom Stats Grid - Compact, Balanced & Refined */}
+              {/* Card Bottom Stats Grid: Profit & Credit Dube */}
               <View style={styles.heroStatsDivider}>
                 <View style={styles.heroStatColLeft}>
                   <ThemedText style={styles.heroSubLabel}>
                     Estimated Profit
                   </ThemedText>
                   <ThemedText style={styles.heroSubValue}>
-                    {Math.max(0, todayRevenue - todayExpense).toLocaleString('en-US')} ETB{' '}
+                    {estimatedProfit.toLocaleString('en-US')} ETB{' '}
                     <ThemedText style={styles.profitPercent}>
-                      ({todayRevenue > 0 ? Math.round((Math.max(0, todayRevenue - todayExpense) / todayRevenue) * 100) : 0}%)
+                      ({profitPercent}%)
                     </ThemedText>
                   </ThemedText>
                 </View>
 
                 <View style={styles.heroStatColRight}>
                   <ThemedText style={styles.heroSubLabel}>
-                    Registered Dube(debt)
+                    Registered Dube (Debt)
                   </ThemedText>
                   <ThemedText style={styles.heroDubeValue}>
                     {registeredDube.toLocaleString('en-US')} ETB
@@ -174,9 +188,9 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            {/* 2. UNIFIED QUICK ACTIONS (Connected directly to actual functionality/tabs) */}
+            {/* 2. UNIFIED QUICK ACTIONS (Connected directly to actual screens) */}
             <View style={styles.actionRow}>
-              {/* 1. Record Sale -> Navigates to Sales Tab */}
+              {/* Record Sale -> Sales Tab */}
               <Pressable
                 style={[styles.actionButton, styles.saleAction]}
                 onPress={() => router.push('/sales' as any)}
@@ -189,7 +203,7 @@ export default function HomeScreen() {
                 </ThemedText>
               </Pressable>
 
-              {/* 2. Log Expense -> Navigates to Expenses / Sales Tab */}
+              {/* Log Expense -> Expenses Screen */}
               <Pressable
                 style={[styles.actionButton, styles.expenseAction]}
                 onPress={() => router.push('/sales' as any)}
@@ -202,7 +216,7 @@ export default function HomeScreen() {
                 </ThemedText>
               </Pressable>
 
-              {/* 3. Manage Branches -> Navigates to Branches Screen */}
+              {/* Manage Branches -> Branches Screen */}
               <Pressable
                 style={[styles.actionButton, styles.branchesAction]}
                 onPress={() => router.push('/(business)/branches' as any)}
@@ -216,7 +230,7 @@ export default function HomeScreen() {
               </Pressable>
             </View>
 
-            {/* 3. WEEKLY SALES PERFORMANCE CHART */}
+            {/* 3. WEEKLY SALES PERFORMANCE CHART (Connected with Real Past 7 Days Data) */}
             <View style={styles.cleanCard}>
               <View style={styles.cardHeaderRow}>
                 <View>
@@ -235,11 +249,15 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              {/* Bar Chart Component */}
-              <SalesTrendAreaChart />
+              {/* Real Data Bar Chart */}
+              <SalesTrendAreaChart
+                dataPoints={metrics?.weeklySalesPoints}
+                avgText={metrics?.avgDailyRevenueText}
+                hasData={metrics?.hasWeeklySales}
+              />
             </View>
 
-            {/* 4. PAYMENT SETTLEMENT CHANNELS */}
+            {/* 4. PAYMENT SETTLEMENT CHANNELS (Connected with Real Payment Methods) */}
             <View style={styles.cleanCard}>
               <View style={styles.cardHeaderRow}>
                 <View>
@@ -247,7 +265,7 @@ export default function HomeScreen() {
                     Payment Channels
                   </ThemedText>
                   <ThemedText style={styles.sectionSubtitle}>
-                    Settlement share for today&apos;s sales
+                    Settlement share for business transactions
                   </ThemedText>
                 </View>
 
@@ -258,10 +276,14 @@ export default function HomeScreen() {
                 </View>
               </View>
 
-              <PaymentChannelDonutChart />
+              {/* Real Data Channels Breakdown */}
+              <PaymentChannelDonutChart
+                channels={metrics?.paymentChannels}
+                hasData={metrics?.hasPaymentData}
+              />
             </View>
 
-            {/* 5. MULTI-BRANCH STATUS */}
+            {/* 5. MULTI-BRANCH STATUS (Connected with Real Branches & Sales) */}
             <View style={styles.cleanCard}>
               <View style={styles.cardHeaderRow}>
                 <View>
@@ -269,7 +291,7 @@ export default function HomeScreen() {
                     Operating Branches
                   </ThemedText>
                   <ThemedText style={styles.sectionSubtitle}>
-                    Active locations ({displayBranches.length})
+                    Active locations ({metrics?.branchBreakdown?.length || branches.length})
                   </ThemedText>
                 </View>
 
@@ -284,21 +306,21 @@ export default function HomeScreen() {
               </View>
 
               <View style={{ gap: 7, marginTop: 4 }}>
-                {displayBranches.map((br: any, idx: number) => {
-                  const isCurrent = activeBranch?.id === br.id || br.active;
-                  return (
-                    <View
+                {metrics?.branchBreakdown && metrics.branchBreakdown.length > 0 ? (
+                  metrics.branchBreakdown.map((br, idx) => (
+                    <Pressable
                       key={br.id || idx}
+                      onPress={() => switchBranch(br.id)}
                       style={[
                         styles.branchRow,
-                        isCurrent && styles.branchRowActive,
+                        br.isCurrent && styles.branchRowActive,
                       ]}
                     >
                       <View style={styles.branchLeft}>
                         <View
                           style={[
                             styles.branchAvatar,
-                            { backgroundColor: isCurrent ? '#065F46' : '#94A3B8' },
+                            { backgroundColor: br.isCurrent ? '#065F46' : '#94A3B8' },
                           ]}
                         >
                           <ThemedText style={styles.branchAvatarText}>
@@ -310,26 +332,45 @@ export default function HomeScreen() {
                             {br.name}
                           </ThemedText>
                           <ThemedText style={styles.branchMeta}>
-                            {br.city || 'Addis Ababa'} · Share: {br.share || '50%'}
+                            {br.city} · Share: {br.share}
                           </ThemedText>
                         </View>
                       </View>
 
                       <View style={{ alignItems: 'flex-end', marginLeft: 8 }}>
                         <ThemedText style={styles.branchSalesText}>
-                          {br.sales || '12,450 ETB'}
+                          {br.sales}
                         </ThemedText>
-                        <ThemedText style={styles.branchActiveTag}>
-                          {isCurrent ? '● Active Branch' : 'Online'}
+                        <ThemedText
+                          style={[
+                            styles.branchActiveTag,
+                            br.isCurrent && { color: '#065F46', fontWeight: '800' },
+                          ]}
+                        >
+                          {br.isCurrent ? '● Active Branch' : 'Tap to Select'}
                         </ThemedText>
                       </View>
-                    </View>
-                  );
-                })}
+                    </Pressable>
+                  ))
+                ) : (
+                  <View style={styles.emptyBranchBox}>
+                    <ThemedText style={{ fontSize: 24, marginBottom: 4 }}>🏬</ThemedText>
+                    <ThemedText style={styles.emptyTitle}>No Branches Registered</ThemedText>
+                    <ThemedText style={styles.emptySubtitle}>
+                      Add branches to track multi-location sales.
+                    </ThemedText>
+                    <Pressable
+                      onPress={() => router.push('/(business)/create-branch' as any)}
+                      style={styles.emptyActionBtn}
+                    >
+                      <ThemedText style={styles.emptyActionText}>+ Add Branch</ThemedText>
+                    </Pressable>
+                  </View>
+                )}
               </View>
             </View>
 
-            {/* 6. RECENT ACTIVITY FEED */}
+            {/* 6. RECENT ACTIVITY FEED (Connected with Real Sales, Expenses & Debts) */}
             <View style={styles.cleanCard}>
               <View style={styles.cardHeaderRow}>
                 <ThemedText style={styles.sectionTitle}>
@@ -343,65 +384,55 @@ export default function HomeScreen() {
               </View>
 
               <View style={{ marginTop: 2 }}>
-                {/* Activity 1 */}
-                <View style={styles.activityRow}>
-                  <View style={styles.activityLeft}>
-                    <View style={[styles.activityIconBadge, { backgroundColor: '#ECFDF5' }]}>
-                      <ThemedText style={{ fontSize: 13 }}>💵</ThemedText>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <ThemedText style={styles.activityTitle}>
-                        Counter Cash Sale
-                      </ThemedText>
-                      <ThemedText style={styles.activitySubtitle}>
-                        Main Branch · 12:45 PM
-                      </ThemedText>
-                    </View>
+                {metrics?.recentActivities && metrics.recentActivities.length > 0 ? (
+                  metrics.recentActivities.map((act, index) => {
+                    const isLast = index === metrics.recentActivities.length - 1;
+                    return (
+                      <View
+                        key={act.id}
+                        style={[
+                          styles.activityRow,
+                          isLast && { borderBottomWidth: 0 },
+                        ]}
+                      >
+                        <View style={styles.activityLeft}>
+                          <View
+                            style={[
+                              styles.activityIconBadge,
+                              { backgroundColor: act.iconBg },
+                            ]}
+                          >
+                            <ThemedText style={{ fontSize: 13 }}>{act.icon}</ThemedText>
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <ThemedText style={styles.activityTitle} numberOfLines={1}>
+                              {act.title}
+                            </ThemedText>
+                            <ThemedText style={styles.activitySubtitle} numberOfLines={1}>
+                              {act.subtitle}
+                            </ThemedText>
+                          </View>
+                        </View>
+                        <ThemedText
+                          style={[
+                            styles.activityAmount,
+                            { color: act.amountColor },
+                          ]}
+                        >
+                          {act.amountFormatted}
+                        </ThemedText>
+                      </View>
+                    );
+                  })
+                ) : (
+                  <View style={styles.emptyBranchBox}>
+                    <ThemedText style={{ fontSize: 24, marginBottom: 4 }}>📊</ThemedText>
+                    <ThemedText style={styles.emptyTitle}>No Transactions Yet</ThemedText>
+                    <ThemedText style={styles.emptySubtitle}>
+                      Record sales or expenses to view live activities here.
+                    </ThemedText>
                   </View>
-                  <ThemedText style={[styles.activityAmount, { color: '#059669' }]}>
-                    +850.00 ETB
-                  </ThemedText>
-                </View>
-
-                {/* Activity 2 */}
-                <View style={styles.activityRow}>
-                  <View style={styles.activityLeft}>
-                    <View style={[styles.activityIconBadge, { backgroundColor: '#EFF6FF' }]}>
-                      <ThemedText style={{ fontSize: 13 }}>📱</ThemedText>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <ThemedText style={styles.activityTitle}>
-                        Telebirr QR Payment
-                      </ThemedText>
-                      <ThemedText style={styles.activitySubtitle}>
-                        Main Branch · 11:30 AM
-                      </ThemedText>
-                    </View>
-                  </View>
-                  <ThemedText style={[styles.activityAmount, { color: '#0284C7' }]}>
-                    +500.00 ETB
-                  </ThemedText>
-                </View>
-
-                {/* Activity 3 */}
-                <View style={[styles.activityRow, { borderBottomWidth: 0 }]}>
-                  <View style={styles.activityLeft}>
-                    <View style={[styles.activityIconBadge, { backgroundColor: '#FFFBEB' }]}>
-                      <ThemedText style={{ fontSize: 13 }}>📜</ThemedText>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <ThemedText style={styles.activityTitle}>
-                        New Dube — Kebede M.
-                      </ThemedText>
-                      <ThemedText style={styles.activitySubtitle}>
-                        14-Day Term · 10:15 AM
-                      </ThemedText>
-                    </View>
-                  </View>
-                  <ThemedText style={[styles.activityAmount, { color: '#D97706' }]}>
-                    1,200.00 ETB
-                  </ThemedText>
-                </View>
+                )}
               </View>
             </View>
           </View>
@@ -485,7 +516,7 @@ const styles = StyleSheet.create({
   },
   heroAmountText: {
     color: '#FFFFFF',
-    fontSize: 27, // Clean, reduced from 34px to proportional 27px
+    fontSize: 27,
     fontWeight: '900',
     letterSpacing: -0.4,
   },
@@ -600,142 +631,167 @@ const styles = StyleSheet.create({
   },
   sectionSubtitle: {
     fontSize: 11,
-    fontWeight: '500',
-    color: '#64748B',
+    color: '#94A3B8',
     marginTop: 1,
+    fontWeight: '500',
   },
   pillBadge: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 12,
+    borderRadius: 8,
     backgroundColor: '#F1F5F9',
   },
   pillBadgeText: {
     fontSize: 10,
     fontWeight: '700',
-    color: '#475569',
+    color: '#64748B',
   },
   reconciledBadge: {
     paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 10,
+    paddingVertical: 2.5,
+    borderRadius: 6,
     backgroundColor: '#ECFDF5',
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
   },
   reconciledText: {
-    fontSize: 9.5,
+    fontSize: 9,
     fontWeight: '800',
     color: '#065F46',
-  },
-  manageBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-    backgroundColor: '#F1F5F9',
-  },
-  manageBtnText: {
-    fontSize: 10.5,
-    fontWeight: '700',
-    color: '#334155',
+    letterSpacing: 0.5,
   },
 
-  // Operating Branches Row
+  // Multi-branch Rows
+  manageBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  manageBtnText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#065F46',
+  },
   branchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
+    padding: 10,
     borderRadius: 12,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: 'transparent',
   },
   branchRowActive: {
-    backgroundColor: '#F0FDF4',
-    borderColor: '#BBF7D0',
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
   },
   branchLeft: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
+    flex: 1,
   },
   branchAvatar: {
     width: 24,
     height: 24,
-    borderRadius: 6,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   branchAvatarText: {
-    color: '#FFFFFF',
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '800',
+    color: '#FFFFFF',
   },
   branchName: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#1E293B',
   },
   branchMeta: {
-    fontSize: 10,
-    color: '#64748B',
+    fontSize: 10.5,
+    color: '#94A3B8',
     marginTop: 1,
   },
   branchSalesText: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '800',
     color: '#0F172A',
   },
   branchActiveTag: {
     fontSize: 9.5,
+    color: '#64748B',
     fontWeight: '600',
-    color: '#059669',
+    marginTop: 1,
+  },
+  emptyBranchBox: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  emptyTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#334155',
+  },
+  emptySubtitle: {
+    fontSize: 11,
+    color: '#94A3B8',
+    textAlign: 'center',
+    maxWidth: 240,
+  },
+  emptyActionBtn: {
+    marginTop: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: '#065F46',
+  },
+  emptyActionText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 
-  // Recent Activity Feed Row
+  // Recent Activity Feed Rows
+  viewAllText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+    color: '#065F46',
+  },
   activityRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderBottomWidth: 1,
     borderBottomColor: '#F8FAFC',
   },
   activityLeft: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingRight: 8,
+    gap: 10,
+    flex: 1,
   },
   activityIconBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
+    width: 32,
+    height: 32,
+    borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
   },
   activityTitle: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '700',
-    color: '#0F172A',
+    color: '#1E293B',
   },
   activitySubtitle: {
-    fontSize: 10,
-    color: '#64748B',
+    fontSize: 10.5,
+    color: '#94A3B8',
     marginTop: 1,
   },
   activityAmount: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '800',
-    textAlign: 'right',
-  },
-  viewAllText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#059669',
+    marginLeft: 8,
   },
 });
