@@ -1,6 +1,7 @@
 import { authClient, baseURL } from '@/lib/auth-client';
 import { isSQLiteAvailable } from '@/db/client';
 import { localHealthRepo } from '@/repositories/local-health.repo';
+import { calculateFinancialSummary } from './health-calc';
 import type {
   FinancialSnapshot,
   FinancialSummary,
@@ -8,35 +9,7 @@ import type {
   ShareTokenResult,
 } from '@/types/health';
 
-/**
- * Computes aggregate summary numbers across a series of financial snapshots.
- */
-export function calculateFinancialSummary(snapshots: FinancialSnapshot[]): FinancialSummary {
-  if (!snapshots.length) {
-    return {
-      totalInflow: 0,
-      totalOutflow: 0,
-      netProfit: 0,
-      avgProfitMarginPct: 0,
-      averageDigitalRatio: 0,
-    };
-  }
-
-  const totalInflow = snapshots.reduce((sum, s) => sum + s.grossInflow, 0);
-  const totalOutflow = snapshots.reduce((sum, s) => sum + s.grossOutflow, 0);
-  const netProfit = totalInflow - totalOutflow;
-  const avgProfitMarginPct = totalInflow > 0 ? (netProfit / totalInflow) * 100 : 0;
-  const avgDigital =
-    snapshots.reduce((sum, s) => sum + s.digitalPaymentRatio, 0) / snapshots.length;
-
-  return {
-    totalInflow,
-    totalOutflow,
-    netProfit,
-    avgProfitMarginPct: Math.round(avgProfitMarginPct * 10) / 10,
-    averageDigitalRatio: Math.round(avgDigital * 10) / 10,
-  };
-}
+export { calculateFinancialSummary };
 
 export interface FetchHealthOptions {
   businessId: string;

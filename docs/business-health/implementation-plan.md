@@ -48,15 +48,15 @@ This document details the phase-by-phase execution plan for the **Business Healt
 
 ## 2. Phase Breakdown Matrix
 
-| Phase | Title | Primary Deliverables | Target Files |
-| :--- | :--- | :--- | :--- |
-| **Phase 1** | **Database Schema & Migrations** | Dedicated `business_financial_snapshot` & `financial_share_token` tables in Drizzle and local SQLite schema. | `backend/src/db/business-health.ts`<br>`backend/src/db/schema.ts`<br>`mobile/src/db/schema.ts`<br>`mobile/src/db/migrations.ts` |
-| **Phase 2** | **Backend Aggregation Engine & API** | Monthly/Yearly historical computation service, snapshot query endpoints, and share token generator. | `backend/src/service/business-health.service.ts`<br>`backend/src/repositories/business-health.repository.ts`<br>`backend/src/controllers/business-health.controller.ts`<br>`backend/src/routes/business-health.routes.ts` |
-| **Phase 3** | **Mobile Data Layer & Repositories** | Local SQLite snapshot repository, offline-first fallback, and Zustand `useBusinessHealthStore`. | `mobile/src/repositories/local-health.repo.ts`<br>`mobile/src/service/business-health.ts`<br>`mobile/src/store/business-health-store.ts` |
-| **Phase 4** | **Financial Chart Components** | Interactive Dual-Bar Inflow vs Outflow Chart, MoM/YoY Profit Velocity Trend Line, and Digital Settlement Dial. | `mobile/src/components/charts/health-charts.tsx`<br>`mobile/src/types/health.ts` |
-| **Phase 5** | **Business Health Screen Implementation** | Full UI in `mobile/src/app/health.tsx` with Time Filters (1M, 3M, 6M, 1Y, All) and Branch Selector. | `mobile/src/app/health.tsx`<br>`mobile/src/components/health/*` |
-| **Phase 6** | **Bank & Funding Shareable Dossier** | Token generator modal, read-only public web view endpoint for funding organizations, and QR/URL sharing. | `backend/src/controllers/business-health.controller.ts`<br>`mobile/src/components/health/share-dossier-modal.tsx` |
-| **Phase 7** | **Verification & Unit Tests** | Metric formula unit tests (MoM, YoY, Margins, Digital Ratio), SQLite migration test, and regression verification. | `mobile/src/tests/business-health.test.ts`<br>`backend/src/tests/business-health.test.ts` |
+| Phase | Title | Primary Deliverables | Target Files | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **Phase 1** | **Database Schema & Migrations** | Dedicated `business_financial_snapshot` & `financial_share_token` tables in Drizzle and local SQLite schema. | `backend/src/db/business-health.ts`<br>`backend/src/db/schema.ts`<br>`mobile/src/db/schema.ts`<br>`mobile/src/db/migrations.ts` | **Completed** |
+| **Phase 2** | **Backend Aggregation Engine & API** | Monthly/Yearly historical computation service, snapshot query endpoints, and share token generator. | `backend/src/service/business-health.service.ts`<br>`backend/src/repositories/business-health.repository.ts`<br>`backend/src/controllers/business-health.controller.ts`<br>`backend/src/routes/business-health.routes.ts` | **Completed** |
+| **Phase 3** | **Mobile Data Layer & Repositories** | Local SQLite snapshot repository, offline-first fallback, and Zustand `useBusinessHealthStore`. | `mobile/src/repositories/local-health.repo.ts`<br>`mobile/src/service/business-health.ts`<br>`mobile/src/store/business-health-store.ts` | **Completed** |
+| **Phase 4** | **Financial Chart Components** | Interactive Dual-Bar Inflow vs Outflow Chart, MoM/YoY Profit Velocity Trend Line, and Digital Settlement Dial. | `mobile/src/components/charts/health-charts.tsx`<br>`mobile/src/types/health.ts` | **Completed** |
+| **Phase 5** | **Business Health Screen Implementation** | Full UI in `mobile/src/app/health.tsx` with Time Filters (1M, 3M, 6M, 1Y, All) and Branch Selector. | `mobile/src/app/health.tsx`<br>`mobile/src/components/health/*` | **Completed** |
+| **Phase 6** | **Bank & Funding Shareable Dossier** | Token generator modal, read-only public web view endpoint for funding organizations, and QR/URL sharing. | `backend/src/controllers/business-health.controller.ts`<br>`mobile/src/components/health/share-dossier-modal.tsx` | **Completed** |
+| **Phase 7** | **Verification & Unit Tests** | Metric formula unit tests (MoM, YoY, Margins, Digital Ratio), SQLite migration test, and regression verification. | `mobile/src/tests/business-health.test.ts`<br>`backend/src/tests/business-health.test.ts` | **Completed** |
 
 ---
 

@@ -3,8 +3,11 @@ import {
   fetchBusinessHealthData,
   createShareToken,
   revokeShareToken,
-  calculateFinancialSummary,
 } from '@/service/business-health';
+import {
+  calculateFinancialSummary,
+  filterSnapshotsByTimeframe,
+} from '@/service/health-calc';
 import type {
   FinancialSnapshot,
   FinancialSummary,
@@ -46,33 +49,6 @@ interface BusinessHealthState {
   closeShareModal: () => void;
   generateShareLink: (params: CreateShareTokenParams) => Promise<ShareTokenResult>;
   revokeActiveToken: () => Promise<void>;
-}
-
-function filterSnapshotsByTimeframe(
-  snapshots: FinancialSnapshot[],
-  timeframe: TimeRangeFilter
-): FinancialSnapshot[] {
-  if (!snapshots.length) return [];
-  const count = snapshots.length;
-  const currentYear = String(new Date().getFullYear());
-
-  switch (timeframe) {
-    case '1M':
-      return snapshots.slice(Math.max(0, count - 1));
-    case '3M':
-      return snapshots.slice(Math.max(0, count - 3));
-    case '6M':
-      return snapshots.slice(Math.max(0, count - 6));
-    case '1Y':
-      return snapshots.slice(Math.max(0, count - 12));
-    case 'YTD': {
-      const ytd = snapshots.filter((s) => s.periodYear === currentYear);
-      return ytd.length > 0 ? ytd : snapshots.slice(Math.max(0, count - 6));
-    }
-    case 'ALL':
-    default:
-      return snapshots;
-  }
 }
 
 export const useBusinessHealthStore = create<BusinessHealthState>((set, get) => ({
