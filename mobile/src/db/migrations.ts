@@ -1,7 +1,7 @@
 import { getDatabase, isSQLiteAvailable } from './client';
 import { CREATE_TABLES_SQL } from './schema';
 
-export const CURRENT_SCHEMA_VERSION = 2;
+export const CURRENT_SCHEMA_VERSION = 3;
 
 /**
  * Runs pending database migrations using SQLite user_version pragma.
@@ -26,7 +26,7 @@ export async function initLocalDatabase(): Promise<void> {
     console.log('[SQLite Migrations] Running initial migration (version 0 -> 1)...');
     await db.execAsync(`
       ${CREATE_TABLES_SQL}
-      PRAGMA user_version = 2;
+      PRAGMA user_version = 3;
     `);
     console.log('[SQLite Migrations] Initial schema successfully applied.');
     return;
@@ -67,6 +67,51 @@ export async function initLocalDatabase(): Promise<void> {
     `);
     console.log('[SQLite Migrations] Version 2 schema migration applied successfully.');
   }
+
+  if (currentVersion < 3) {
+    console.log('[SQLite Migrations] Running migration (version 2 -> 3: local_financial_snapshot)...');
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS local_financial_snapshot (
+        id TEXT PRIMARY KEY NOT NULL,
+        business_id TEXT NOT NULL,
+        branch_id TEXT,
+        period_type TEXT NOT NULL,
+        period_year TEXT NOT NULL,
+        period_month TEXT,
+        period_label TEXT NOT NULL,
+        start_date TEXT NOT NULL,
+        end_date TEXT NOT NULL,
+        gross_inflow REAL NOT NULL DEFAULT 0,
+        gross_outflow REAL NOT NULL DEFAULT 0,
+        net_profit REAL NOT NULL DEFAULT 0,
+        profit_margin_pct REAL NOT NULL DEFAULT 0,
+        growth_mom_pct REAL,
+        growth_yoy_pct REAL,
+        transaction_count INTEGER NOT NULL DEFAULT 0,
+        avg_ticket_size REAL NOT NULL DEFAULT 0,
+        digital_payment_ratio REAL NOT NULL DEFAULT 0,
+        telebirr_volume REAL NOT NULL DEFAULT 0,
+        cbe_volume REAL NOT NULL DEFAULT 0,
+        cash_volume REAL NOT NULL DEFAULT 0,
+        dube_collected_volume REAL NOT NULL DEFAULT 0,
+        dube_issued_volume REAL NOT NULL DEFAULT 0,
+        debt_recovery_rate_pct REAL NOT NULL DEFAULT 0,
+        branch_metrics_json TEXT,
+        is_finalized INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_local_snapshot_biz_period 
+      ON local_financial_snapshot(business_id, period_type, period_year, period_month);
+
+      CREATE INDEX IF NOT EXISTS idx_local_snapshot_branch 
+      ON local_financial_snapshot(business_id, branch_id);
+
+      PRAGMA user_version = 3;
+    `);
+    console.log('[SQLite Migrations] Version 3 schema migration applied successfully.');
+  }
 }
 
 /**
@@ -84,6 +129,7 @@ export async function resetLocalDatabase(): Promise<void> {
     DROP TABLE IF EXISTS sync_queue;
     DROP TABLE IF EXISTS sync_metadata;
     DROP TABLE IF EXISTS local_bank_sms;
+    DROP TABLE IF EXISTS local_financial_snapshot;
     PRAGMA user_version = 0;
   `);
 

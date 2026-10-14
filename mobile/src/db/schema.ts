@@ -86,6 +86,37 @@ export interface LocalBankSmsRow {
   updated_at: string;
 }
 
+export interface LocalFinancialSnapshotRow {
+  id: string;
+  business_id: string;
+  branch_id: string | null;
+  period_type: 'monthly' | 'yearly';
+  period_year: string;
+  period_month: string | null;
+  period_label: string;
+  start_date: string;
+  end_date: string;
+  gross_inflow: number;
+  gross_outflow: number;
+  net_profit: number;
+  profit_margin_pct: number;
+  growth_mom_pct: number | null;
+  growth_yoy_pct: number | null;
+  transaction_count: number;
+  avg_ticket_size: number;
+  digital_payment_ratio: number;
+  telebirr_volume: number;
+  cbe_volume: number;
+  cash_volume: number;
+  dube_collected_volume: number;
+  dube_issued_volume: number;
+  debt_recovery_rate_pct: number;
+  branch_metrics_json: string | null;
+  is_finalized: number; // 1 = true, 0 = false
+  created_at: string;
+  updated_at: string;
+}
+
 export const CREATE_TABLES_SQL = `
 -- 1. Local Sales & Dube Table
 CREATE TABLE IF NOT EXISTS local_sale (
@@ -193,4 +224,42 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_bank_sms_ref ON local_bank_sms(transaction
 CREATE INDEX IF NOT EXISTS idx_bank_sms_biz ON local_bank_sms(business_id, received_at DESC);
 CREATE INDEX IF NOT EXISTS idx_bank_sms_provider ON local_bank_sms(provider);
 CREATE INDEX IF NOT EXISTS idx_bank_sms_status ON local_bank_sms(import_status);
+
+-- 7. Local Financial Snapshot Table (Pre-computed Business Health summaries)
+CREATE TABLE IF NOT EXISTS local_financial_snapshot (
+  id TEXT PRIMARY KEY NOT NULL,
+  business_id TEXT NOT NULL,
+  branch_id TEXT,
+  period_type TEXT NOT NULL,
+  period_year TEXT NOT NULL,
+  period_month TEXT,
+  period_label TEXT NOT NULL,
+  start_date TEXT NOT NULL,
+  end_date TEXT NOT NULL,
+  gross_inflow REAL NOT NULL DEFAULT 0,
+  gross_outflow REAL NOT NULL DEFAULT 0,
+  net_profit REAL NOT NULL DEFAULT 0,
+  profit_margin_pct REAL NOT NULL DEFAULT 0,
+  growth_mom_pct REAL,
+  growth_yoy_pct REAL,
+  transaction_count INTEGER NOT NULL DEFAULT 0,
+  avg_ticket_size REAL NOT NULL DEFAULT 0,
+  digital_payment_ratio REAL NOT NULL DEFAULT 0,
+  telebirr_volume REAL NOT NULL DEFAULT 0,
+  cbe_volume REAL NOT NULL DEFAULT 0,
+  cash_volume REAL NOT NULL DEFAULT 0,
+  dube_collected_volume REAL NOT NULL DEFAULT 0,
+  dube_issued_volume REAL NOT NULL DEFAULT 0,
+  debt_recovery_rate_pct REAL NOT NULL DEFAULT 0,
+  branch_metrics_json TEXT,
+  is_finalized INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_local_snapshot_biz_period 
+ON local_financial_snapshot(business_id, period_type, period_year, period_month);
+
+CREATE INDEX IF NOT EXISTS idx_local_snapshot_branch 
+ON local_financial_snapshot(business_id, branch_id);
 `;
