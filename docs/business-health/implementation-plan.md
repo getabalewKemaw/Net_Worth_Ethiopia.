@@ -1,8 +1,12 @@
 # Business Health & Loan Readiness — Step-by-Step Implementation Plan
 
-This document details the architectural design and phase-by-phase implementation plan for the **Business Health & Loan Readiness** feature in **NetWorth Ethiopia**.
+This document details the phase-by-phase execution plan for the **Business Health & Loan Readiness** feature in **NetWorth Ethiopia**.
 
-The primary purpose of this feature is to provide merchant business owners with an authoritative, verifiable financial dossier showing **currency flows, multi-month and multi-year growth velocity (MoM / YoY), branch profitability summaries, and bankability indicators** that serve as formal proof for commercial bank loans (e.g., CBE, Awash, Dashen, Enat Bank), digital merchant credit (e.g., Telebirr Sanduq), and funding organizations.
+### Related Documentation Suite
+- 📖 [**README.md**](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/business-health/README.md) — Executive summary, Ethiopian MSME credit problem, and core value proposition.
+- 🗄️ [**schema-and-data-model.md**](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/business-health/schema-and-data-model.md) — PostgreSQL Drizzle, SQLite schemas, mathematical formulas, and indexing.
+- 🌐 [**architecture-and-api.md**](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/business-health/architecture-and-api.md) — System data flow, aggregation pipeline, API endpoints, and funder verification security.
+- 🎨 [**ui-and-ux-design.md**](file:///home/eaglex/Documents/insa-ctc/FinalProject/docs/business-health/ui-and-ux-design.md) — Screen anatomy, dual-bar inflow/outflow charts, growth trend curves, and sharing flows.
 
 ---
 
