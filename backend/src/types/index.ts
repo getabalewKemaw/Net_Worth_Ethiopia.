@@ -3,6 +3,7 @@ import { business, branch } from "../db/schema";
 import { expense, sale } from "../db/sales-expense-management";
 export * from "./sales";
 export * from "./bidr";
+export * from "./business-health";
 
 export type Business = typeof business.$inferSelect;
 export type NewBusiness = typeof business.$inferInsert;
