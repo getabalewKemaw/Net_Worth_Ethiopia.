@@ -250,27 +250,21 @@ Implemented unit test suites in [backend/src/tests/business-health.test.ts](file
 
 ---
 
-## 7. Known Environment Gotcha & Resolution
+## 7. PostgreSQL Docker Architecture & Applied Migrations
 
-### PostgreSQL Service State & Migration Notice
-- **Symptom**: Running `npm run dev` in `backend/` yields:
+### PostgreSQL Deployment Context
+- PostgreSQL runs as a Docker container (`postgres:18`) named `postgresql`, with port mapping `0.0.0.0:5432->5432/tcp`.
+- Database Name: `networth` (Credentials configured in `backend/.env`).
+
+### Migration Status: Completed & Verified
+- Migration `backend/drizzle/0003_brave_krista_starr.sql` has been applied and verified in the Docker PostgreSQL container:
+  - Table `business_financial_snapshot` created with primary key, foreign keys (`business.id`, `branch.id`), and composite B-tree indexes (`snapshot_biz_period_idx`, `snapshot_biz_branch_idx`, `snapshot_date_range_idx`).
+  - Table `financial_share_token` created with primary key, foreign keys (`business.id`, `user.id`), and indexes (`share_token_biz_idx`, `share_token_created_by_idx`).
+  - Recorded in `drizzle.__drizzle_migrations` (hash: `6bdb52b6b3de2da6911bf869f44a48bd95cbf8d108392c3163406e50915e97b4`).
+- Backend dev server command to run anytime:
+  ```bash
+  cd backend && npm run dev
   ```
-  error: relation "business_financial_snapshot" does not exist
-  ```
-- **Root Cause**: The Drizzle schema and migration file `0003_brave_krista_starr.sql` were generated in Phase 1, but applying the migration to PostgreSQL requires the PostgreSQL database service to be actively running on the host system (`localhost:5432`). Following a system or daemon restart, the PostgreSQL service stops (`ECONNREFUSED ::1:5432`).
-- **Resolution Steps**:
-  1. Start the PostgreSQL daemon on the host:
-     ```bash
-     sudo systemctl start postgresql
-     ```
-  2. Apply pending database migrations:
-     ```bash
-     cd backend && npm run db:migrate
-     ```
-  3. Start the backend server:
-     ```bash
-     cd backend && npm run dev
-     ```
 
 ---
 
