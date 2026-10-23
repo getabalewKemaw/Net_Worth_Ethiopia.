@@ -4,11 +4,9 @@ import { requireAuth } from "../middleware/auth";
 
 const router = Router();
 
-router.use(requireAuth);
-
-router.post("/businesses/:businessId/branches", controller.createBranch);
-router.get("/businesses/:businessId/branches", controller.getBranchesByBusinessId);
-router.get("/branches/:id", controller.getBranchById);
-router.patch("/branches/:id", controller.updateBranch);
+router.post("/businesses/:businessId/branches", requireAuth, controller.createBranch);
+router.get("/businesses/:businessId/branches", requireAuth, controller.getBranchesByBusinessId);
+router.get("/branches/:id", requireAuth, controller.getBranchById);
+router.patch("/branches/:id", requireAuth, controller.updateBranch);
 
 export default router;

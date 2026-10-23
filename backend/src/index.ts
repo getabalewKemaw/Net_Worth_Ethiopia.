@@ -10,6 +10,7 @@ import expensesRoutes from "./routes/expenses.routes";
 import bidrRoutes from "./routes/bidr.routes";
 import syncRoutes from "./routes/sync.routes";
 import businessHealthRoutes from "./routes/business-health.routes";
+import adminRoutes from "./routes/admin.routes";
 import { errorHandler } from "./middleware/error";
 
 dotenv.config();
@@ -25,13 +26,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", toNodeHandler(auth));
+app.use("/api/admin", adminRoutes);
+app.use("/api/health", businessHealthRoutes);
 app.use("/api/businesses", businessRoutes);
-app.use("/api", branchRoutes);
 app.use("/api/sales", salesRoutes);
 app.use("/api/expenses", expensesRoutes);
 app.use("/api/bidr", bidrRoutes);
 app.use("/api/sync", syncRoutes);
-app.use("/api/health", businessHealthRoutes);
+app.use("/api", branchRoutes);
 
 app.get("/", (req: Request, res: Response) => {
     res.send("NetWorth API is running!");
