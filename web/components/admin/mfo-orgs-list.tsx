@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { Card, CardHeader, CardBody } from "@/components/ui/card";
+import  { useState } from "react";
+import { Card,  CardBody } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CreditCard, PlusCircle } from "lucide-react";

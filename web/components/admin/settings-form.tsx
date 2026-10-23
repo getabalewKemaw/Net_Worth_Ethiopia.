@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import  { useState } from "react";
 import { Card, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Save, Check } from "lucide-react";
