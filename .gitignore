@@ -35,12 +35,20 @@ Thumbs.db
 
 # Build outputs
 build/
+**/build/
+.gradle/
+**/.gradle/
+.cxx/
+**/.cxx/
+.next/
+web/.next/
 /android/
 /mobile/android/
 /ios/
 /mobile/ios/
 !**/modules/**/android/
 !**/modules/**/ios/
+
 
 # Package managers
 package-lock.json
