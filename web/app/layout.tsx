@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Lexend } from "next/font/google";
 import "./globals.css";
-import { AuthSimProvider } from "@/lib/auth-sim";
 
 const lexend = Lexend({
   variable: "--font-lexend",
@@ -11,7 +10,7 @@ const lexend = Lexend({
 
 export const metadata: Metadata = {
   title: "NetWorth Ethiopia · Enterprise Portal",
-  description: "Microfinance Underwriting Dossier & Central Administration System",
+  description: "Official Microfinance Underwriting Dossier & Central Administration System",
 };
 
 export default function RootLayout({
@@ -22,7 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${lexend.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-sans bg-slate-50 bg-dot-pattern text-slate-900">
-        <AuthSimProvider>{children}</AuthSimProvider>
+        {children}
       </body>
     </html>
   );

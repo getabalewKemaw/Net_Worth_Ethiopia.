@@ -2,8 +2,7 @@
 
 import React from "react";
 import { AccountDropdown } from "./account-dropdown";
-import { useAuthSim } from "@/lib/auth-sim";
-import { ShieldCheck, Building } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 interface TopbarProps {
   title: string;
@@ -11,14 +10,11 @@ interface TopbarProps {
 }
 
 export function Topbar({ title, subtitle }: TopbarProps) {
-  const { currentUser } = useAuthSim();
-  const isAdmin = currentUser.role === "admin";
-
   return (
     <header className="h-12 px-5 border-b border-slate-200 bg-white flex items-center justify-between sticky top-0 z-30 shadow-2xs">
       <div className="flex items-center gap-2.5">
         <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-800 shrink-0">
-          {isAdmin ? <ShieldCheck className="w-3.5 h-3.5" /> : <Building className="w-3.5 h-3.5" />}
+          <ShieldCheck className="w-3.5 h-3.5" />
         </div>
         <div>
           <h1 className="text-xs font-bold text-slate-900 leading-tight">
