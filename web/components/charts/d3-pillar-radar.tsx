@@ -110,7 +110,7 @@ export function D3PillarRadarChart({ pillars }: { pillars: FinancialPillar[] }) 
           <span className="w-2.5 h-2.5 rounded-xs border border-emerald-700 bg-emerald-100" /> Merchant Score
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-0.5 border-b border-dashed border-slate-400" /> MFO Threshold (70%)
+          <span className="w-3 h-0.5 border-b border-dashed border-slate-400" /> Underwriting Threshold (70%)
         </span>
       </div>
       {hovered && (

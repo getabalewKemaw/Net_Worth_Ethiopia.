@@ -12,20 +12,25 @@ export interface CandidatePoint {
   grade: string;
 }
 
-const CANDIDATES: CandidatePoint[] = [
-  { code: "NW-78219", name: "Abyssinia Spices", score: 84, capacity: 485, branches: 3, grade: "A" },
-  { code: "NW-54012", name: "Sheger Wholesale Mart", score: 91, capacity: 620, branches: 4, grade: "A" },
-  { code: "NW-31904", name: "Blue Nile Electronics", score: 68, capacity: 290, branches: 2, grade: "C" },
-  { code: "NW-89211", name: "Bole Fresh Produce", score: 76, capacity: 380, branches: 2, grade: "B" },
-  { code: "NW-44120", name: "Entoto Textiles & Apparel", score: 58, capacity: 180, branches: 1, grade: "D" },
-];
-
-export function D3PortfolioScatter({ onSelect }: { onSelect?: (code: string) => void }) {
+export function D3PortfolioScatter({
+  candidates,
+  onSelect,
+}: {
+  candidates?: CandidatePoint[];
+  onSelect?: (code: string) => void;
+}) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [hovered, setHovered] = useState<CandidatePoint | null>(null);
 
+  const candidateList = candidates && candidates.length > 0 ? candidates : [
+    { code: "ENT-101", name: "Mercato Merchant A", score: 84, capacity: 485, branches: 3, grade: "A" },
+    { code: "ENT-102", name: "Bole Retail Hub", score: 91, capacity: 620, branches: 4, grade: "A" },
+    { code: "ENT-103", name: "Piazza Electronics", score: 68, capacity: 290, branches: 2, grade: "C" },
+    { code: "ENT-104", name: "Megenagna Grocers", score: 76, capacity: 380, branches: 2, grade: "B" },
+  ];
+
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || !candidateList.length) return;
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
@@ -41,13 +46,14 @@ export function D3PortfolioScatter({ onSelect }: { onSelect?: (code: string) => 
     pat.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 8)
       .attr("stroke", "#047857").attr("stroke-width", 1.2).attr("stroke-opacity", 0.3);
 
+    const maxCap = Math.max(500, (d3.max(candidateList, (d) => d.capacity) || 600) * 1.15);
     const x = d3.scaleLinear().domain([45, 100]).range([margin.left, width - margin.right]);
-    const y = d3.scaleLinear().domain([100, 750]).range([height - margin.bottom, margin.top]);
+    const y = d3.scaleLinear().domain([100, maxCap]).range([height - margin.bottom, margin.top]);
 
     // Prime quadrant background box
     svg.append("rect")
-      .attr("x", x(75)).attr("y", y(750))
-      .attr("width", width - margin.right - x(75)).attr("height", y(350) - y(750))
+      .attr("x", x(75)).attr("y", y(maxCap))
+      .attr("width", width - margin.right - x(75)).attr("height", y(350) - y(maxCap))
       .attr("fill", "url(#quad-diag)").attr("rx", 6);
 
     svg.append("text").attr("x", width - margin.right - 8).attr("y", margin.top + 14)
@@ -61,7 +67,7 @@ export function D3PortfolioScatter({ onSelect }: { onSelect?: (code: string) => 
       .attr("stroke", "#cbd5e1").attr("stroke-dasharray", "3,3");
 
     // Candidate Bubbles
-    CANDIDATES.forEach((c) => {
+    candidateList.forEach((c) => {
       const isPrime = c.score >= 75 && c.capacity >= 350;
       const g = svg.append("g").attr("cursor", "pointer")
         .on("mouseenter", () => setHovered(c))
@@ -84,7 +90,7 @@ export function D3PortfolioScatter({ onSelect }: { onSelect?: (code: string) => 
       .call(d3.axisBottom(x).ticks(5).tickFormat((d) => `${d} pts`)).select(".domain").attr("stroke", "#e2e8f0");
     svg.append("g").attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(y).ticks(4).tickFormat((d) => `${d}k`)).select(".domain").remove();
-  }, [onSelect]);
+  }, [candidateList, onSelect]);
 
   return (
     <div className="space-y-2">
