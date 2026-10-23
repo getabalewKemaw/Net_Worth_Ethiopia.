@@ -50,8 +50,26 @@ export interface VerifiedDossierResult {
     type: string;
     city: string;
     address: string;
+    tin?: string | null;
+    tradeLicenseNo?: string | null;
+    ownerName?: string;
+    branchCount?: number;
     operatingSince: string;
   };
+  healthScore: number;
+  ratingGrade: "Grade A" | "Grade B" | "Grade C" | "Grade D";
+  recommendedLoanEtb: number;
+  monthlyRevenueEtb: number;
+  digitalRatioPercent: number;
+  dubeRepaymentRatePercent: number;
+  avgDubeDays: number;
+  pillars: Array<{
+    title: string;
+    score: number;
+    weight: number;
+    description: string;
+    status: "strong" | "moderate" | "weak";
+  }>;
   summary: {
     totalRevenue: number;
     totalExpense: number;
@@ -79,3 +97,4 @@ export interface VerifiedDossierResult {
     branchMetrics: BranchMetricSummary[];
   }>;
 }
+

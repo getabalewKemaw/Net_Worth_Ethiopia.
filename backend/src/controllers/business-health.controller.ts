@@ -79,9 +79,7 @@ export const businessHealthController = {
       const funderNote = req.body?.funderNote;
       const validityDays = req.body?.validityDays ? Number(req.body.validityDays) : 30;
 
-      const host = req.get("host") || "localhost:3000";
-      const protocol = req.protocol === "https" ? "https" : "http";
-      const baseUrl = `${protocol}://${host}`;
+      const webUrl = process.env.WEB_URL || "http://localhost:3001";
 
       const tokenResult = await businessHealthService.generateShareToken(
         businessId,
@@ -93,7 +91,7 @@ export const businessHealthController = {
           funderNote,
           validityDays,
         },
-        baseUrl
+        webUrl
       );
 
       apiResponse(res, 201, tokenResult);

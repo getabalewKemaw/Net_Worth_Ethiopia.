@@ -314,7 +314,10 @@ export const businessHealthService = {
       accessCount: "0",
     });
 
-    const shareUrl = `${baseUrl}/verify-health/${token}`;
+    const webBaseUrl =
+      process.env.WEB_URL ||
+      (baseUrl && !baseUrl.includes(":3000") ? baseUrl : "http://localhost:3001");
+    const shareUrl = `${webBaseUrl}/dossier/${token}`;
 
     return {
       token: created.token,
@@ -372,6 +375,69 @@ export const businessHealthService = {
     // Debt recovery rate across series
     const lastSnapshot = snapshots.length > 0 ? snapshots[snapshots.length - 1] : undefined;
     const recoveryRate = lastSnapshot ? `${lastSnapshot.debtRecoveryRatePct}%` : "100%";
+    const dubeRepaymentRatePercent = Number(recoveryRate.replace("%", "")) || 100;
+    const digitalRatioPercent = summary.averageDigitalRatio;
+    const monthlyRevenueEtb = Math.round(summary.totalInflow / Math.max(1, snapshots.length));
+    const avgDubeDays = Math.max(7, Math.min(30, Math.round(28 - (dubeRepaymentRatePercent * 0.16))));
+
+    // Calculate 4 Financial Pillars
+    const p1Score = Math.min(
+      30,
+      Math.max(
+        8,
+        Math.round(
+          (consecutiveProfitable / Math.max(1, snapshots.length)) * 15 +
+            (monthlyRevenueEtb > 100000 ? 15 : (monthlyRevenueEtb / 100000) * 15)
+        )
+      )
+    );
+
+    const p2Score = Math.min(25, Math.max(5, Math.round((digitalRatioPercent / 100) * 25)));
+    const p3Score = Math.min(25, Math.max(5, Math.round((dubeRepaymentRatePercent / 100) * 25)));
+    const p4Score = Math.min(
+      20,
+      Math.max(4, Math.round((Math.max(0, summary.avgProfitMarginPct) / 35) * 20))
+    );
+
+    const healthScore = Math.min(100, Math.max(0, p1Score + p2Score + p3Score + p4Score));
+    const ratingGrade: "Grade A" | "Grade B" | "Grade C" | "Grade D" =
+      healthScore >= 80 ? "Grade A" : healthScore >= 70 ? "Grade B" : healthScore >= 55 ? "Grade C" : "Grade D";
+
+    const recommendedLoanEtb =
+      monthlyRevenueEtb > 0
+        ? Math.round((monthlyRevenueEtb * 0.7 * (healthScore / 100)) / 1000) * 1000
+        : 50000;
+
+    const pillars = [
+      {
+        title: "Revenue Velocity & Stability",
+        score: p1Score,
+        weight: 30,
+        description: `Gross inflows averaging ${Math.round(monthlyRevenueEtb / 1000)}k ETB/mo with ${consecutiveProfitable} profitable periods`,
+        status: p1Score >= 24 ? ("strong" as const) : p1Score >= 16 ? ("moderate" as const) : ("weak" as const),
+      },
+      {
+        title: "Verified Digital Footprint",
+        score: p2Score,
+        weight: 25,
+        description: `${digitalRatioPercent}% of revenues verified via Telebirr & CBE digital rails`,
+        status: p2Score >= 20 ? ("strong" as const) : p2Score >= 13 ? ("moderate" as const) : ("weak" as const),
+      },
+      {
+        title: "Customer Credit (Dube) Recovery",
+        score: p3Score,
+        weight: 25,
+        description: `${dubeRepaymentRatePercent}% recovery rate with average turnaround in ${avgDubeDays} days`,
+        status: p3Score >= 20 ? ("strong" as const) : p3Score >= 13 ? ("moderate" as const) : ("weak" as const),
+      },
+      {
+        title: "Operating Margin & Expense Control",
+        score: p4Score,
+        weight: 20,
+        description: `${summary.avgProfitMarginPct}% average net profit margin after overheads`,
+        status: p4Score >= 15 ? ("strong" as const) : p4Score >= 10 ? ("moderate" as const) : ("weak" as const),
+      },
+    ];
 
     return {
       status: "verified",
@@ -385,8 +451,19 @@ export const businessHealthService = {
         type: businessData.business.type,
         city: businessData.business.city,
         address: businessData.business.address,
+        tin: businessData.business.tin || null,
+        tradeLicenseNo: businessData.business.tradeLicenseNo || null,
+        branchCount: businessData.branches.length,
         operatingSince: businessData.business.createdAt.toISOString().slice(0, 10),
       },
+      healthScore,
+      ratingGrade,
+      recommendedLoanEtb,
+      monthlyRevenueEtb,
+      digitalRatioPercent,
+      dubeRepaymentRatePercent,
+      avgDubeDays,
+      pillars,
       summary: {
         totalRevenue: summary.totalInflow,
         totalExpense: summary.totalOutflow,
