@@ -3,40 +3,36 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
-interface DataPoint {
+export interface DataPoint {
   month: string;
   gtv: number;
   digital: number;
 }
 
-const DEFAULT_DATA: DataPoint[] = [
-  { month: "May", gtv: 28, digital: 21 },
-  { month: "Jun", gtv: 34, digital: 26 },
-  { month: "Jul", gtv: 39, digital: 31 },
-  { month: "Aug", gtv: 42, digital: 34 },
-  { month: "Sep", gtv: 45, digital: 37 },
-  { month: "Oct", gtv: 49, digital: 40 },
-];
-
-export function D3AreaChart({ data = DEFAULT_DATA }: { data?: DataPoint[] }) {
+export function D3AreaChart({ data, unit = "M" }: { data?: DataPoint[]; unit?: string }) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const chartData = data || [];
 
   useEffect(() => {
-    if (!svgRef.current || !data.length) return;
+    if (!svgRef.current || !chartData.length) return;
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
     const width = 560;
     const height = 210;
-    const margin = { top: 15, right: 15, bottom: 25, left: 35 };
+    const margin = { top: 15, right: 15, bottom: 25, left: 42 };
 
     const x = d3.scalePoint()
-      .domain(data.map((d) => d.month))
-      .range([margin.left, width - margin.right]);
+      .domain(chartData.map((d) => d.month))
+      .range([margin.left, width - margin.right])
+      .padding(0.5);
 
+    // Dynamic Max Domain based on data
+    const maxData = d3.max(chartData, (d) => Math.max(d.gtv, d.digital)) || 1;
+    const maxVal = Math.max(1, maxData);
     const y = d3.scaleLinear()
-      .domain([0, 60])
+      .domain([0, maxVal * 1.25])
       .range([height - margin.bottom, margin.top]);
 
     // Defs for SVG diagonal stripe pattern
@@ -76,7 +72,7 @@ export function D3AreaChart({ data = DEFAULT_DATA }: { data?: DataPoint[] }) {
       .curve(d3.curveMonotoneX);
 
     svg.append("path")
-      .datum(data)
+      .datum(chartData)
       .attr("fill", "url(#area-diagonal-stripe)")
       .attr("d", area);
 
@@ -87,14 +83,14 @@ export function D3AreaChart({ data = DEFAULT_DATA }: { data?: DataPoint[] }) {
       .curve(d3.curveMonotoneX);
 
     svg.append("path")
-      .datum(data)
+      .datum(chartData)
       .attr("fill", "none")
       .attr("stroke", "#047857")
       .attr("stroke-width", 2.5)
       .attr("d", line);
 
     // Dots
-    data.forEach((d) => {
+    chartData.forEach((d) => {
       const cx = x(d.month)!;
       const cy = y(d.gtv);
       svg.append("circle").attr("cx", cx).attr("cy", cy).attr("r", 4.5).attr("fill", "#ffffff").attr("stroke", "#047857").attr("stroke-width", 2);
@@ -108,12 +104,20 @@ export function D3AreaChart({ data = DEFAULT_DATA }: { data?: DataPoint[] }) {
       .select(".domain").attr("stroke", "#e2e8f0");
     svg.selectAll(".tick text").attr("fill", "#64748b").attr("font-size", "10px").attr("dy", "10px");
 
-    const yAxis = d3.axisLeft(y).ticks(4).tickFormat((d) => `${d}M`).tickSize(0);
+    const yAxis = d3.axisLeft(y).ticks(4).tickFormat((d) => `${d}${unit}`).tickSize(0);
     svg.append("g")
       .attr("transform", `translate(${margin.left},0)`)
       .call(yAxis)
-      .select(".domain").remove();
-  }, [data]);
+  }, [chartData, unit]);
+
+  if (chartData.length === 0) {
+    return (
+      <div className="w-full h-44 flex flex-col items-center justify-center text-xs text-slate-400 bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+        <p className="font-semibold text-slate-600">No transaction volume recorded yet</p>
+        <p className="text-[11px] text-slate-400 mt-0.5">Historical ledger curve will appear when merchants record sales</p>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full overflow-hidden">

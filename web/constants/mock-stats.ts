@@ -9,7 +9,6 @@ export const MOCK_PLATFORM_STATS: PlatformStats = {
   activeDubeEtb: 6240000,
   recoveredDubeEtb: 19850000,
   monthlyPulls: 342,
-  activeMfoPartners: 6,
 };
 
 export const MOCK_MFO_ORGS: MfoOrganization[] = [

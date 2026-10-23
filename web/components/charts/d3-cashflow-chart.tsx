@@ -3,34 +3,26 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
-interface CashFlowMonth {
+export interface CashFlowMonth {
   month: string;
   inflow: number;  // in thousands ETB
   outflow: number; // in thousands ETB
   safeCap: number; // monthly debt service ceiling in thousands ETB
 }
 
-const DEFAULT_FLOWS: CashFlowMonth[] = [
-  { month: "May", inflow: 320, outflow: 210, safeCap: 55 },
-  { month: "Jun", inflow: 380, outflow: 250, safeCap: 55 },
-  { month: "Jul", inflow: 410, outflow: 270, safeCap: 55 },
-  { month: "Aug", inflow: 440, outflow: 290, safeCap: 55 },
-  { month: "Sep", inflow: 460, outflow: 300, safeCap: 55 },
-  { month: "Oct", inflow: 485, outflow: 310, safeCap: 55 },
-];
-
-export function D3CashFlowChart({ data = DEFAULT_FLOWS }: { data?: CashFlowMonth[] }) {
+export function D3CashFlowChart({ data }: { data?: CashFlowMonth[] }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [active, setActive] = useState<CashFlowMonth | null>(null);
+  const chartData = data || [];
 
   useEffect(() => {
-    if (!svgRef.current || !data.length) return;
+    if (!svgRef.current || !chartData.length) return;
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
     const width = 500;
     const height = 210;
-    const margin = { top: 15, right: 15, bottom: 25, left: 40 };
+    const margin = { top: 15, right: 15, bottom: 25, left: 45 };
 
     const defs = svg.append("defs");
     // Inflow pattern (emerald)
@@ -49,11 +41,14 @@ export function D3CashFlowChart({ data = DEFAULT_FLOWS }: { data?: CashFlowMonth
     p2.append("line").attr("x1", 0).attr("y1", 0).attr("x2", 0).attr("y2", 8)
       .attr("stroke", "#475569").attr("stroke-width", 1.8).attr("stroke-opacity", 0.6);
 
-    const x0 = d3.scaleBand().domain(data.map((d) => d.month))
+    const x0 = d3.scaleBand().domain(chartData.map((d) => d.month))
       .range([margin.left, width - margin.right]).padding(0.25);
     const x1 = d3.scaleBand().domain(["inflow", "outflow"])
       .range([0, x0.bandwidth()]).padding(0.1);
-    const y = d3.scaleLinear().domain([0, 550])
+
+    // Dynamic Max Domain based on data
+    const maxVal = Math.max(50, d3.max(chartData, (d) => Math.max(d.inflow, d.outflow, d.safeCap)) || 200);
+    const y = d3.scaleLinear().domain([0, maxVal * 1.15])
       .range([height - margin.bottom, margin.top]);
 
     // Grid lines
@@ -65,56 +60,100 @@ export function D3CashFlowChart({ data = DEFAULT_FLOWS }: { data?: CashFlowMonth
     });
 
     // Bars
-    data.forEach((d) => {
+    chartData.forEach((d) => {
       const g = svg.append("g").attr("transform", `translate(${x0(d.month)},0)`);
       // Inflow bar
       g.append("rect")
-        .attr("x", x1("inflow")!).attr("y", y(d.inflow))
-        .attr("width", x1.bandwidth()).attr("height", height - margin.bottom - y(d.inflow))
-        .attr("rx", 3).attr("fill", "url(#inflow-diag)")
-        .attr("stroke", "#047857").attr("stroke-width", 1.2).attr("cursor", "pointer")
-        .on("mouseenter", () => setActive(d)).on("mouseleave", () => setActive(null));
+        .attr("x", x1("inflow")!)
+        .attr("y", y(d.inflow))
+        .attr("width", x1.bandwidth())
+        .attr("height", height - margin.bottom - y(d.inflow))
+        .attr("fill", "url(#inflow-diag)")
+        .attr("stroke", "#047857")
+        .attr("stroke-width", 1.2)
+        .attr("rx", 3)
+        .attr("cursor", "pointer")
+        .on("mouseenter", () => setActive(d))
+        .on("mouseleave", () => setActive(null));
+
       // Outflow bar
       g.append("rect")
-        .attr("x", x1("outflow")!).attr("y", y(d.outflow))
-        .attr("width", x1.bandwidth()).attr("height", height - margin.bottom - y(d.outflow))
-        .attr("rx", 3).attr("fill", "url(#outflow-diag)")
-        .attr("stroke", "#475569").attr("stroke-width", 1.2).attr("cursor", "pointer")
-        .on("mouseenter", () => setActive(d)).on("mouseleave", () => setActive(null));
+        .attr("x", x1("outflow")!)
+        .attr("y", y(d.outflow))
+        .attr("width", x1.bandwidth())
+        .attr("height", height - margin.bottom - y(d.outflow))
+        .attr("fill", "url(#outflow-diag)")
+        .attr("stroke", "#475569")
+        .attr("stroke-width", 1.2)
+        .attr("rx", 3)
+        .attr("cursor", "pointer")
+        .on("mouseenter", () => setActive(d))
+        .on("mouseleave", () => setActive(null));
     });
 
-    // Debt Service Capacity Ceiling line
-    const capY = y(55);
+    // Ceiling reference line for safe loan capacity
+    const avgCap = chartData[chartData.length - 1]?.safeCap || chartData[0]?.safeCap || 50;
+    const safeCapY = y(avgCap);
     svg.append("line")
       .attr("x1", margin.left).attr("x2", width - margin.right)
-      .attr("y1", capY).attr("y2", capY)
-      .attr("stroke", "#d97706").attr("stroke-width", 1.5).attr("stroke-dasharray", "4,3");
+      .attr("y1", safeCapY).attr("y2", safeCapY)
+      .attr("stroke", "#2563eb").attr("stroke-dasharray", "4,4").attr("stroke-width", 1.5);
+
+    svg.append("text")
+      .attr("x", width - margin.right)
+      .attr("y", safeCapY - 4)
+      .attr("text-anchor", "end")
+      .attr("fill", "#2563eb")
+      .attr("font-size", "10px")
+      .attr("font-weight", "800")
+      .text(`Max Safe Debt: ${avgCap}k`);
 
     // Axes
-    svg.append("g").attr("transform", `translate(0,${height - margin.bottom})`)
-      .call(d3.axisBottom(x0).tickSize(0)).select(".domain").attr("stroke", "#e2e8f0");
-    svg.selectAll(".tick text").attr("fill", "#64748b").attr("font-size", "10px");
+    const xAxis = d3.axisBottom(x0).tickSize(0);
+    svg.append("g")
+      .attr("transform", `translate(0,${height - margin.bottom})`)
+      .call(xAxis)
+      .select(".domain").attr("stroke", "#e2e8f0");
+    svg.selectAll(".tick text").attr("fill", "#64748b").attr("font-size", "10px").attr("dy", "10px");
 
-    svg.append("g").attr("transform", `translate(${margin.left},0)`)
-      .call(d3.axisLeft(y).ticks(4).tickFormat((d) => `${d}k`)).select(".domain").remove();
-  }, [data]);
+    const yAxis = d3.axisLeft(y).ticks(4).tickFormat((d) => `${d}k`).tickSize(0);
+    svg.append("g")
+      .attr("transform", `translate(${margin.left},0)`)
+      .call(yAxis)
+      .select(".domain").remove();
+  }, [chartData]);
+
+  if (chartData.length === 0) {
+    return (
+      <div className="w-full h-44 flex flex-col items-center justify-center text-xs text-slate-400 bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+        <p className="font-semibold text-slate-600">No cash flow periods recorded yet</p>
+        <p className="text-[11px] text-slate-400 mt-0.5">Monthly inflows and outflows will be computed from transaction history</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-xs border border-emerald-700 bg-emerald-100" /> Revenue Inflow</span>
-          <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-xs border border-slate-600 bg-slate-200" /> Operating Outflow</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-0.5 border-b border-dashed border-amber-600" /> DSCR Ceiling</span>
+    <div className="w-full space-y-2">
+      <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-xs bg-emerald-100 border border-emerald-700" />
+            <span className="text-[11px] font-bold text-slate-700">Gross Inflows</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-xs bg-slate-200 border border-slate-700" />
+            <span className="text-[11px] font-bold text-slate-700">Outflows</span>
+          </div>
         </div>
         {active && (
-          <span className="text-emerald-800 font-extrabold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-            {active.month}: Net +{(active.inflow - active.outflow)}k ETB
+          <span className="font-mono text-[11px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+            {active.month}: +{active.inflow}k ETB / -{active.outflow}k ETB (Net: +{active.inflow - active.outflow}k ETB)
           </span>
         )}
       </div>
+
       <div className="w-full overflow-hidden">
-        <svg ref={svgRef} viewBox="0 0 500 210" className="w-full h-auto max-h-[210px]" />
+        <svg ref={svgRef} viewBox="0 0 500 210" className="w-full h-auto max-h-[220px]" />
       </div>
     </div>
   );

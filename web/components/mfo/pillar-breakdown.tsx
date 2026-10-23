@@ -17,7 +17,7 @@ export function PillarBreakdown({ pillars }: PillarBreakdownProps) {
             Four Financial Health Pillars & Audit Radar
           </h3>
           <p className="text-[11px] text-slate-500 font-medium">
-            Weighted assessment of creditworthiness vs. MFO approval threshold
+            Weighted assessment of creditworthiness vs. institutional underwriting threshold
           </p>
         </div>
       </CardHeader>

@@ -3,24 +3,36 @@
 import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
 
-interface DonutItem {
+export interface DonutItem {
   label: string;
   value: number;
   color: string;
   bg?: string;
 }
 
-const DEFAULT_SEGMENTS: DonutItem[] = [
-  { label: "Telebirr", value: 54, color: "#047857", bg: "#ecfdf5" },
-  { label: "CBE Birr", value: 28, color: "#2563eb", bg: "#eff6ff" },
-  { label: "Cash", value: 18, color: "#d97706", bg: "#fffbeb" },
-];
+interface D3DonutChartProps {
+  segments?: DonutItem[];
+  centerText?: string;
+  centerSubtext?: string;
+}
 
-export function D3DonutChart({ segments = DEFAULT_SEGMENTS }: { segments?: DonutItem[] }) {
+export function D3DonutChart({
+  segments,
+  centerText,
+  centerSubtext = "DIGITAL",
+}: D3DonutChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const chartSegments: DonutItem[] = segments || [];
+
+  // Dynamic calculation of digital percentage if centerText not explicitly given
+  const digitalShare =
+    centerText ||
+    `${chartSegments
+      .filter((s) => s.label.toLowerCase().includes("telebirr") || s.label.toLowerCase().includes("cbe"))
+      .reduce((sum, s) => sum + s.value, 0)}%`;
 
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || chartSegments.length === 0) return;
 
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
@@ -44,7 +56,7 @@ export function D3DonutChart({ segments = DEFAULT_SEGMENTS }: { segments?: Donut
 
     // SVG Diagonal Patterns for each segment
     const defs = svg.append("defs");
-    segments.forEach((s, i) => {
+    chartSegments.forEach((s, i) => {
       const p = defs.append("pattern")
         .attr("id", `donut-diag-${i}`)
         .attr("width", 8)
@@ -65,7 +77,7 @@ export function D3DonutChart({ segments = DEFAULT_SEGMENTS }: { segments?: Donut
     });
 
     g.selectAll("path")
-      .data(pie(segments))
+      .data(pie(chartSegments))
       .enter()
       .append("path")
       .attr("d", arc)
@@ -73,14 +85,14 @@ export function D3DonutChart({ segments = DEFAULT_SEGMENTS }: { segments?: Donut
       .attr("stroke", (d) => d.data.color)
       .attr("stroke-width", 1.5);
 
-    // Center metric
+    // Dynamic Center metric
     g.append("text")
       .attr("text-anchor", "middle")
       .attr("dy", "-0.1em")
       .attr("font-size", "20px")
       .attr("font-weight", "900")
       .attr("fill", "#0f172a")
-      .text("82%");
+      .text(digitalShare);
 
     g.append("text")
       .attr("text-anchor", "middle")
@@ -88,14 +100,22 @@ export function D3DonutChart({ segments = DEFAULT_SEGMENTS }: { segments?: Donut
       .attr("font-size", "10px")
       .attr("font-weight", "700")
       .attr("fill", "#64748b")
-      .text("DIGITAL");
-  }, [segments]);
+  }, [chartSegments, digitalShare, centerSubtext]);
+
+  if (chartSegments.length === 0) {
+    return (
+      <div className="w-full h-36 flex flex-col items-center justify-center text-xs text-slate-400 bg-slate-50/50 rounded-lg border border-dashed border-slate-200">
+        <p className="font-semibold text-slate-600">No payment data recorded yet</p>
+        <p className="text-[11px] text-slate-400 mt-0.5">Payment breakdown appears after recording sales</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col items-center">
       <svg ref={svgRef} viewBox="0 0 180 180" className="w-36 h-36" />
-      <div className="flex items-center gap-3 mt-3 text-[11px] font-semibold text-slate-600">
-        {segments.map((s) => (
+      <div className="flex flex-wrap items-center justify-center gap-3 mt-3 text-[11px] font-semibold text-slate-600">
+        {chartSegments.map((s) => (
           <div key={s.label} className="flex items-center gap-1.5">
             <span
               className="w-3 h-3 rounded-xs border"

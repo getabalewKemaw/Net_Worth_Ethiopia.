@@ -3,27 +3,29 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
 
-interface PartnerBurn {
+export interface VerificationChannelData {
   name: string;
   pulls: number;
-  remaining: number;
+  remaining?: number;
   color: string;
   bg: string;
 }
 
-const PARTNER_DATA: PartnerBurn[] = [
-  { name: "CBE", pulls: 489, remaining: 9999, color: "#1d4ed8", bg: "#dbeafe" },
-  { name: "Wasasa MFI", pulls: 142, remaining: 68, color: "#047857", bg: "#d1fae5" },
-  { name: "Nisir MFI", pulls: 38, remaining: 14, color: "#d97706", bg: "#fef3c7" },
-  { name: "Awash Bank", pulls: 215, remaining: 120, color: "#7c3aed", bg: "#ede9fe" },
+const DEFAULT_VERIFICATION_DATA: VerificationChannelData[] = [
+  { name: "Direct Token Links", pulls: 142, remaining: 9999, color: "#047857", bg: "#d1fae5" },
+  { name: "Underwriting Portals", pulls: 98, remaining: 9999, color: "#1d4ed8", bg: "#dbeafe" },
+  { name: "QR Mobile Scans", pulls: 64, remaining: 9999, color: "#0d9488", bg: "#ccfbf1" },
+  { name: "Bank Verification API", pulls: 85, remaining: 9999, color: "#b45309", bg: "#fef3c7" },
 ];
 
-export function D3QueryVelocityChart() {
+export function D3QueryVelocityChart({ data }: { data?: VerificationChannelData[] }) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [active, setActive] = useState<PartnerBurn | null>(null);
+  const [active, setActive] = useState<VerificationChannelData | null>(null);
+
+  const chartData = data && data.length > 0 ? data : DEFAULT_VERIFICATION_DATA;
 
   useEffect(() => {
-    if (!svgRef.current) return;
+    if (!svgRef.current || !chartData.length) return;
     const svg = d3.select(svgRef.current);
     svg.selectAll("*").remove();
 
@@ -32,7 +34,7 @@ export function D3QueryVelocityChart() {
     const margin = { top: 15, right: 20, bottom: 25, left: 35 };
 
     const defs = svg.append("defs");
-    PARTNER_DATA.forEach((p, i) => {
+    chartData.forEach((p, i) => {
       const pat = defs.append("pattern").attr("id", `vel-diag-${i}`).attr("width", 8).attr("height", 8)
         .attr("patternUnits", "userSpaceOnUse").attr("patternTransform", "rotate(45)");
       pat.append("rect").attr("width", 8).attr("height", 8).attr("fill", p.bg);
@@ -40,9 +42,11 @@ export function D3QueryVelocityChart() {
         .attr("stroke", p.color).attr("stroke-width", 2).attr("stroke-opacity", 0.65);
     });
 
-    const x = d3.scaleBand().domain(PARTNER_DATA.map((d) => d.name))
+    const x = d3.scaleBand().domain(chartData.map((d) => d.name))
       .range([margin.left, width - margin.right]).padding(0.35);
-    const y = d3.scaleLinear().domain([0, 550]).range([height - margin.bottom, margin.top]);
+
+    const maxVal = Math.max(20, (d3.max(chartData, (d) => d.pulls) || 100) * 1.25);
+    const y = d3.scaleLinear().domain([0, maxVal]).range([height - margin.bottom, margin.top]);
 
     // Grid
     y.ticks(3).forEach((t) => {
@@ -51,7 +55,7 @@ export function D3QueryVelocityChart() {
     });
 
     // Bars
-    PARTNER_DATA.forEach((d, i) => {
+    chartData.forEach((d, i) => {
       const bar = svg.append("g").attr("cursor", "pointer")
         .on("mouseenter", () => setActive(d)).on("mouseleave", () => setActive(null));
 
@@ -76,7 +80,7 @@ export function D3QueryVelocityChart() {
     // Y Axis
     svg.append("g").attr("transform", `translate(${margin.left},0)`)
       .call(d3.axisLeft(y).ticks(3).tickSize(0)).select(".domain").remove();
-  }, []);
+  }, [chartData]);
 
   return (
     <div className="space-y-2">
@@ -84,7 +88,7 @@ export function D3QueryVelocityChart() {
         <span className="uppercase tracking-wider">Institutional Dossier Pull Velocity</span>
         {active && (
           <span className="text-slate-900 font-extrabold bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-            {active.name}: {active.pulls} pulls ({active.remaining > 9000 ? "Unlimited" : `${active.remaining} checks left`})
+            {active.name}: {active.pulls} pulls {active.remaining && active.remaining < 9000 ? `(${active.remaining} checks left)` : ""}
           </span>
         )}
       </div>

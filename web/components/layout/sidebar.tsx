@@ -1,69 +1,34 @@
 "use client";
 
-import React, { Suspense } from "react";
+import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useAuthSim } from "@/lib/auth-sim";
+import { useAdminStore } from "@/store/admin-store";
 import {
   LayoutDashboard,
   Users,
-  Building2,
   Settings,
-  Search,
-  FileText,
-  CreditCard,
+  ShieldCheck,
   Layers,
+  LogOut,
 } from "lucide-react";
 
-function NavLinks() {
+export function Sidebar() {
   const pathname = usePathname();
-  const { currentUser } = useAuthSim();
-  const isAdmin = currentUser.role === "admin";
+  const router = useRouter();
+  const { currentUser, logout } = useAdminStore();
 
   const adminNav = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { label: "User Management", href: "/admin/users", icon: Users },
-    { label: "MFO Organizations", href: "/admin/mfo-partners", icon: Building2 },
+    { label: "Business Owners", href: "/admin/users", icon: Users },
     { label: "System Settings", href: "/admin/settings", icon: Settings },
   ];
 
-  const mfoNav = [
-    { label: "Underwriting Hub", href: "/mfo", icon: LayoutDashboard },
-    { label: "Merchant Lookup", href: "/mfo/lookup", icon: Search },
-    { label: "Credit Dossiers", href: "/mfo/dossier/NW-78219", icon: FileText },
-  ];
-
-  const navItems = isAdmin ? adminNav : mfoNav;
-
-  return (
-    <div className="space-y-1">
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = pathname === item.href;
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors",
-              isActive
-                ? "bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs"
-                : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-            )}
-          >
-            <Icon className="w-4 h-4 shrink-0 text-slate-500" />
-            {item.label}
-          </Link>
-        );
-      })}
-    </div>
-  );
-}
-
-export function Sidebar() {
-  const { currentUser } = useAuthSim();
-  const isAdmin = currentUser.role === "admin";
+  const handleLogout = () => {
+    logout();
+    router.push("/");
+  };
 
   return (
     <aside className="w-60 border-r border-slate-200 bg-white flex flex-col shrink-0 h-screen sticky top-0 shadow-xs z-40">
@@ -76,30 +41,55 @@ export function Sidebar() {
             NetWorth <span className="text-emerald-700">ET</span>
           </span>
           <p className="text-[9px] uppercase tracking-wider font-bold text-slate-500">
-            {isAdmin ? "Admin Console" : "Bank / MFO Portal"}
+            Central Admin Console
           </p>
         </div>
       </div>
 
       <nav className="p-3 space-y-1 flex-1 overflow-y-auto sidebar-scroll">
         <p className="px-3 py-1 text-[9px] font-bold uppercase tracking-wider text-slate-400">
-          Navigation
+          Management
         </p>
-        <Suspense fallback={<div className="h-28 rounded-lg bg-slate-100 animate-pulse" />}>
-          <NavLinks />
-        </Suspense>
+        <div className="space-y-1">
+          {adminNav.map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold transition-colors",
+                  isActive
+                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs"
+                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                )}
+              >
+                <Icon className="w-4 h-4 shrink-0 text-slate-500" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
       </nav>
 
-      <div className="p-3 border-t border-slate-200 bg-slate-50/50">
+      <div className="p-3 border-t border-slate-200 bg-slate-50/50 space-y-2">
         <div className="px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs shadow-2xs">
           <div className="flex items-center gap-1.5 text-slate-600">
-            <CreditCard className="w-3.5 h-3.5 text-emerald-700" />
-            <span className="text-[10px] font-bold uppercase tracking-wider">Institution</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+            <span className="text-[10px] font-bold uppercase tracking-wider">Superadmin</span>
           </div>
           <p className="text-[11px] font-extrabold text-slate-900 mt-0.5 truncate">
-            {currentUser.organization || "Enterprise Core"}
+            {currentUser?.email || "admin@networth.et"}
           </p>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-700 hover:border-red-200 transition-colors text-xs font-bold cursor-pointer"
+        >
+          <LogOut className="w-3.5 h-3.5" /> Sign Out
+        </button>
       </div>
     </aside>
   );

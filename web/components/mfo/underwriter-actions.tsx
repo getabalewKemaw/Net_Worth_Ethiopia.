@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Card, CardHeader, CardBody } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Clock, XCircle, Printer } from "lucide-react";
+import { CheckCircle, Clock, XCircle } from "lucide-react";
 
 export function UnderwriterActions() {
   const [status, setStatus] = useState<"pending" | "approved" | "rejected">("pending");
@@ -22,9 +22,6 @@ export function UnderwriterActions() {
         <h3 className="text-xs font-bold text-slate-900">
           Underwriter Loan Decision
         </h3>
-        <Button variant="outline" size="sm" onClick={() => window.print()}>
-          <Printer className="w-3.5 h-3.5" /> Print Dossier
-        </Button>
       </CardHeader>
       <CardBody className="p-5 space-y-4">
         <div>

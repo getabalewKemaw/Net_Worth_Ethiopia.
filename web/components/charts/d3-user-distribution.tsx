@@ -14,10 +14,10 @@ export interface UserRoleDistribution {
 }
 
 const DEFAULT_DISTRIBUTION: UserRoleDistribution[] = [
-  { role: "merchant", label: "Merchants", count: 1420, sub: "1,895 active branches", color: "#047857", bg: "#d1fae5", cardBg: "bg-emerald-50/50 border-emerald-200/70" },
-  { role: "sales", label: "Sales Agents", count: 450, sub: "Field onboarding staff", color: "#334155", bg: "#e2e8f0", cardBg: "bg-slate-50 border-slate-200/80" },
-  { role: "bank", label: "Bank / MFO", count: 28, sub: "Underwriting officers", color: "#1d4ed8", bg: "#dbeafe", cardBg: "bg-blue-50/50 border-blue-200/70" },
-  { role: "admin", label: "Admins", count: 6, sub: "System operators", color: "#b45309", bg: "#fef3c7", cardBg: "bg-amber-50/50 border-amber-200/70" },
+  { role: "merchant", label: "Business Owners", count: 0, sub: "Registered MSME merchants", color: "#047857", bg: "#d1fae5", cardBg: "bg-emerald-50/50 border-emerald-200/70" },
+  { role: "branches", label: "Operating Branches", count: 0, sub: "Retail & service locations", color: "#2563eb", bg: "#dbeafe", cardBg: "bg-blue-50/50 border-blue-200/70" },
+  { role: "dossiers", label: "Shared Dossiers", count: 0, sub: "Active verification links", color: "#0d9488", bg: "#ccfbf1", cardBg: "bg-teal-50/50 border-teal-200/70" },
+  { role: "admin", label: "Superadmins", count: 1, sub: "Central console operator", color: "#b45309", bg: "#fef3c7", cardBg: "bg-amber-50/50 border-amber-200/70" },
 ];
 
 export function D3UserDistributionChart({
@@ -27,6 +27,7 @@ export function D3UserDistributionChart({
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const total = distribution.reduce((acc, curr) => acc + curr.count, 0);
+  const safeTotal = Math.max(1, total);
   const [activeRole, setActiveRole] = useState<string | null>(null);
 
   // 1. Initial Render & Geometry (Only runs when data changes, NEVER on hover)
@@ -53,7 +54,7 @@ export function D3UserDistributionChart({
 
     let currentX = 0;
     distribution.forEach((item, i) => {
-      const segWidth = Math.max(12, (item.count / total) * width);
+      const segWidth = Math.max(12, (item.count / safeTotal) * width);
 
       const g = svg.append("g")
         .datum(item)
@@ -80,12 +81,12 @@ export function D3UserDistributionChart({
           .attr("fill", item.color)
           .attr("font-size", "11px")
           .attr("font-weight", "800")
-          .text(`${((item.count / total) * 100).toFixed(1)}%`);
+          .text(`${((item.count / safeTotal) * 100).toFixed(1)}%`);
       }
 
       currentX += segWidth;
     });
-  }, [distribution, total]);
+  }, [distribution, safeTotal]);
 
   // 2. Smooth Hover Opacity Highlight (Modifies attributes only, NEVER deletes/re-renders DOM)
   useEffect(() => {
@@ -121,7 +122,7 @@ export function D3UserDistributionChart({
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {distribution.map((item) => {
-          const pct = ((item.count / total) * 100).toFixed(1);
+          const pct = ((item.count / safeTotal) * 100).toFixed(1);
           const isSelected = activeRole === item.role;
           return (
             <div
