@@ -11,7 +11,7 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 | **Phase 1** | **Database Schema & Migrations** <br>*(Completed)* | Dedicated `staff_assignment` table in PostgreSQL & local SQLite, plus attribution columns on `sale` & `expense`. | `backend/src/db/staff-management.ts`<br>`backend/src/db/schema.ts`<br>`backend/src/db/sales-expense-management.ts`<br>`mobile/src/db/schema.ts`<br>`mobile/src/db/migrations.ts` |
 | **Phase 2** | **Backend Staff APIs & Scoped Middlewares** <br>*(Completed)* | Staff assignment endpoints, auto-claim logic on login, daily digest endpoint, and branch-isolation middleware. | `backend/src/routes/staff.routes.ts`<br>`backend/src/controllers/staff.controller.ts`<br>`backend/src/service/staff.service.ts`<br>`backend/src/repositories/staff.repository.ts`<br>`backend/src/middleware/staff-guard.ts` |
 | **Phase 3** | **Mobile Data Layer & Repositories** <br>*(Completed)* | Local SQLite staff repository, auto-tagging injection in sales/expenses/debts, and Zustand `useStaffStore`. | `mobile/src/types/staff.ts`<br>`mobile/src/repositories/local-staff.repo.ts`<br>`mobile/src/store/staff-store.ts` |
-| **Phase 4** | **Unified Auth & Smart Role Navigation** | Session role detection, auto-claim invocation, and route guard routing staff to POS workspace vs. owner tabs. | `mobile/src/app/_layout.tsx`<br>`mobile/src/hooks/use-auth-role.ts` |
+| **Phase 4** | **Unified Auth & Smart Role Navigation** <br>*(Completed)* | Session role detection, auto-claim invocation, and route guard routing staff to POS workspace vs. owner tabs. | `mobile/src/app/_layout.tsx`<br>`mobile/src/hooks/use-auth-role.ts`<br>`mobile/src/app/staff/index.tsx` |
 | **Phase 5** | **Staff Counter Interface (Option B)** | Locked branch POS interface with Shift Drawer Summary and 3 tabs: Counter Sales, Branch Dube, and Petty Expenses. | `mobile/src/app/staff/_layout.tsx`<br>`mobile/src/app/staff/index.tsx`<br>`mobile/src/app/staff/dube.tsx`<br>`mobile/src/app/staff/expenses.tsx` |
 | **Phase 6** | **Branch Staff Assignment UI (Owner Side)** | Assigned staff list and "Add Staff by Email" modal inside the existing Branch Management screen. | `mobile/src/features/business/edit-branch-ui.tsx`<br>`mobile/src/components/business/assign-staff-modal.tsx` |
 | **Phase 7** | **Owner Daily Branch Digest Screen (Idea C)** | Dedicated screen in Hamburger Menu showing multi-branch daily performance, cash drawer counts, and settled debt logs. | `mobile/src/app/daily-digest.tsx`<br>`mobile/src/components/navigation/hamburger-drawer.tsx` |
@@ -58,15 +58,17 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 
 ---
 
-### Phase 4: Unified Auth & Smart Role Navigation Router
+### Phase 4: Unified Auth & Smart Role Navigation Router — [COMPLETED]
 
 #### Objectives
-1. In `mobile/src/app/_layout.tsx`, intercept post-login state:
-   - Check if current user email or ID has an active `staff_assignment`.
-   - If Staff: route to `/staff/` (Staff Interface).
-   - If Owner: route to `/(tabs)` (Owner Experience).
-   - If New User: route to `/(business)/create-business`.
-2. Prevent staff from navigating to `/health` or owner administrative tabs.
+1. [x] Implemented reactive unified hook `useAuthRole` (`mobile/src/hooks/use-auth-role.ts`) resolving session role (`'sales' | 'owner' | 'new_user' | 'unauthenticated'`) with auto-claim of pending staff invites upon sign-in.
+2. [x] Created `/staff/index.tsx` as dedicated root destination for staff counter interface with locked branch header and sign-out action.
+3. [x] Integrated state machine navigation router in `mobile/src/app/_layout.tsx`:
+   - Sales staff strictly redirected to `/staff`, intercepting unauthorized access to `/(tabs)`, `/(business)`, or `/health`.
+   - Business owners routed to `/(tabs)` root, preventing access to staff counter, onboarding wizard, or auth screens.
+   - Brand new users routed to `/(business)/create-business`.
+   - Unauthenticated users routed to `/(auth)/login`.
+4. [x] Verified zero TypeScript compilation errors (`mobile` and `backend`).
 
 ---
 
