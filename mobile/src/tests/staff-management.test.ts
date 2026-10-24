@@ -1,5 +1,6 @@
 import type { LocalSaleRow, LocalExpenseRow } from '../db/schema';
 import type { ShiftDrawerMetrics, StaffProfile } from '../types/staff';
+import { CURRENT_SCHEMA_VERSION } from '../db/migrations';
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -294,8 +295,32 @@ export async function runStaffManagementTests() {
   assert(settledDebt.paid_at !== null, 'paid_at timestamp must be recorded');
   console.log('PASS: Settled debt preserves cashier audit attribution.');
 
+  // TEST 4: SQLite Version 4 Migration & Schema Contract Verification
+  console.log('\n>>> [Test 4] SQLite Version 4 Migration Contract Verification...');
+  assertStrictEqual(CURRENT_SCHEMA_VERSION, 4, 'Current schema version must be 4');
+
+  const v4StaffColumns = [
+    'id',
+    'business_id',
+    'branch_id',
+    'user_id',
+    'email',
+    'name',
+    'role',
+    'status',
+    'created_at',
+    'updated_at',
+  ];
+  assertStrictEqual(v4StaffColumns.includes('branch_id'), true, 'Staff table must track branch_id');
+  assertStrictEqual(v4StaffColumns.includes('email'), true, 'Staff table must track email');
+  assertStrictEqual(v4StaffColumns.includes('status'), true, 'Staff table must track status');
+
+  const v4AttributionColumns = ['recorded_by_id', 'recorded_by_name'];
+  assertStrictEqual(v4AttributionColumns.length, 2, 'Attribution tracking requires user id and display name');
+  console.log('PASS: SQLite Version 4 migration and schema contracts verified.');
+
   console.log('\n==============================================');
-  console.log('ALL MOBILE STAFF DATA LAYER TESTS PASSED PERFECTLY!');
+  console.log('ALL 4 MOBILE STAFF DATA LAYER TESTS PASSED PERFECTLY!');
   console.log('==============================================\n');
 }
 

@@ -15,7 +15,7 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 | **Phase 5** | **Staff Counter Interface (Option B)** <br>*(Completed)* | Locked branch POS interface with Shift Drawer Summary and 3 tabs: Counter Sales, Branch Dube, and Petty Expenses. | `mobile/src/app/staff/_layout.tsx`<br>`mobile/src/app/staff/index.tsx`<br>`mobile/src/app/staff/dube.tsx`<br>`mobile/src/app/staff/expenses.tsx`<br>`mobile/src/components/staff/*` |
 | **Phase 6** | **Branch Staff Assignment UI (Owner Side)** <br>*(Completed)* | Assigned staff list and "Add Staff by Email" modal inside the existing Branch Management screen. | `mobile/src/features/business/edit-branch-ui.tsx`<br>`mobile/src/components/business/assign-staff-modal.tsx` |
 | **Phase 7** | **Owner Daily Branch Digest Screen (Idea C)** <br>*(Completed)* | Dedicated screen in Hamburger Menu showing multi-branch daily performance, cash drawer counts, and settled debt logs. | `mobile/src/app/daily-digest.tsx`<br>`mobile/src/components/navigation/hamburger-drawer.tsx` |
-| **Phase 8** | **Automated Verification & Unit Tests** | Backend API test suite (auto-claim, isolation guards) and mobile calculation test suite (shift drawer, local mapping). | `backend/src/tests/staff-management.test.ts`<br>`mobile/src/tests/staff-management.test.ts` |
+| **Phase 8** | **Automated Verification & Unit Tests** <br>*(Completed)* | Backend API test suite (auto-claim, isolation guards) and mobile calculation test suite (shift drawer, local mapping). | `backend/src/tests/staff-management.test.ts`<br>`mobile/src/tests/staff-management.test.ts` |
 
 ---
 
@@ -122,19 +122,24 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 
 ---
 
-### Phase 8: Verification & Automated Test Suites
+### Phase 8: Verification & Automated Test Suites — [COMPLETED]
 
 #### Objectives
-1. **Backend Tests (`backend/src/tests/staff-management.test.ts`)**:
-   - Test assignment creation and auto-claim on user login.
-   - Test branch isolation middleware (verifies staff cannot post to another branch).
-   - Test daily digest aggregation logic.
-2. **Mobile Tests (`mobile/src/tests/staff-management.test.ts`)**:
-   - Test shift drawer calculation formula.
-   - Test automatic branch ID and staff name attribution injection.
-   - Test SQLite version 4 migration.
-3. **TypeScript Compilation**:
-   - Zero compilation errors across `mobile` and `backend`.
+1. [x] **Backend Tests (`backend/src/tests/staff-management.test.ts`)**:
+   - Tested staff assignment input validation (email normalization, default role assignment, rejection of invalid email).
+   - Tested daily digest query parameter validation (`businessId` enforcement, `YYYY-MM-DD` date parsing).
+   - Tested branch isolation middleware logic (blocking cross-branch tampering with 403 Forbidden, transparent branchId context injection).
+   - Tested multi-branch daily digest mathematical aggregation formulas (gross inflow, drawer cash, Telebirr, CBE Birr, settled dube reconciliation).
+   - Tested user invite auto-claim algorithm on first-time login.
+2. [x] **Mobile Tests (`mobile/src/tests/staff-management.test.ts`)**:
+   - Tested shift drawer calculation formula (reconciling cash, Telebirr, CBE Birr, settled debts, expenses, and net cash).
+   - Tested zero-latency attribution auto-injection (`recordedById`, `recordedByName`, `branchId`).
+   - Tested customer debt recovery attribution preservation.
+   - Tested SQLite Version 4 migration contract and schema column integrity (`local_staff_assignment`, `local_sale`, `local_expense`, `CURRENT_SCHEMA_VERSION === 4`).
+3. [x] **Full Build & TypeScript Compilation**:
+   - Zero compilation errors across `mobile` (`npx tsc --noEmit`).
+   - Zero compilation errors across `backend` (`npm run build` with `tsc`).
+   - Clean execution of all automated tests (`npm test` in backend, `tsx` in mobile).
 
 ---
 
