@@ -9,7 +9,7 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 | Phase | Title | Primary Deliverables | Target Files |
 | :--- | :--- | :--- | :--- |
 | **Phase 1** | **Database Schema & Migrations** <br>*(Completed)* | Dedicated `staff_assignment` table in PostgreSQL & local SQLite, plus attribution columns on `sale` & `expense`. | `backend/src/db/staff-management.ts`<br>`backend/src/db/schema.ts`<br>`backend/src/db/sales-expense-management.ts`<br>`mobile/src/db/schema.ts`<br>`mobile/src/db/migrations.ts` |
-| **Phase 2** | **Backend Staff APIs & Scoped Middlewares** | Staff assignment endpoints, auto-claim logic on login, daily digest endpoint, and branch-isolation middleware. | `backend/src/routes/staff.routes.ts`<br>`backend/src/controllers/staff.controller.ts`<br>`backend/src/service/staff.service.ts`<br>`backend/src/repositories/staff.repository.ts`<br>`backend/src/middleware/staff-guard.ts` |
+| **Phase 2** | **Backend Staff APIs & Scoped Middlewares** <br>*(Completed)* | Staff assignment endpoints, auto-claim logic on login, daily digest endpoint, and branch-isolation middleware. | `backend/src/routes/staff.routes.ts`<br>`backend/src/controllers/staff.controller.ts`<br>`backend/src/service/staff.service.ts`<br>`backend/src/repositories/staff.repository.ts`<br>`backend/src/middleware/staff-guard.ts` |
 | **Phase 3** | **Mobile Data Layer & Repositories** | Local SQLite staff repository, auto-tagging injection in sales/expenses/debts, and Zustand `useStaffStore`. | `mobile/src/types/staff.ts`<br>`mobile/src/repositories/local-staff.repo.ts`<br>`mobile/src/store/staff-store.ts` |
 | **Phase 4** | **Unified Auth & Smart Role Navigation** | Session role detection, auto-claim invocation, and route guard routing staff to POS workspace vs. owner tabs. | `mobile/src/app/_layout.tsx`<br>`mobile/src/hooks/use-auth-role.ts` |
 | **Phase 5** | **Staff Counter Interface (Option B)** | Locked branch POS interface with Shift Drawer Summary and 3 tabs: Counter Sales, Branch Dube, and Petty Expenses. | `mobile/src/app/staff/_layout.tsx`<br>`mobile/src/app/staff/index.tsx`<br>`mobile/src/app/staff/dube.tsx`<br>`mobile/src/app/staff/expenses.tsx` |
@@ -32,15 +32,17 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 
 ---
 
-### Phase 2: Backend Staff APIs & Security Middlewares
+### Phase 2: Backend Staff APIs & Security Middlewares — [COMPLETED]
 
 #### Objectives
-1. Implement `POST /api/branches/:branchId/staff` to assign a staff member by email.
-2. Implement `GET /api/branches/:branchId/staff` to list assigned staff per branch.
-3. Implement `DELETE /api/branches/:branchId/staff/:assignmentId` to revoke staff access.
-4. Implement `GET /api/staff/me` for staff client startup context.
-5. Implement `GET /api/branches/daily-digest` for the owner's multi-branch end-of-day reconciliation.
-6. Create `requireStaffBranchMatch` middleware to reject cross-branch data tampering with `403 Forbidden`.
+1. [x] Implement `POST /api/branches/:branchId/staff` to assign a staff member by email (with auto-linking to existing user).
+2. [x] Implement `GET /api/branches/:branchId/staff` to list assigned staff per branch.
+3. [x] Implement `DELETE /api/branches/:branchId/staff/:assignmentId` to revoke staff access.
+4. [x] Implement `GET /api/staff/me` for staff client startup context and automated pending invite claiming.
+5. [x] Implement `GET /api/branches/daily-digest` for owner's multi-branch end-of-day reconciliation and debt recovery logs.
+6. [x] Implement `requireStaffBranchMatch` middleware to reject cross-branch data tampering with `403 Forbidden` and auto-inject assigned context.
+7. [x] Implement `forbidStaff` middleware protecting owner-only administrative endpoints (`/api/health/*`, staff management, daily digest).
+8. [x] Created and verified automated backend unit test suite (`backend/src/tests/staff-management.test.ts`) with 100% pass rate.
 
 ---
 

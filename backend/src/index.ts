@@ -11,6 +11,7 @@ import bidrRoutes from "./routes/bidr.routes";
 import syncRoutes from "./routes/sync.routes";
 import businessHealthRoutes from "./routes/business-health.routes";
 import adminRoutes from "./routes/admin.routes";
+import staffRoutes from "./routes/staff.routes";
 import { errorHandler } from "./middleware/error";
 
 dotenv.config();
@@ -33,6 +34,7 @@ app.use("/api/sales", salesRoutes);
 app.use("/api/expenses", expensesRoutes);
 app.use("/api/bidr", bidrRoutes);
 app.use("/api/sync", syncRoutes);
+app.use("/api", staffRoutes);
 app.use("/api", branchRoutes);
 
 app.get("/", (req: Request, res: Response) => {

@@ -1,4 +1,5 @@
 import * as businessRepo from "../repositories/business.repository";
+import * as staffRepo from "../repositories/staff.repository";
 import { syncRepo } from "../repositories/sync.repository";
 import { ForbiddenError, NotFoundError } from "../helpers/errors";
 import type { SyncPullResponse, SyncPushRequest, SyncPushResponse } from "../types/sync";
@@ -16,7 +17,10 @@ export const syncService = {
       throw new NotFoundError("Business not found");
     }
     if (biz.userId !== userId) {
-      throw new ForbiddenError("Unauthorized: You do not own this business");
+      const staffMember = await staffRepo.findActiveStaffAssignmentByUserId(userId);
+      if (!staffMember || staffMember.businessId !== data.businessId || staffMember.status !== "active") {
+        throw new ForbiddenError("Unauthorized: You do not own this business or have active staff access");
+      }
     }
 
     if (!data.mutations || data.mutations.length === 0) {
@@ -60,7 +64,10 @@ export const syncService = {
       throw new NotFoundError("Business not found");
     }
     if (biz.userId !== userId) {
-      throw new ForbiddenError("Unauthorized: You do not own this business");
+      const staffMember = await staffRepo.findActiveStaffAssignmentByUserId(userId);
+      if (!staffMember || staffMember.businessId !== businessId || staffMember.status !== "active") {
+        throw new ForbiddenError("Unauthorized: You do not own this business or have active staff access");
+      }
     }
 
     let sinceDate: Date | undefined;

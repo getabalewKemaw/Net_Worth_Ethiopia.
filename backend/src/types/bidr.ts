@@ -3,6 +3,8 @@ import type { PaymentMethod, SaleStatus } from "./sales";
 export interface SettleBidrInput {
   paymentMethod?: PaymentMethod | undefined;
   notes?: string | null | undefined;
+  recordedById?: string | null | undefined;
+  recordedByName?: string | null | undefined;
 }
 
 export interface UpdateBidrInput {
@@ -11,6 +13,8 @@ export interface UpdateBidrInput {
   customerPhone?: string | null | undefined;
   notes?: string | null | undefined;
   status?: SaleStatus | undefined;
+  recordedById?: string | null | undefined;
+  recordedByName?: string | null | undefined;
 }
 
 export interface BidrFilters {
@@ -33,6 +37,8 @@ export interface CreateBidrInput {
   customerPhone?: string | null | undefined;
   dueDate?: Date | null | undefined;
   notes?: string | null | undefined;
+  recordedById?: string | null | undefined;
+  recordedByName?: string | null | undefined;
 }
 
 export interface DebtSummary {
