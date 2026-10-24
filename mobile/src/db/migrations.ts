@@ -1,7 +1,7 @@
 import { getDatabase, isSQLiteAvailable } from './client';
 import { CREATE_TABLES_SQL } from './schema';
 
-export const CURRENT_SCHEMA_VERSION = 3;
+export const CURRENT_SCHEMA_VERSION = 4;
 
 /**
  * Runs pending database migrations using SQLite user_version pragma.
@@ -26,7 +26,7 @@ export async function initLocalDatabase(): Promise<void> {
     console.log('[SQLite Migrations] Running initial migration (version 0 -> 1)...');
     await db.execAsync(`
       ${CREATE_TABLES_SQL}
-      PRAGMA user_version = 3;
+      PRAGMA user_version = 4;
     `);
     console.log('[SQLite Migrations] Initial schema successfully applied.');
     return;
@@ -112,6 +112,42 @@ export async function initLocalDatabase(): Promise<void> {
     `);
     console.log('[SQLite Migrations] Version 3 schema migration applied successfully.');
   }
+
+  if (currentVersion < 4) {
+    console.log('[SQLite Migrations] Running migration (version 3 -> 4: local_staff_assignment & attribution columns)...');
+    await db.execAsync(`
+      -- 1. Create local_staff_assignment table
+      CREATE TABLE IF NOT EXISTS local_staff_assignment (
+        id TEXT PRIMARY KEY NOT NULL,
+        business_id TEXT NOT NULL,
+        branch_id TEXT NOT NULL,
+        user_id TEXT,
+        email TEXT NOT NULL,
+        name TEXT,
+        role TEXT NOT NULL DEFAULT 'sales',
+        status TEXT NOT NULL DEFAULT 'active',
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_local_staff_biz ON local_staff_assignment(business_id);
+      CREATE INDEX IF NOT EXISTS idx_local_staff_branch ON local_staff_assignment(branch_id);
+      CREATE INDEX IF NOT EXISTS idx_local_staff_email ON local_staff_assignment(email);
+
+      -- 2. Add attribution columns to local_sale
+      ALTER TABLE local_sale ADD COLUMN recorded_by_id TEXT;
+      ALTER TABLE local_sale ADD COLUMN recorded_by_name TEXT;
+      CREATE INDEX IF NOT EXISTS idx_local_sale_recorded_by ON local_sale(recorded_by_id);
+
+      -- 3. Add attribution columns to local_expense
+      ALTER TABLE local_expense ADD COLUMN recorded_by_id TEXT;
+      ALTER TABLE local_expense ADD COLUMN recorded_by_name TEXT;
+      CREATE INDEX IF NOT EXISTS idx_local_expense_recorded_by ON local_expense(recorded_by_id);
+
+      PRAGMA user_version = 4;
+    `);
+    console.log('[SQLite Migrations] Version 4 schema migration applied successfully.');
+  }
 }
 
 /**
@@ -130,6 +166,7 @@ export async function resetLocalDatabase(): Promise<void> {
     DROP TABLE IF EXISTS sync_metadata;
     DROP TABLE IF EXISTS local_bank_sms;
     DROP TABLE IF EXISTS local_financial_snapshot;
+    DROP TABLE IF EXISTS local_staff_assignment;
     PRAGMA user_version = 0;
   `);
 

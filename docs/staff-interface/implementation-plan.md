@@ -8,7 +8,7 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 
 | Phase | Title | Primary Deliverables | Target Files |
 | :--- | :--- | :--- | :--- |
-| **Phase 1** | **Database Schema & Migrations** | Dedicated `staff_assignment` table in PostgreSQL & local SQLite, plus attribution columns on `sale` & `expense`. | `backend/src/db/staff-management.ts`<br>`backend/src/db/schema.ts`<br>`backend/src/db/sales-expense-management.ts`<br>`mobile/src/db/schema.ts`<br>`mobile/src/db/migrations.ts` |
+| **Phase 1** | **Database Schema & Migrations** <br>*(Completed)* | Dedicated `staff_assignment` table in PostgreSQL & local SQLite, plus attribution columns on `sale` & `expense`. | `backend/src/db/staff-management.ts`<br>`backend/src/db/schema.ts`<br>`backend/src/db/sales-expense-management.ts`<br>`mobile/src/db/schema.ts`<br>`mobile/src/db/migrations.ts` |
 | **Phase 2** | **Backend Staff APIs & Scoped Middlewares** | Staff assignment endpoints, auto-claim logic on login, daily digest endpoint, and branch-isolation middleware. | `backend/src/routes/staff.routes.ts`<br>`backend/src/controllers/staff.controller.ts`<br>`backend/src/service/staff.service.ts`<br>`backend/src/repositories/staff.repository.ts`<br>`backend/src/middleware/staff-guard.ts` |
 | **Phase 3** | **Mobile Data Layer & Repositories** | Local SQLite staff repository, auto-tagging injection in sales/expenses/debts, and Zustand `useStaffStore`. | `mobile/src/types/staff.ts`<br>`mobile/src/repositories/local-staff.repo.ts`<br>`mobile/src/store/staff-store.ts` |
 | **Phase 4** | **Unified Auth & Smart Role Navigation** | Session role detection, auto-claim invocation, and route guard routing staff to POS workspace vs. owner tabs. | `mobile/src/app/_layout.tsx`<br>`mobile/src/hooks/use-auth-role.ts` |
@@ -21,13 +21,14 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 
 ## 2. Detailed Phase Specifications
 
-### Phase 1: Database Schema & Migrations
+### Phase 1: Database Schema & Migrations — [COMPLETED]
 
 #### Objectives
-1. Create `staff_assignment` table in PostgreSQL (Drizzle ORM) with foreign keys to `business.id`, `branch.id`, and `user.id`.
-2. Add `recorded_by_id` and `recorded_by_name` columns to `sale` and `expense` tables.
-3. Generate and verify Drizzle migration `0004`.
-4. Mirror schema in SQLite (`local_staff_assignment`) and bump `CURRENT_SCHEMA_VERSION = 4` in `mobile/src/db/migrations.ts`.
+1. [x] Create `staff_assignment` table in PostgreSQL (Drizzle ORM) with foreign keys to `business.id`, `branch.id`, and `user.id`.
+2. [x] Add `recorded_by_id` and `recorded_by_name` columns to `sale` and `expense` tables.
+3. [x] Generate and verify Drizzle migration `0004_magenta_wendigo.sql` (applied and verified in PostgreSQL).
+4. [x] Mirror schema in SQLite (`local_staff_assignment`) and bump `CURRENT_SCHEMA_VERSION = 4` in `mobile/src/db/migrations.ts`.
+5. [x] Validated TypeScript compilation across both `backend` and `mobile` projects (0 errors).
 
 ---
 

@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import { index, integer, pgEnum, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { branch, business } from "./business-branch-management";
+import { user } from "./schema";
 import {
   PAYMENT_METHOD_VALUES,
   SALE_STATUS_VALUES,
@@ -32,6 +33,8 @@ export const sale = pgTable(
     notes: text("notes"),
     status: saleStatusEnum("status").notNull(),
     paidAt: timestamp("paid_at"),
+    recordedById: text("recorded_by_id").references(() => user.id, { onDelete: "set null" }),
+    recordedByName: text("recorded_by_name"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -44,6 +47,7 @@ export const sale = pgTable(
     index("sale_status_idx").on(table.status),
     index("sale_createdAt_idx").on(table.createdAt),
     index("sale_business_updated_idx").on(table.businessId, table.updatedAt),
+    index("sale_recorded_by_idx").on(table.recordedById),
   ],
 );
 
@@ -61,6 +65,8 @@ export const expense = pgTable(
     amount: integer("amount").notNull(),
     category: text("category").notNull(),
     notes: text("notes"),
+    recordedById: text("recorded_by_id").references(() => user.id, { onDelete: "set null" }),
+    recordedByName: text("recorded_by_name"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -73,6 +79,7 @@ export const expense = pgTable(
     index("expense_category_idx").on(table.category),
     index("expense_createdAt_idx").on(table.createdAt),
     index("expense_business_updated_idx").on(table.businessId, table.updatedAt),
+    index("expense_recorded_by_idx").on(table.recordedById),
   ],
 );
 
