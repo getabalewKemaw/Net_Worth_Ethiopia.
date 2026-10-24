@@ -11,6 +11,9 @@ import { useBusinessStore } from '@/store/business-store';
 import { initLocalDatabase } from '@/db/migrations';
 import { useNetworkSync } from '@/hooks/use-network-sync';
 
+import { usePushNotifications } from '@/hooks/use-push-notifications';
+
+
 import { Platform } from 'react-native';
 
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
@@ -30,6 +33,9 @@ export default function TabLayout() {
 
   // Background offline sync lifecycle watcher
   useNetworkSync();
+
+  usePushNotifications();
+
 
   const loadInitialState = useBusinessStore((state) => state.loadInitialState);
   const activeBusiness = useBusinessStore((state) => state.activeBusiness);
@@ -60,16 +66,13 @@ export default function TabLayout() {
         router.replace('/(auth)/login');
       }
     } else {
-      // Wait for initial business fetch to complete
       if (isBusinessPending && !activeBusiness) return;
 
       if (!activeBusiness) {
-        // Authenticated but no business registered -> force business onboarding
         if (!inBusinessGroup) {
           router.replace('/(business)/create-business');
         }
       } else {
-        // Authenticated and has business -> prevent back navigation to login or onboarding
         if (inAuthGroup || (inBusinessGroup && segments[1] === 'create-business')) {
           router.replace('/');
         }
@@ -84,3 +87,4 @@ export default function TabLayout() {
     </ThemeProvider>
   );
 }
+
