@@ -12,7 +12,7 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 | **Phase 2** | **Backend Staff APIs & Scoped Middlewares** <br>*(Completed)* | Staff assignment endpoints, auto-claim logic on login, daily digest endpoint, and branch-isolation middleware. | `backend/src/routes/staff.routes.ts`<br>`backend/src/controllers/staff.controller.ts`<br>`backend/src/service/staff.service.ts`<br>`backend/src/repositories/staff.repository.ts`<br>`backend/src/middleware/staff-guard.ts` |
 | **Phase 3** | **Mobile Data Layer & Repositories** <br>*(Completed)* | Local SQLite staff repository, auto-tagging injection in sales/expenses/debts, and Zustand `useStaffStore`. | `mobile/src/types/staff.ts`<br>`mobile/src/repositories/local-staff.repo.ts`<br>`mobile/src/store/staff-store.ts` |
 | **Phase 4** | **Unified Auth & Smart Role Navigation** <br>*(Completed)* | Session role detection, auto-claim invocation, and route guard routing staff to POS workspace vs. owner tabs. | `mobile/src/app/_layout.tsx`<br>`mobile/src/hooks/use-auth-role.ts`<br>`mobile/src/app/staff/index.tsx` |
-| **Phase 5** | **Staff Counter Interface (Option B)** | Locked branch POS interface with Shift Drawer Summary and 3 tabs: Counter Sales, Branch Dube, and Petty Expenses. | `mobile/src/app/staff/_layout.tsx`<br>`mobile/src/app/staff/index.tsx`<br>`mobile/src/app/staff/dube.tsx`<br>`mobile/src/app/staff/expenses.tsx` |
+| **Phase 5** | **Staff Counter Interface (Option B)** <br>*(Completed)* | Locked branch POS interface with Shift Drawer Summary and 3 tabs: Counter Sales, Branch Dube, and Petty Expenses. | `mobile/src/app/staff/_layout.tsx`<br>`mobile/src/app/staff/index.tsx`<br>`mobile/src/app/staff/dube.tsx`<br>`mobile/src/app/staff/expenses.tsx`<br>`mobile/src/components/staff/*` |
 | **Phase 6** | **Branch Staff Assignment UI (Owner Side)** | Assigned staff list and "Add Staff by Email" modal inside the existing Branch Management screen. | `mobile/src/features/business/edit-branch-ui.tsx`<br>`mobile/src/components/business/assign-staff-modal.tsx` |
 | **Phase 7** | **Owner Daily Branch Digest Screen (Idea C)** | Dedicated screen in Hamburger Menu showing multi-branch daily performance, cash drawer counts, and settled debt logs. | `mobile/src/app/daily-digest.tsx`<br>`mobile/src/components/navigation/hamburger-drawer.tsx` |
 | **Phase 8** | **Automated Verification & Unit Tests** | Backend API test suite (auto-claim, isolation guards) and mobile calculation test suite (shift drawer, local mapping). | `backend/src/tests/staff-management.test.ts`<br>`mobile/src/tests/staff-management.test.ts` |
@@ -72,20 +72,17 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 
 ---
 
-### Phase 5: Sales Staff Counter Workspace (Option B)
+### Phase 5: Sales Staff Counter Workspace (Option B) — [COMPLETED]
 
 #### Objectives
-Build the distraction-free counter checkout app for sales staff:
-1. **Top Header**: Locked branch pill (`Bole Outlet 🔒`) + Staff Profile.
-2. **Hero Shift Drawer Card**: Real-time counter shift metrics:
-   - Total Cash in Drawer.
-   - Total Telebirr collected.
-   - Total CBE Birr collected.
-   - Total Dube settled.
-3. **Bottom 3-Tab Navigator**:
-   - `Sales`: Quick numeric POS + Shift sales feed.
-   - `Customer Dube`: Branch credit balance list + Debt settlement form.
-   - `Expenses`: Branch petty operating expense entry.
+1. [x] Built shared top header (`StaffHeader` in `mobile/src/components/staff/staff-header.tsx`) with locked branch badge (`Bole Outlet 🔒`), cashier attribution chip, manual refresh trigger, and shift sign-out confirmation modal.
+2. [x] Built Hero Shift Drawer Card (`ShiftDrawerCard` in `mobile/src/components/staff/shift-drawer-card.tsx`) reconciling physical cash in drawer, Telebirr, CBE Birr, settled debts, and total shift volume.
+3. [x] Created 3-tab custom staff navigator (`StaffTabBar` and `mobile/src/app/staff/_layout.tsx`):
+   - **Tab 1: Counter Sales (`mobile/src/app/staff/index.tsx`)**: Fast POS workspace, `QuickSaleModal` for instant counter checkouts with payment method selection, today's sales feed with cashier stamps, and pull-to-refresh.
+   - **Tab 2: Customer Dube (`mobile/src/app/staff/dube.tsx`)**: Branch credit notebook ledger, credit filters (`All`, `Active Credit`, `Settled History`), customer search, `IssueDubeModal` for new credit, and `SettleDubeModal` for receiving debt payments directly into shift drawer.
+   - **Tab 3: Operating Expenses (`mobile/src/app/staff/expenses.tsx`)**: Petty shop expenses paid out of counter drawer cash, expense feed, and `AddStaffExpenseModal` with category selection.
+4. [x] Zero latency offline operation: all 3 tabs interact with local SQLite repositories (`localSalesRepo`, `localBidrRepo`, `localExpensesRepo`) with auto-sync and zero profit metrics exposed to cashiers.
+5. [x] Verified TypeScript compilation (0 errors across mobile and backend).
 
 ---
 
