@@ -23,6 +23,8 @@ function generateUUID(): string {
   });
 }
 
+import { useStaffStore } from '../store/staff-store';
+
 export function mapRowToDebtItem(row: LocalSaleRow): DebtItem {
   return {
     id: row.id,
@@ -38,6 +40,8 @@ export function mapRowToDebtItem(row: LocalSaleRow): DebtItem {
     notes: row.notes,
     status: row.status as any,
     paidAt: row.paid_at,
+    recordedById: row.recorded_by_id ?? null,
+    recordedByName: row.recorded_by_name ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -56,10 +60,15 @@ export const localBidrRepo = {
     const mutationId = generateUUID();
     const now = new Date().toISOString();
 
+    const staffState = useStaffStore.getState();
+    const effectiveBranchId = payload.branchId || (staffState.isStaff ? staffState.assignedBranchId : null) || payload.branchId;
+    const recordedById = payload.recordedById || staffState.staffProfile?.userId || null;
+    const recordedByName = payload.recordedByName || staffState.staffProfile?.name || null;
+
     const row: LocalSaleRow = {
       id,
       business_id: payload.businessId,
-      branch_id: payload.branchId,
+      branch_id: effectiveBranchId,
       sale_type: 'dube',
       payment_method: payload.paymentMethod || 'cash',
       description: payload.description,
@@ -70,6 +79,8 @@ export const localBidrRepo = {
       status: 'pending',
       notes: payload.notes ?? null,
       paid_at: null,
+      recorded_by_id: recordedById,
+      recorded_by_name: recordedByName,
       sync_status: 'pending_create',
       created_at: now,
       updated_at: now,
@@ -80,8 +91,8 @@ export const localBidrRepo = {
         `INSERT INTO local_sale (
           id, business_id, branch_id, sale_type, payment_method, description,
           amount, customer_name, customer_phone, due_date, status, notes,
-          paid_at, sync_status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          paid_at, recorded_by_id, recorded_by_name, sync_status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           row.id,
           row.business_id,
@@ -96,6 +107,8 @@ export const localBidrRepo = {
           row.status,
           row.notes,
           row.paid_at,
+          row.recorded_by_id ?? null,
+          row.recorded_by_name ?? null,
           row.sync_status,
           row.created_at,
           row.updated_at,
@@ -119,6 +132,8 @@ export const localBidrRepo = {
             customerPhone: row.customer_phone,
             dueDate: row.due_date,
             notes: row.notes,
+            recordedById: row.recorded_by_id,
+            recordedByName: row.recorded_by_name,
             createdAt: now,
           },
           createdAt: now,
@@ -150,6 +165,10 @@ export const localBidrRepo = {
       throw new Error(`Debt record with id ${id} not found.`);
     }
 
+    const staffState = useStaffStore.getState();
+    const recordedById = payload?.recordedById || staffState.staffProfile?.userId || null;
+    const recordedByName = payload?.recordedByName || staffState.staffProfile?.name || null;
+
     const updatedPaymentMethod = payload?.paymentMethod || existing.payment_method;
     const updatedNotes = payload?.notes ?? existing.notes;
 
@@ -160,10 +179,12 @@ export const localBidrRepo = {
              paid_at = ?,
              payment_method = ?,
              notes = ?,
+             recorded_by_id = COALESCE(?, recorded_by_id),
+             recorded_by_name = COALESCE(?, recorded_by_name),
              sync_status = 'pending_update',
              updated_at = ?
          WHERE id = ?`,
-        [now, updatedPaymentMethod, updatedNotes, now, id]
+        [now, updatedPaymentMethod, updatedNotes, recordedById, recordedByName, now, id]
       );
 
       await syncQueueRepo.enqueueMutation(
@@ -177,6 +198,8 @@ export const localBidrRepo = {
             paymentMethod: updatedPaymentMethod,
             notes: updatedNotes,
             paidAt: now,
+            recordedById,
+            recordedByName,
           },
           createdAt: now,
         },
@@ -424,8 +447,8 @@ export const localBidrRepo = {
           `INSERT INTO local_sale (
             id, business_id, branch_id, sale_type, payment_method, description,
             amount, customer_name, customer_phone, due_date, status, notes,
-            paid_at, sync_status, created_at, updated_at
-          ) VALUES (?, ?, ?, 'dube', ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?, ?)
+            paid_at, recorded_by_id, recorded_by_name, sync_status, created_at, updated_at
+          ) VALUES (?, ?, ?, 'dube', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?, ?)
           ON CONFLICT(id) DO UPDATE SET
             branch_id = excluded.branch_id,
             payment_method = excluded.payment_method,
@@ -437,6 +460,8 @@ export const localBidrRepo = {
             status = excluded.status,
             notes = excluded.notes,
             paid_at = excluded.paid_at,
+            recorded_by_id = excluded.recorded_by_id,
+            recorded_by_name = excluded.recorded_by_name,
             sync_status = 'synced',
             updated_at = excluded.updated_at`,
           [
@@ -452,6 +477,8 @@ export const localBidrRepo = {
             item.status,
             item.notes ?? null,
             item.paidAt ?? null,
+            item.recordedById ?? null,
+            item.recordedByName ?? null,
             item.createdAt || new Date().toISOString(),
             item.updatedAt || new Date().toISOString(),
           ]

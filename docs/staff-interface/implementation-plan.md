@@ -10,7 +10,7 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 | :--- | :--- | :--- | :--- |
 | **Phase 1** | **Database Schema & Migrations** <br>*(Completed)* | Dedicated `staff_assignment` table in PostgreSQL & local SQLite, plus attribution columns on `sale` & `expense`. | `backend/src/db/staff-management.ts`<br>`backend/src/db/schema.ts`<br>`backend/src/db/sales-expense-management.ts`<br>`mobile/src/db/schema.ts`<br>`mobile/src/db/migrations.ts` |
 | **Phase 2** | **Backend Staff APIs & Scoped Middlewares** <br>*(Completed)* | Staff assignment endpoints, auto-claim logic on login, daily digest endpoint, and branch-isolation middleware. | `backend/src/routes/staff.routes.ts`<br>`backend/src/controllers/staff.controller.ts`<br>`backend/src/service/staff.service.ts`<br>`backend/src/repositories/staff.repository.ts`<br>`backend/src/middleware/staff-guard.ts` |
-| **Phase 3** | **Mobile Data Layer & Repositories** | Local SQLite staff repository, auto-tagging injection in sales/expenses/debts, and Zustand `useStaffStore`. | `mobile/src/types/staff.ts`<br>`mobile/src/repositories/local-staff.repo.ts`<br>`mobile/src/store/staff-store.ts` |
+| **Phase 3** | **Mobile Data Layer & Repositories** <br>*(Completed)* | Local SQLite staff repository, auto-tagging injection in sales/expenses/debts, and Zustand `useStaffStore`. | `mobile/src/types/staff.ts`<br>`mobile/src/repositories/local-staff.repo.ts`<br>`mobile/src/store/staff-store.ts` |
 | **Phase 4** | **Unified Auth & Smart Role Navigation** | Session role detection, auto-claim invocation, and route guard routing staff to POS workspace vs. owner tabs. | `mobile/src/app/_layout.tsx`<br>`mobile/src/hooks/use-auth-role.ts` |
 | **Phase 5** | **Staff Counter Interface (Option B)** | Locked branch POS interface with Shift Drawer Summary and 3 tabs: Counter Sales, Branch Dube, and Petty Expenses. | `mobile/src/app/staff/_layout.tsx`<br>`mobile/src/app/staff/index.tsx`<br>`mobile/src/app/staff/dube.tsx`<br>`mobile/src/app/staff/expenses.tsx` |
 | **Phase 6** | **Branch Staff Assignment UI (Owner Side)** | Assigned staff list and "Add Staff by Email" modal inside the existing Branch Management screen. | `mobile/src/features/business/edit-branch-ui.tsx`<br>`mobile/src/components/business/assign-staff-modal.tsx` |
@@ -46,14 +46,15 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 
 ---
 
-### Phase 3: Mobile Data Layer & Repositories
+### Phase 3: Mobile Data Layer & Repositories — [COMPLETED]
 
 #### Objectives
-1. Define TypeScript types in `mobile/src/types/staff.ts`.
-2. Implement `localStaffRepo` in `mobile/src/repositories/local-staff.repo.ts`:
-   - `saveStaffAtomic`, `getBranchStaff`, `computeShiftDrawerMetrics`.
-3. Update `localSalesRepo`, `localExpensesRepo`, and `localBidrRepo` to automatically inject `branchId`, `recordedById`, and `recordedByName` from local session state with **0ms latency**.
-4. Create `useStaffStore` in `mobile/src/store/staff-store.ts`.
+1. [x] Define TypeScript types in `mobile/src/types/staff.ts` (`StaffAssignment`, `StaffProfile`, `ShiftDrawerMetrics`, `DailyDigestResponse`).
+2. [x] Implement `localStaffRepo` in `mobile/src/repositories/local-staff.repo.ts` (`saveStaffAtomic`, `saveStaffBatch`, `getStaffAssignmentsByBranch`, `computeShiftDrawerMetrics`).
+3. [x] Created mobile API client service in `mobile/src/service/staff.ts` (`fetchStaffProfile`, `fetchBranchStaff`, `assignStaff`, `revokeStaff`, `fetchDailyDigest`).
+4. [x] Updated `localSalesRepo`, `localExpensesRepo`, and `localBidrRepo` to automatically inject `branchId`, `recordedById`, and `recordedByName` from local session state with **0ms latency**.
+5. [x] Created `useStaffStore` in `mobile/src/store/staff-store.ts` managing staff session context, offline SQLite fallback, drawer metrics, and staff assignments.
+6. [x] Created and verified automated mobile unit test suite (`mobile/src/tests/staff-management.test.ts`) with 100% pass rate.
 
 ---
 
