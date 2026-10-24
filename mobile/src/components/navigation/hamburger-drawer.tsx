@@ -56,6 +56,7 @@ export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
   {
     title: 'Financial Intelligence',
     items: [
+      { id: 'daily-digest', label: 'Daily Branch Digest', icon: '📊', route: '/daily-digest' },
       { id: 'health', label: 'Business Health', icon: '⭐️', route: '/health' },
       { id: 'financial', label: 'Financial Profile', icon: '🏦', route: '/financial-profile' },
     ],

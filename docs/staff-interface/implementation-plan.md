@@ -14,7 +14,7 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 | **Phase 4** | **Unified Auth & Smart Role Navigation** <br>*(Completed)* | Session role detection, auto-claim invocation, and route guard routing staff to POS workspace vs. owner tabs. | `mobile/src/app/_layout.tsx`<br>`mobile/src/hooks/use-auth-role.ts`<br>`mobile/src/app/staff/index.tsx` |
 | **Phase 5** | **Staff Counter Interface (Option B)** <br>*(Completed)* | Locked branch POS interface with Shift Drawer Summary and 3 tabs: Counter Sales, Branch Dube, and Petty Expenses. | `mobile/src/app/staff/_layout.tsx`<br>`mobile/src/app/staff/index.tsx`<br>`mobile/src/app/staff/dube.tsx`<br>`mobile/src/app/staff/expenses.tsx`<br>`mobile/src/components/staff/*` |
 | **Phase 6** | **Branch Staff Assignment UI (Owner Side)** <br>*(Completed)* | Assigned staff list and "Add Staff by Email" modal inside the existing Branch Management screen. | `mobile/src/features/business/edit-branch-ui.tsx`<br>`mobile/src/components/business/assign-staff-modal.tsx` |
-| **Phase 7** | **Owner Daily Branch Digest Screen (Idea C)** | Dedicated screen in Hamburger Menu showing multi-branch daily performance, cash drawer counts, and settled debt logs. | `mobile/src/app/daily-digest.tsx`<br>`mobile/src/components/navigation/hamburger-drawer.tsx` |
+| **Phase 7** | **Owner Daily Branch Digest Screen (Idea C)** <br>*(Completed)* | Dedicated screen in Hamburger Menu showing multi-branch daily performance, cash drawer counts, and settled debt logs. | `mobile/src/app/daily-digest.tsx`<br>`mobile/src/components/navigation/hamburger-drawer.tsx` |
 | **Phase 8** | **Automated Verification & Unit Tests** | Backend API test suite (auto-claim, isolation guards) and mobile calculation test suite (shift drawer, local mapping). | `backend/src/tests/staff-management.test.ts`<br>`mobile/src/tests/staff-management.test.ts` |
 
 ---
@@ -101,18 +101,24 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 
 ---
 
-### Phase 7: Owner Daily Branch Digest Screen (Idea C)
+### Phase 7: Owner Daily Branch Digest Screen (Idea C) — [COMPLETED]
 
 #### Objectives
-1. Create `mobile/src/app/daily-digest.tsx`.
-2. Add menu link in `mobile/src/components/navigation/hamburger-drawer.tsx` under *Financial Intelligence*:
+1. [x] Created `mobile/src/app/daily-digest.tsx` accessible to business owners.
+2. [x] Added menu item in `mobile/src/components/navigation/hamburger-drawer.tsx` under *Financial Intelligence*:
    ```typescript
    { id: 'daily-digest', label: 'Daily Branch Digest', icon: '📊', route: '/daily-digest' }
    ```
-3. UI Sections:
-   - Date selector (defaults to Today).
-   - Overall reconciliation card (Physical cash across all branches vs. digital bank inflows).
-   - Per-branch card list: Cash in drawer, Telebirr, CBE, expenses, and detailed list of settled debts with staff attribution.
+3. [x] Implemented date switcher (Today, Yesterday, previous/next day stepping) preventing future date selection.
+4. [x] Built Company-Wide Reconciliation Summary:
+   - Total Gross Revenue Collected.
+   - 2-Column Physical Cash vs Digital Trails (cash to collect from drawers vs. digital mobile money in bank).
+   - Settled customer debts recovered volume.
+5. [x] Built Branch Counter Audits List:
+   - Per-branch cards showing cashier attribution (`Cashier: Chala T.`), gross revenue, drawer cash, Telebirr, CBE Birr, and petty expenses deducted.
+   - Detailed "Debts Settled Today" feed displaying customer name, amount, payment channel, and cashier audit trail (`Logged by [Cashier] at [Time]`).
+6. [x] Offline resilience: seamless SQLite fallback aggregation if device is offline when viewing the digest.
+7. [x] Verified zero TypeScript errors across `mobile` and `backend`.
 
 ---
 
