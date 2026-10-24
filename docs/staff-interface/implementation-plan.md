@@ -13,7 +13,7 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 | **Phase 3** | **Mobile Data Layer & Repositories** <br>*(Completed)* | Local SQLite staff repository, auto-tagging injection in sales/expenses/debts, and Zustand `useStaffStore`. | `mobile/src/types/staff.ts`<br>`mobile/src/repositories/local-staff.repo.ts`<br>`mobile/src/store/staff-store.ts` |
 | **Phase 4** | **Unified Auth & Smart Role Navigation** <br>*(Completed)* | Session role detection, auto-claim invocation, and route guard routing staff to POS workspace vs. owner tabs. | `mobile/src/app/_layout.tsx`<br>`mobile/src/hooks/use-auth-role.ts`<br>`mobile/src/app/staff/index.tsx` |
 | **Phase 5** | **Staff Counter Interface (Option B)** <br>*(Completed)* | Locked branch POS interface with Shift Drawer Summary and 3 tabs: Counter Sales, Branch Dube, and Petty Expenses. | `mobile/src/app/staff/_layout.tsx`<br>`mobile/src/app/staff/index.tsx`<br>`mobile/src/app/staff/dube.tsx`<br>`mobile/src/app/staff/expenses.tsx`<br>`mobile/src/components/staff/*` |
-| **Phase 6** | **Branch Staff Assignment UI (Owner Side)** | Assigned staff list and "Add Staff by Email" modal inside the existing Branch Management screen. | `mobile/src/features/business/edit-branch-ui.tsx`<br>`mobile/src/components/business/assign-staff-modal.tsx` |
+| **Phase 6** | **Branch Staff Assignment UI (Owner Side)** <br>*(Completed)* | Assigned staff list and "Add Staff by Email" modal inside the existing Branch Management screen. | `mobile/src/features/business/edit-branch-ui.tsx`<br>`mobile/src/components/business/assign-staff-modal.tsx` |
 | **Phase 7** | **Owner Daily Branch Digest Screen (Idea C)** | Dedicated screen in Hamburger Menu showing multi-branch daily performance, cash drawer counts, and settled debt logs. | `mobile/src/app/daily-digest.tsx`<br>`mobile/src/components/navigation/hamburger-drawer.tsx` |
 | **Phase 8** | **Automated Verification & Unit Tests** | Backend API test suite (auto-claim, isolation guards) and mobile calculation test suite (shift drawer, local mapping). | `backend/src/tests/staff-management.test.ts`<br>`mobile/src/tests/staff-management.test.ts` |
 
@@ -86,15 +86,18 @@ This document details the phase-by-phase execution plan for the **Sales Staff In
 
 ---
 
-### Phase 6: Branch Staff Assignment UI (Owner Side)
+### Phase 6: Branch Staff Assignment UI (Owner Side) — [COMPLETED]
 
 #### Objectives
-Integrate staff assignment directly into the existing **Branch Management** flow:
-1. In `edit-branch-ui.tsx`, add an **"Assigned Counter Staff"** card section.
-2. Displays active and pending staff with status chips (`[✓ Active]`, `[⏳ Pending]`).
-3. "+ Assign Staff Member" opens a modal:
-   - Inputs: Staff Email, Name/Nickname, Role.
-   - Sends assignment to backend.
+1. [x] In `mobile/src/features/business/edit-branch-ui.tsx`, added dedicated **"Assigned Counter Staff"** card section with real-time staff list for the operating branch.
+2. [x] Displayed active and pending staff with status chips (`[✓ Active]` and `[⏳ Pending Registration]`), email, and assigned counter role.
+3. [x] Built `AssignStaffModal` (`mobile/src/components/business/assign-staff-modal.tsx`):
+   - Staff Email input with format and duplicate assignment validation.
+   - Staff Name / Nickname input.
+   - Sales Cashier role selection.
+   - Auto-claim notification explaining that pending invitations activate immediately upon staff registration/login.
+4. [x] Implemented staff revocation flow with native confirmation dialog and automatic local/backend sync.
+5. [x] Verified zero TypeScript compilation errors (`mobile` and `backend`).
 
 ---
 
