@@ -78,7 +78,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
-  const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+  const slideAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const { data: session } = authClient.useSession();
@@ -115,7 +115,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
   const closeDrawer = (callback?: () => void) => {
     Animated.parallel([
       Animated.timing(slideAnim, {
-        toValue: -DRAWER_WIDTH,
+        toValue: DRAWER_WIDTH,
         duration: 220,
         useNativeDriver: true,
       }),
@@ -173,8 +173,31 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
           },
         ]}
       >
-        <View className="flex-row items-center gap-2.5">
-          {/* Hamburger Menu Trigger Button */}
+        {/* Left Side: App Logo & Business Identity */}
+        <View style={styles.headerLeft}>
+          <Image
+            source={require('@/assets/images/logo/networth.jpg')}
+            style={styles.headerBarLogo}
+            contentFit="cover"
+          />
+
+          <View style={styles.headerTitleContainer}>
+            <ThemedText style={styles.headerBusinessName} numberOfLines={1}>
+              {activeBusiness?.name || 'NetWorth Ethiopia'}
+            </ThemedText>
+            <View style={styles.headerBranchRow}>
+              <View style={styles.branchStatusDot} />
+              <ThemedText style={styles.headerBranchName} numberOfLines={1}>
+                {activeBranch?.name || 'Main Branch'}
+              </ThemedText>
+            </View>
+          </View>
+        </View>
+
+        {/* Right Side: Network Status Indicator & Hamburger Drawer Trigger */}
+        <View style={styles.headerRight}>
+          <SyncStatusBadge />
+
           <Pressable
             onPress={openDrawer}
             style={styles.hamburgerBtn}
@@ -184,34 +207,10 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
           >
             <View style={styles.hamburgerLinesContainer}>
               <View style={[styles.hamburgerLine, { width: 18, backgroundColor: '#0F172A' }]} />
-              <View style={[styles.hamburgerLine, { width: 13, backgroundColor: '#065F46' }]} />
+              <View style={[styles.hamburgerLine, { width: 13, backgroundColor: '#065F46', alignSelf: 'flex-end' }]} />
               <View style={[styles.hamburgerLine, { width: 18, backgroundColor: '#0F172A' }]} />
             </View>
           </Pressable>
-
-          {/* Branded App Logo */}
-          <Image
-            source={require('@/assets/images/logo/networth.jpg')}
-            style={styles.headerBarLogo}
-            contentFit="cover"
-          />
-
-          <View className="gap-0.5">
-            <ThemedText className="text-[15px] font-black tracking-tight" style={{ color: '#0F172A' }}>
-              {activeBusiness?.name || 'NetWorth Ethiopia'}
-            </ThemedText>
-            <View className="flex-row items-center gap-1.5">
-              <View className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <ThemedText className="text-[11px] font-medium text-slate-500">
-                {activeBranch?.name || 'Main Branch'}
-              </ThemedText>
-            </View>
-          </View>
-        </View>
-
-        <View className="flex-row items-center gap-2">
-          {/* Dynamic Offline / Online / Syncing Status Badge */}
-          <SyncStatusBadge />
         </View>
       </View>
 
@@ -233,7 +232,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
             <Pressable style={StyleSheet.absoluteFill} onPress={() => closeDrawer()} />
           </Animated.View>
 
-          {/* Left-Sided Drawer Container */}
+          {/* Right-Sided Drawer Container */}
           <Animated.View
             style={[
               styles.drawerWrapper,
@@ -416,17 +415,63 @@ const styles = StyleSheet.create({
   headerBar: {
     width: '100%',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
     zIndex: 10,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    marginRight: 10,
+  },
+  headerBarLogo: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  headerTitleContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  headerBusinessName: {
+    fontSize: 15,
+    fontWeight: '900',
+    letterSpacing: -0.3,
+    color: '#0F172A',
+  },
+  headerBranchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 1,
+  },
+  branchStatusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
+  },
+  headerBranchName: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   hamburgerBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 38,
+    height: 38,
+    borderRadius: 11,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -453,26 +498,10 @@ const styles = StyleSheet.create({
     height: 2,
     borderRadius: 1.5,
   },
-  onlineBadge: {
-    paddingHorizontal: 9,
-    paddingVertical: 4.5,
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#ECFDF5',
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-  pulsingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#059669',
-  },
   modalRoot: {
     flex: 1,
     flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   backdropOverlay: {
     position: 'absolute',
@@ -483,20 +512,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15, 23, 42, 0.45)',
   },
   drawerWrapper: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
     height: '100%',
     backgroundColor: '#FFFFFF',
+    borderLeftWidth: 1,
+    borderLeftColor: '#F1F5F9',
     ...Platform.select({
       ios: {
         shadowColor: '#000000',
-        shadowOffset: { width: 5, height: 0 },
-        shadowOpacity: 0.22,
-        shadowRadius: 15,
+        shadowOffset: { width: -4, height: 0 },
+        shadowOpacity: 0.18,
+        shadowRadius: 16,
       },
       android: {
         elevation: 20,
       },
       web: {
-        boxShadow: '4px 0 24px rgba(0, 0, 0, 0.15)',
+        boxShadow: '-4px 0 24px rgba(0, 0, 0, 0.12)',
       },
     }),
   },
@@ -512,13 +547,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  headerBarLogo: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
   },
   brandIconBox: {
     width: 40,

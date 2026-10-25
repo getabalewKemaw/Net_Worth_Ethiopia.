@@ -1,116 +1,172 @@
 import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, Alert, Platform } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { useNetworkSync } from '@/hooks/use-network-sync';
+import {
+  WifiIcon,
+  WifiOffIcon,
+  CloudUploadIcon,
+  RefreshCwIcon,
+} from '@/components/icons';
 
 /**
- * Compact, modern status badge displaying live network and synchronization state.
- * Adapts dynamically between Online, Offline (with pending count), and Syncing.
+ * Compact, iconic status indicator displaying live network and synchronization state.
+ * Uses modern iconography (Wifi, WifiOff, CloudUpload, Refresh) instead of textual labels.
  */
 export function SyncStatusBadge() {
   const { isOnline, isSyncing, pendingCount, triggerSync } = useNetworkSync();
 
+  const handlePress = () => {
+    if (isSyncing) {
+      Alert.alert('Syncing', 'A database synchronization is currently in progress.');
+    } else if (!isOnline) {
+      Alert.alert(
+        'Offline Mode',
+        pendingCount > 0
+          ? `Device is offline. You have ${pendingCount} local record(s) queued to sync once internet is restored.`
+          : 'Device is offline. Changes are saved locally and will auto-sync when connection is restored.'
+      );
+    } else if (pendingCount > 0) {
+      Alert.alert(
+        'Pending Sync',
+        `You have ${pendingCount} offline update(s) ready to sync.`,
+        [
+          { text: 'Later', style: 'cancel' },
+          { text: 'Sync Now', onPress: () => triggerSync() },
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Network Status',
+        'Connected & Online. Your local database is fully up to date with the server.'
+      );
+    }
+  };
+
   if (!isOnline) {
     return (
-      <View style={[styles.badge, styles.offlineBadge]}>
-        <View style={[styles.dot, styles.offlineDot]} />
-        <ThemedText style={[styles.text, styles.offlineText]}>
-          Offline {pendingCount > 0 ? `(${pendingCount})` : ''}
-        </ThemedText>
-      </View>
+      <Pressable
+        onPress={handlePress}
+        style={[styles.indicatorBtn, styles.offlineBtn]}
+        accessibilityLabel="Offline indicator"
+        accessibilityRole="button"
+        hitSlop={6}
+      >
+        <WifiOffIcon size={17} color="#D97706" strokeWidth={2.2} />
+        {pendingCount > 0 ? (
+          <View style={[styles.countBadge, styles.offlineCountBadge]}>
+            <ThemedText style={styles.countText}>{pendingCount}</ThemedText>
+          </View>
+        ) : null}
+      </Pressable>
     );
   }
 
   if (isSyncing) {
     return (
-      <View style={[styles.badge, styles.syncingBadge]}>
-        <View style={[styles.dot, styles.syncingDot]} />
-        <ThemedText style={[styles.text, styles.syncingText]}>
-          Syncing...
-        </ThemedText>
-      </View>
+      <Pressable
+        onPress={handlePress}
+        style={[styles.indicatorBtn, styles.syncingBtn]}
+        accessibilityLabel="Syncing in progress"
+        accessibilityRole="button"
+        hitSlop={6}
+      >
+        <RefreshCwIcon size={16} color="#059669" strokeWidth={2.2} />
+      </Pressable>
     );
   }
 
   if (pendingCount > 0) {
     return (
-      <Pressable onPress={() => triggerSync()} style={[styles.badge, styles.pendingBadge]}>
-        <View style={[styles.dot, styles.pendingDot]} />
-        <ThemedText style={[styles.text, styles.pendingText]}>
-          ↑ {pendingCount} to sync
-        </ThemedText>
+      <Pressable
+        onPress={handlePress}
+        style={[styles.indicatorBtn, styles.pendingBtn]}
+        accessibilityLabel={`${pendingCount} changes to sync`}
+        accessibilityRole="button"
+        hitSlop={6}
+      >
+        <CloudUploadIcon size={17} color="#2563EB" strokeWidth={2.2} />
+        <View style={[styles.countBadge, styles.pendingCountBadge]}>
+          <ThemedText style={styles.countText}>{pendingCount}</ThemedText>
+        </View>
       </Pressable>
     );
   }
 
-  // Fully connected & synced
+  // Fully connected & synced: sleek Wifi icon without text label
   return (
-    <View style={[styles.badge, styles.onlineBadge]}>
-      <View style={[styles.dot, styles.onlineDot]} />
-      <ThemedText style={[styles.text, styles.onlineText]}>
-        Online
-      </ThemedText>
-    </View>
+    <Pressable
+      onPress={handlePress}
+      style={[styles.indicatorBtn, styles.onlineBtn]}
+      accessibilityLabel="Connected & synced"
+      accessibilityRole="button"
+      hitSlop={6}
+    >
+      <WifiIcon size={17} color="#059669" strokeWidth={2.2} />
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  badge: {
-    flexDirection: 'row',
+  indicatorBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 11,
     alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12,
+    justifyContent: 'center',
     borderWidth: 1,
+    position: 'relative',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0F172A',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
   },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  text: {
-    fontSize: 10.5,
-    fontWeight: '700',
-  },
-  onlineBadge: {
+  onlineBtn: {
     backgroundColor: '#ECFDF5',
     borderColor: '#A7F3D0',
   },
-  onlineDot: {
-    backgroundColor: '#10B981',
-  },
-  onlineText: {
-    color: '#065F46',
-  },
-  offlineBadge: {
-    backgroundColor: '#FEF3C7',
+  offlineBtn: {
+    backgroundColor: '#FFFBEB',
     borderColor: '#FDE68A',
   },
-  offlineDot: {
-    backgroundColor: '#D97706',
-  },
-  offlineText: {
-    color: '#B45309',
-  },
-  syncingBadge: {
+  syncingBtn: {
     backgroundColor: '#ECFDF5',
     borderColor: '#6EE7B7',
   },
-  syncingDot: {
-    backgroundColor: '#059669',
-  },
-  syncingText: {
-    color: '#065F46',
-  },
-  pendingBadge: {
+  pendingBtn: {
     backgroundColor: '#EFF6FF',
     borderColor: '#BFDBFE',
   },
-  pendingDot: {
+  countBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  offlineCountBadge: {
+    backgroundColor: '#D97706',
+  },
+  pendingCountBadge: {
     backgroundColor: '#2563EB',
   },
-  pendingText: {
-    color: '#1D4ED8',
+  countText: {
+    color: '#FFFFFF',
+    fontSize: 9,
+    fontWeight: '800',
+    lineHeight: 11,
   },
 });
