@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Pressable,
@@ -15,7 +15,6 @@ import { Image } from 'expo-image';
 import { router, usePathname } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
-import { NotificationBell } from './notification-bell';
 import { useTheme } from '@/hooks/use-theme';
 import { useBusinessStore } from '@/store/business-store';
 import { authClient } from '@/lib/auth-client';
@@ -49,9 +48,9 @@ export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
   {
     title: 'Business & Branches',
     items: [
-      { id: 'branches', label: 'Branch Locations', icon: 'ðŸ¬', route: '/(business)/branches' },
-      { id: 'business-profile', label: 'Business Profile', icon: 'ðŸ¢', route: '/(business)/business-profile' },
-      { id: 'staff', label: 'Staff & Roles', icon: 'ðŸ‘¥', route: '/staff' },
+      { id: 'branches', label: 'Branch Locations', icon: '🏬', route: '/(business)/branches' },
+      { id: 'business-profile', label: 'Business Profile', icon: '🏢', route: '/(business)/business-profile' },
+      { id: 'staff', label: 'Staff & Roles', icon: '👥', route: '/staff' },
     ],
   },
   {
@@ -59,14 +58,13 @@ export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
     items: [
       { id: 'health', label: 'Business Health', icon: '⭐️', route: '/health' },
       { id: 'financial', label: 'Financial Profile', icon: '🏦', route: '/financial-profile' },
-      { id: 'sync', label: 'Offline Sync Queue', icon: '⚡', route: '/sync', badge: 'Live' },
     ],
   },
   {
     title: 'System & Account',
     items: [
-      { id: 'profile', label: 'Merchant Profile', icon: 'ðŸ‘¤', route: '/profile' },
-      { id: 'privacy', label: 'Privacy & Terms', icon: 'ðŸ”’', route: '/privacy' },
+      { id: 'profile', label: 'Merchant Profile', icon: '👤', route: '/profile' },
+      { id: 'privacy', label: 'Privacy & Terms', icon: '🔒', route: '/privacy' },
     ],
   },
 ];
@@ -206,7 +204,6 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
 
         <View className="flex-row items-center gap-2">
           {/* Dynamic Offline / Online / Syncing Status Badge */}
-          <NotificationBell />
           <SyncStatusBadge />
         </View>
       </View>
@@ -267,7 +264,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
                   accessibilityLabel="Close menu"
                   hitSlop={8}
                 >
-                  <ThemedText style={styles.closeBtnIcon}>âœ•</ThemedText>
+                  <ThemedText style={styles.closeBtnIcon}>✕</ThemedText>
                 </Pressable>
               </View>
 
@@ -381,12 +378,12 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
                   style={styles.signOutBtn}
                   android_ripple={{ color: 'rgba(239, 68, 68, 0.15)' }}
                 >
-                  <ThemedText style={styles.signOutBtnIcon}>ðŸšª</ThemedText>
+                  <ThemedText style={styles.signOutBtnIcon}>🚪</ThemedText>
                   <ThemedText style={styles.signOutBtnText}>Sign Out</ThemedText>
                 </Pressable>
 
                 <ThemedText style={styles.versionLabel}>
-                  NetWorth Ethiopia â€¢ v1.0.0
+                  NetWorth Ethiopia • v1.0.0
                 </ThemedText>
               </View>
             </SafeAreaView>
@@ -671,5 +668,3 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
-
-

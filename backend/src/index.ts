@@ -12,8 +12,6 @@ import syncRoutes from "./routes/sync.routes";
 import businessHealthRoutes from "./routes/business-health.routes";
 import adminRoutes from "./routes/admin.routes";
 import { errorHandler } from "./middleware/error";
-import notificationRoutes from "./routes/notification.routes";
-import { startNotificationScheduler } from "./jobs/scheduler";
 
 dotenv.config();
 
@@ -37,19 +35,12 @@ app.use("/api/bidr", bidrRoutes);
 app.use("/api/sync", syncRoutes);
 app.use("/api", branchRoutes);
 
-app.use("/api/notifications", notificationRoutes);
-
-
 app.get("/", (req: Request, res: Response) => {
     res.send("NetWorth API is running!");
 });
 
-
 app.use(errorHandler);
-startNotificationScheduler();
 
 app.listen(Number(port), "0.0.0.0", () => {
     console.log(`Server running on http://0.0.0.0:${port}`);
 });
-
-
