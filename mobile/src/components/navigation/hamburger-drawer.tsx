@@ -47,14 +47,13 @@ export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
     title: 'Financial Intelligence',
     items: [
       { id: 'health', label: 'Business Health', icon: '⭐️', route: '/health' },
-      { id: 'financial', label: 'Financial Profile', icon: '🏦', route: '/financial-profile' },
     ],
   },
   {
     title: 'System & Account',
     items: [
       { id: 'profile', label: 'Merchant Profile', icon: '👤', route: '/profile' },
-      { id: 'privacy', label: 'Privacy & Terms', icon: '🔒', route: '/privacy' },
+      { id: 'privacy', label: 'Privacy & Policy', icon: '🔒', route: '/privacy' },
     ],
   },
 ];
