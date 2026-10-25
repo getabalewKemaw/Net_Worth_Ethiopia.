@@ -66,7 +66,7 @@ export function AnimatedIcon() {
       </Animated.View>
 
       <Animated.View className="justify-center items-center" entering={logoKeyframe.duration(DURATION)}>
-        <Image className="absolute w-[76px] h-[71px]" source={require('@/assets/images/expo-logo.png')} />
+        <Image className="absolute w-[84px] h-[84px] rounded-[22px]" source={require('@/assets/images/logo/networth.jpg')} contentFit="cover" />
       </Animated.View>
     </View>
   );

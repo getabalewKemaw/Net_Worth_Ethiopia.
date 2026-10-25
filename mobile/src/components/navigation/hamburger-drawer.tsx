@@ -173,7 +173,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
           },
         ]}
       >
-        <View className="flex-row items-center gap-3">
+        <View className="flex-row items-center gap-2.5">
           {/* Hamburger Menu Trigger Button */}
           <Pressable
             onPress={openDrawer}
@@ -188,6 +188,13 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
               <View style={[styles.hamburgerLine, { width: 18, backgroundColor: '#0F172A' }]} />
             </View>
           </Pressable>
+
+          {/* Branded App Logo */}
+          <Image
+            source={require('@/assets/images/logo/networth.jpg')}
+            style={styles.headerBarLogo}
+            contentFit="cover"
+          />
 
           <View className="gap-0.5">
             <ThemedText className="text-[15px] font-black tracking-tight" style={{ color: '#0F172A' }}>
@@ -241,7 +248,11 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
               <View style={styles.drawerHeader}>
                 <View className="flex-row items-center gap-3">
                   <View style={styles.brandIconBox}>
-                    <ThemedText style={styles.brandIconText}>NW</ThemedText>
+                    <Image
+                      source={require('@/assets/images/logo/networth.jpg')}
+                      style={styles.brandLogoImage}
+                      contentFit="cover"
+                    />
                   </View>
                   <View>
                     <View className="flex-row items-center gap-1.5">
@@ -382,9 +393,16 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
                   <ThemedText style={styles.signOutBtnText}>Sign Out</ThemedText>
                 </Pressable>
 
-                <ThemedText style={styles.versionLabel}>
-                  NetWorth Ethiopia • v1.0.0
-                </ThemedText>
+                <View style={styles.footerBrandingRow}>
+                  <Image
+                    source={require('@/assets/images/logo/networth.jpg')}
+                    style={styles.footerLogo}
+                    contentFit="cover"
+                  />
+                  <ThemedText style={styles.versionLabel}>
+                    NetWorth Ethiopia • v1.0.0
+                  </ThemedText>
+                </View>
               </View>
             </SafeAreaView>
           </Animated.View>
@@ -495,19 +513,51 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  brandIconBox: {
-    width: 36,
-    height: 36,
+  headerBarLogo: {
+    width: 34,
+    height: 34,
     borderRadius: 10,
-    backgroundColor: '#065F46',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  brandIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
-  brandIconText: {
-    color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 14,
-    letterSpacing: -0.5,
+  brandLogoImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+  },
+  footerBrandingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  footerLogo: {
+    width: 16,
+    height: 16,
+    borderRadius: 4,
   },
   etPill: {
     paddingHorizontal: 5,

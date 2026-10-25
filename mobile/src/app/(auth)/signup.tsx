@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, router, useLocalSearchParams } from 'expo-router';
@@ -59,11 +59,11 @@ export default function SignupScreen() {
       <SafeAreaView className="flex-1 z-[2]">
         <View className="flex-1 px-5 pt-16 items-center">
           <View className="items-center mb-6">
-            <View className="py-3 px-6 rounded-2xl mb-4 bg-white shadow-lg shadow-black/10">
+            <View style={styles.logoCard}>
               <Image 
-                source={require('@/assets/images/logo.png')} 
-                className="h-12 w-[160px]"
-                contentFit="contain"
+                source={require('@/assets/images/logo/networth.jpg')} 
+                style={styles.logoImage}
+                contentFit="cover"
               />
             </View>
             <Text className="text-white text-3xl font-extrabold mb-2 text-center tracking-tight">Create Account</Text>
@@ -114,3 +114,28 @@ export default function SignupScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  logoCard: {
+    width: 90,
+    height: 90,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 6,
+    marginBottom: 16,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 18,
+  },
+});

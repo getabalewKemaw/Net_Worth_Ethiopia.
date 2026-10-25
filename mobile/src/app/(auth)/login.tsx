@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Linking from 'expo-linking';
@@ -51,15 +51,15 @@ export default function LoginScreen() {
       <SafeAreaView className="flex-1 z-[2]">
         <View className="flex-1 px-5 pt-20 items-center">
           <View className="items-center mb-8">
-            <View className="py-3 px-6 rounded-2xl mb-5 bg-white shadow-lg shadow-black/10">
+            <View style={styles.logoCard}>
               <Image 
-                source={require('@/assets/images/logo.png')} 
-                className="h-12 w-[160px]"
-                contentFit="contain"
+                source={require('@/assets/images/logo/networth.jpg')} 
+                style={styles.logoImage}
+                contentFit="cover"
               />
             </View>
             <Text className="text-white text-3xl font-extrabold mb-2 text-center tracking-tight">Welcome Back</Text>
-            <Text className="text-white/95 text-base font-medium text-center px-4">Log in to continue to NetWorth</Text>
+            <Text className="text-white/95 text-base font-medium text-center px-4">Log in to continue to NetWorth Ethiopia</Text>
           </View>
 
           <AuthCard>
@@ -83,3 +83,28 @@ export default function LoginScreen() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  logoCard: {
+    width: 90,
+    height: 90,
+    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 6,
+    marginBottom: 20,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    elevation: 8,
+    borderWidth: 1.5,
+    borderColor: '#FFFFFF',
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 18,
+  },
+});
