@@ -2,6 +2,7 @@ import crypto from "crypto";
 import * as bidrRepo from "../repositories/bidr.repository";
 import * as businessRepo from "../repositories/business.repository";
 import * as branchRepo from "../repositories/branch.repository";
+import * as staffRepo from "../repositories/staff.repository";
 import { NotFoundError, ForbiddenError, BadRequestError } from "../helpers/errors";
 import { resolveUserBusinessId } from "./sales.service";
 import type { Sale, NewSale, CreateBidrInput, BidrFilters, DebtSummary, SettleBidrInput, UpdateBidrInput } from "../types";
@@ -31,6 +32,8 @@ export const createDebtService = async (
     notes: data.notes ?? null,
     status: "pending",
     paidAt: null,
+    recordedById: data.recordedById ?? userId,
+    recordedByName: data.recordedByName ?? null,
   };
 
   return await bidrRepo.createDebt(newSale);
@@ -64,7 +67,14 @@ export const getDebtByIdService = async (
 
   const biz = await businessRepo.findBusinessById(debt.businessId);
   if (!biz || biz.userId !== userId) {
-    throw new ForbiddenError("Unauthorized: You do not have access to this debt record");
+    const staffMember = await staffRepo.findActiveStaffAssignmentByUserId(userId);
+    if (
+      !staffMember ||
+      staffMember.businessId !== debt.businessId ||
+      staffMember.branchId !== debt.branchId
+    ) {
+      throw new ForbiddenError("Unauthorized: You do not have access to this debt record");
+    }
   }
 
   return debt;
@@ -90,7 +100,8 @@ export const getDebtSummaryService = async (
 export const settleDebtService = async (
   id: string,
   userId: string,
-  data?: SettleBidrInput | undefined
+  data?: SettleBidrInput | undefined,
+  userDisplayName?: string
 ): Promise<Sale> => {
   const existing = await getDebtByIdService(id, userId);
 
@@ -101,7 +112,13 @@ export const settleDebtService = async (
     throw new BadRequestError("Cannot settle a voided debt record");
   }
 
-  return await bidrRepo.settleDebt(id, data);
+  const settleData: SettleBidrInput = {
+    ...data,
+    recordedById: data?.recordedById ?? userId,
+    recordedByName: data?.recordedByName ?? userDisplayName ?? null,
+  };
+
+  return await bidrRepo.settleDebt(id, settleData);
 };
 
 export const updateDebtService = async (

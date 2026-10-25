@@ -88,7 +88,12 @@ export const settleDebt = async (req: Request, res: Response, next: NextFunction
     if (!parsed.success) {
       throw new ValidationError("Invalid inputs", parsed.error.format());
     }
-    const settled = await bidrService.settleDebtService(id, authReq.user.id, parsed.data);
+    const settled = await bidrService.settleDebtService(
+      id,
+      authReq.user.id,
+      parsed.data,
+      authReq.user.name
+    );
     apiResponse(res, 200, settled);
   } catch (error) {
     next(error);

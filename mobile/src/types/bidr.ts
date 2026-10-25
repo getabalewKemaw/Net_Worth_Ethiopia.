@@ -14,6 +14,8 @@ export interface DebtItem {
   notes?: string | null;
   status: SaleStatus;
   paidAt?: string | null;
+  recordedById?: string | null;
+  recordedByName?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -28,6 +30,8 @@ export interface CreateDebtPayload {
   customerPhone?: string | null;
   dueDate?: string | null;
   notes?: string | null;
+  recordedById?: string | null;
+  recordedByName?: string | null;
 }
 
 export interface DebtSummaryData {
@@ -60,6 +64,8 @@ export interface FetchDebtsParams {
 export interface SettleDebtPayload {
   paymentMethod?: PaymentMethod;
   notes?: string | null;
+  recordedById?: string | null;
+  recordedByName?: string | null;
 }
 
 export interface UpdateDebtPayload {

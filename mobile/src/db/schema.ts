@@ -17,6 +17,8 @@ export interface LocalSaleRow {
   status: 'pending' | 'settled' | 'overdue' | 'voided';
   notes: string | null;
   paid_at: string | null;
+  recorded_by_id?: string | null;
+  recorded_by_name?: string | null;
   sync_status: 'synced' | 'pending_create' | 'pending_update' | 'pending_delete';
   created_at: string;
   updated_at: string;
@@ -30,7 +32,22 @@ export interface LocalExpenseRow {
   amount: number;
   category: string;
   notes: string | null;
+  recorded_by_id?: string | null;
+  recorded_by_name?: string | null;
   sync_status: 'synced' | 'pending_create' | 'pending_update' | 'pending_delete';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LocalStaffAssignmentRow {
+  id: string;
+  business_id: string;
+  branch_id: string;
+  user_id: string | null;
+  email: string;
+  name: string | null;
+  role: 'sales' | 'manager';
+  status: 'pending' | 'active' | 'suspended';
   created_at: string;
   updated_at: string;
 }
@@ -133,6 +150,8 @@ CREATE TABLE IF NOT EXISTS local_sale (
   status TEXT CHECK(status IN ('pending', 'settled', 'overdue', 'voided')) NOT NULL,
   notes TEXT,
   paid_at TEXT,
+  recorded_by_id TEXT,
+  recorded_by_name TEXT,
   sync_status TEXT DEFAULT 'pending_create' NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
@@ -142,6 +161,7 @@ CREATE INDEX IF NOT EXISTS idx_local_sale_biz ON local_sale(business_id, created
 CREATE INDEX IF NOT EXISTS idx_local_sale_branch ON local_sale(branch_id);
 CREATE INDEX IF NOT EXISTS idx_local_sale_status ON local_sale(status);
 CREATE INDEX IF NOT EXISTS idx_local_sale_type ON local_sale(sale_type);
+CREATE INDEX IF NOT EXISTS idx_local_sale_recorded_by ON local_sale(recorded_by_id);
 
 -- 2. Local Expenses Table
 CREATE TABLE IF NOT EXISTS local_expense (
@@ -152,6 +172,8 @@ CREATE TABLE IF NOT EXISTS local_expense (
   amount INTEGER NOT NULL,
   category TEXT NOT NULL,
   notes TEXT,
+  recorded_by_id TEXT,
+  recorded_by_name TEXT,
   sync_status TEXT DEFAULT 'pending_create' NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
@@ -159,6 +181,7 @@ CREATE TABLE IF NOT EXISTS local_expense (
 
 CREATE INDEX IF NOT EXISTS idx_local_expense_biz ON local_expense(business_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_local_expense_branch ON local_expense(branch_id);
+CREATE INDEX IF NOT EXISTS idx_local_expense_recorded_by ON local_expense(recorded_by_id);
 
 -- 3. Local Branches Table
 CREATE TABLE IF NOT EXISTS local_branch (
@@ -262,4 +285,22 @@ ON local_financial_snapshot(business_id, period_type, period_year, period_month)
 
 CREATE INDEX IF NOT EXISTS idx_local_snapshot_branch 
 ON local_financial_snapshot(business_id, branch_id);
+
+-- 8. Local Staff Assignment Table
+CREATE TABLE IF NOT EXISTS local_staff_assignment (
+  id TEXT PRIMARY KEY NOT NULL,
+  business_id TEXT NOT NULL,
+  branch_id TEXT NOT NULL,
+  user_id TEXT,
+  email TEXT NOT NULL,
+  name TEXT,
+  role TEXT NOT NULL DEFAULT 'sales',
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_local_staff_biz ON local_staff_assignment(business_id);
+CREATE INDEX IF NOT EXISTS idx_local_staff_branch ON local_staff_assignment(branch_id);
+CREATE INDEX IF NOT EXISTS idx_local_staff_email ON local_staff_assignment(email);
 `;
