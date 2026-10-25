@@ -21,6 +21,8 @@ function formatDisplayTime(dateStr?: string | null): string {
   return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
+import { useStaffStore } from '../store/staff-store';
+
 export function mapRowToExpenseEntry(row: LocalExpenseRow): ExpenseEntry {
   return {
     id: row.id,
@@ -32,6 +34,8 @@ export function mapRowToExpenseEntry(row: LocalExpenseRow): ExpenseEntry {
     notes: row.notes,
     time: formatDisplayTime(row.created_at),
     createdAt: row.created_at,
+    recordedById: row.recorded_by_id ?? null,
+    recordedByName: row.recorded_by_name ?? null,
   };
 }
 
@@ -52,14 +56,21 @@ export const localExpensesRepo = {
     const mutationId = generateUUID();
     const now = new Date().toISOString();
 
+    const staffState = useStaffStore.getState();
+    const effectiveBranchId = branchId || (staffState.isStaff ? staffState.assignedBranchId : null) || branchId;
+    const recordedById = input.recordedById || staffState.staffProfile?.userId || null;
+    const recordedByName = input.recordedByName || staffState.staffProfile?.name || null;
+
     const row: LocalExpenseRow = {
       id,
       business_id: businessId,
-      branch_id: branchId,
+      branch_id: effectiveBranchId,
       description: input.description,
       amount: input.amount,
       category: input.category,
       notes: input.notes ?? null,
+      recorded_by_id: recordedById,
+      recorded_by_name: recordedByName,
       sync_status: 'pending_create',
       created_at: now,
       updated_at: now,
@@ -69,8 +80,8 @@ export const localExpensesRepo = {
       await db.runAsync(
         `INSERT INTO local_expense (
           id, business_id, branch_id, description, amount, category,
-          notes, sync_status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          notes, recorded_by_id, recorded_by_name, sync_status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           row.id,
           row.business_id,
@@ -79,6 +90,8 @@ export const localExpensesRepo = {
           row.amount,
           row.category,
           row.notes,
+          row.recorded_by_id ?? null,
+          row.recorded_by_name ?? null,
           row.sync_status,
           row.created_at,
           row.updated_at,
@@ -94,11 +107,13 @@ export const localExpensesRepo = {
           payload: {
             id,
             businessId,
-            branchId,
+            branchId: effectiveBranchId,
             description: row.description,
             amount: row.amount,
             category: row.category,
             notes: row.notes,
+            recordedById: row.recorded_by_id,
+            recordedByName: row.recorded_by_name,
             createdAt: now,
           },
           createdAt: now,
@@ -199,14 +214,16 @@ export const localExpensesRepo = {
         await db.runAsync(
           `INSERT INTO local_expense (
             id, business_id, branch_id, description, amount, category,
-            notes, sync_status, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, 'synced', ?, ?)
+            notes, recorded_by_id, recorded_by_name, sync_status, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?, ?)
           ON CONFLICT(id) DO UPDATE SET
             branch_id = excluded.branch_id,
             description = excluded.description,
             amount = excluded.amount,
             category = excluded.category,
             notes = excluded.notes,
+            recorded_by_id = excluded.recorded_by_id,
+            recorded_by_name = excluded.recorded_by_name,
             sync_status = 'synced',
             updated_at = excluded.updated_at`,
           [
@@ -217,6 +234,8 @@ export const localExpensesRepo = {
             Number(item.amount),
             item.category,
             item.notes ?? null,
+            item.recordedById ?? null,
+            item.recordedByName ?? null,
             item.createdAt || new Date().toISOString(),
             item.updatedAt || new Date().toISOString(),
           ]

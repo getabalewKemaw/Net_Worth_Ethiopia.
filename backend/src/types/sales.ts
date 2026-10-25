@@ -19,6 +19,8 @@ export interface CreateSaleInput {
   dueDate?: Date | null | undefined;
   notes?: string | null | undefined;
   status?: SaleStatus | undefined;
+  recordedById?: string | null | undefined;
+  recordedByName?: string | null | undefined;
 }
 
 export interface UpdateSaleInput {
@@ -33,6 +35,8 @@ export interface UpdateSaleInput {
   dueDate?: Date | null | undefined;
   notes?: string | null | undefined;
   status?: SaleStatus | undefined;
+  recordedById?: string | null | undefined;
+  recordedByName?: string | null | undefined;
 }
 
 export interface CreateExpenseInput {
@@ -42,6 +46,8 @@ export interface CreateExpenseInput {
   amount: number;
   category: string;
   notes?: string | null | undefined;
+  recordedById?: string | null | undefined;
+  recordedByName?: string | null | undefined;
 }
 
 export interface UpdateExpenseInput {

@@ -29,6 +29,8 @@ function formatDisplayDate(dateStr?: string | null): string | undefined {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+import { useStaffStore } from '../store/staff-store';
+
 export function mapRowToSaleEntry(row: LocalSaleRow): SaleEntry {
   return {
     id: row.id,
@@ -45,6 +47,8 @@ export function mapRowToSaleEntry(row: LocalSaleRow): SaleEntry {
     paidAt: row.paid_at,
     time: formatDisplayTime(row.created_at),
     createdAt: row.created_at,
+    recordedById: row.recorded_by_id ?? null,
+    recordedByName: row.recorded_by_name ?? null,
   };
 }
 
@@ -66,6 +70,11 @@ export const localSalesRepo = {
     const mutationId = generateUUID();
     const now = new Date().toISOString();
 
+    const staffState = useStaffStore.getState();
+    const effectiveBranchId = branchId || (staffState.isStaff ? staffState.assignedBranchId : null) || branchId;
+    const recordedById = input.recordedById || staffState.staffProfile?.userId || null;
+    const recordedByName = input.recordedByName || staffState.staffProfile?.name || null;
+
     const isInstant = input.saleType === 'instant';
     const status = input.status || (isInstant ? 'settled' : 'pending');
     const paidAt = status === 'settled' ? (input.paidAt || now) : null;
@@ -73,7 +82,7 @@ export const localSalesRepo = {
     const row: LocalSaleRow = {
       id,
       business_id: businessId,
-      branch_id: branchId,
+      branch_id: effectiveBranchId,
       sale_type: input.saleType,
       payment_method: input.paymentMethod,
       description: input.description,
@@ -84,6 +93,8 @@ export const localSalesRepo = {
       status,
       notes: null,
       paid_at: paidAt,
+      recorded_by_id: recordedById,
+      recorded_by_name: recordedByName,
       sync_status: 'pending_create',
       created_at: now,
       updated_at: now,
@@ -95,8 +106,8 @@ export const localSalesRepo = {
         `INSERT INTO local_sale (
           id, business_id, branch_id, sale_type, payment_method, description,
           amount, customer_name, customer_phone, due_date, status, notes,
-          paid_at, sync_status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          paid_at, recorded_by_id, recorded_by_name, sync_status, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           row.id,
           row.business_id,
@@ -111,6 +122,8 @@ export const localSalesRepo = {
           row.status,
           row.notes,
           row.paid_at,
+          row.recorded_by_id ?? null,
+          row.recorded_by_name ?? null,
           row.sync_status,
           row.created_at,
           row.updated_at,
@@ -127,7 +140,7 @@ export const localSalesRepo = {
           payload: {
             id,
             businessId,
-            branchId,
+            branchId: effectiveBranchId,
             saleType: row.sale_type,
             paymentMethod: row.payment_method,
             description: row.description,
@@ -137,6 +150,8 @@ export const localSalesRepo = {
             dueDate: row.due_date,
             status: row.status,
             paidAt: row.paid_at,
+            recordedById: row.recorded_by_id,
+            recordedByName: row.recorded_by_name,
             createdAt: now,
           },
           createdAt: now,
@@ -291,8 +306,8 @@ export const localSalesRepo = {
           `INSERT INTO local_sale (
             id, business_id, branch_id, sale_type, payment_method, description,
             amount, customer_name, customer_phone, due_date, status, notes,
-            paid_at, sync_status, created_at, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?, ?)
+            paid_at, recorded_by_id, recorded_by_name, sync_status, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'synced', ?, ?)
           ON CONFLICT(id) DO UPDATE SET
             branch_id = excluded.branch_id,
             sale_type = excluded.sale_type,
@@ -305,6 +320,8 @@ export const localSalesRepo = {
             status = excluded.status,
             notes = excluded.notes,
             paid_at = excluded.paid_at,
+            recorded_by_id = excluded.recorded_by_id,
+            recorded_by_name = excluded.recorded_by_name,
             sync_status = 'synced',
             updated_at = excluded.updated_at`,
           [
@@ -321,6 +338,8 @@ export const localSalesRepo = {
             item.status,
             item.notes ?? null,
             item.paidAt ?? null,
+            item.recordedById ?? null,
+            item.recordedByName ?? null,
             item.createdAt || new Date().toISOString(),
             item.updatedAt || new Date().toISOString(),
           ]

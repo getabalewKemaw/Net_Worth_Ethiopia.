@@ -43,6 +43,8 @@ if (Platform.OS === 'web' && typeof document !== 'undefined') {
 SplashScreen.preventAutoHideAsync();
 WebBrowser.maybeCompleteAuthSession();
 
+import { useAuthRole } from '@/hooks/use-auth-role';
+
 export default function TabLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Lexend_300Light,
@@ -62,12 +64,11 @@ export default function TabLayout() {
   const router = useRouter();
   const segments = useSegments();
 
+  // Unified role detection & automatic invite claim hook
+  const { role, isResolving } = useAuthRole();
+
   // Background offline sync lifecycle watcher
   useNetworkSync();
-
-  const loadInitialState = useBusinessStore((state) => state.loadInitialState);
-  const activeBusiness = useBusinessStore((state) => state.activeBusiness);
-  const isBusinessPending = useBusinessStore((state) => state.isPending);
 
   // Initialize local SQLite database schema and indexes on mount
   useEffect(() => {
@@ -76,40 +77,45 @@ export default function TabLayout() {
     });
   }, []);
 
-  // Sync business store state on authentication
   useEffect(() => {
-    if (session) {
-      loadInitialState();
-    }
-  }, [session, loadInitialState]);
+    if (isResolving || role === 'loading') return;
 
-  useEffect(() => {
-    if (isPending) return;
+    const currentSegment = segments[0] as string | undefined;
+    const inAuthGroup = currentSegment === '(auth)';
+    const inBusinessGroup = currentSegment === '(business)';
+    const inStaffGroup = currentSegment === 'staff';
 
-    const inAuthGroup = segments[0] === '(auth)';
-    const inBusinessGroup = segments[0] === '(business)';
+    switch (role) {
+      case 'unauthenticated':
+        if (!inAuthGroup) {
+          router.replace('/(auth)/login');
+        }
+        break;
 
-    if (!session) {
-      if (!inAuthGroup) {
-        router.replace('/(auth)/login');
-      }
-    } else {
-      // Wait for initial business fetch to complete
-      if (isBusinessPending && !activeBusiness) return;
+      case 'sales':
+        // Sales Staff: Strictly restricted to /staff counter interface
+        // Block access to owner tabs, health metrics, and business wizard
+        if (!inStaffGroup) {
+          router.replace('/staff' as any);
+        }
+        break;
 
-      if (!activeBusiness) {
-        // Authenticated but no business registered -> force business onboarding
+      case 'owner':
+        // Business Owner: Access to owner tabs, health, daily digest
+        // Prevent access to auth, onboarding create-business, or staff interface
+        if (inAuthGroup || (inBusinessGroup && segments[1] === 'create-business') || inStaffGroup) {
+          router.replace('/');
+        }
+        break;
+
+      case 'new_user':
+        // Brand new user without staff assignment or registered business -> Onboarding
         if (!inBusinessGroup) {
           router.replace('/(business)/create-business');
         }
-      } else {
-        // Authenticated and has business -> prevent back navigation to login or onboarding
-        if (inAuthGroup || (inBusinessGroup && segments[1] === 'create-business')) {
-          router.replace('/');
-        }
-      }
+        break;
     }
-  }, [session, isPending, activeBusiness, isBusinessPending, segments, router]);
+  }, [role, isResolving, segments, router]);
 
   if (!fontsLoaded && !fontError) {
     return null;

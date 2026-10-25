@@ -2,6 +2,7 @@ import crypto from "crypto";
 import * as expensesRepo from "../repositories/expenses.repository";
 import * as businessRepo from "../repositories/business.repository";
 import * as branchRepo from "../repositories/branch.repository";
+import * as staffRepo from "../repositories/staff.repository";
 import { NotFoundError, ForbiddenError, BadRequestError } from "../helpers/errors";
 import { resolveUserBusinessId } from "./sales.service";
 import type { Expense, NewExpense, CreateExpenseInput, UpdateExpenseInput } from "../types";
@@ -15,7 +16,14 @@ export const createExpenseService = async (
     throw new NotFoundError("Business not found");
   }
   if (biz.userId !== userId) {
-    throw new ForbiddenError("Unauthorized: You do not own this business");
+    const staffMember = await staffRepo.findActiveStaffAssignmentByUserId(userId);
+    if (
+      !staffMember ||
+      staffMember.businessId !== data.businessId ||
+      staffMember.branchId !== data.branchId
+    ) {
+      throw new ForbiddenError("Unauthorized: You do not have permission to record expenses for this business/branch");
+    }
   }
 
   const br = await branchRepo.findBranchById(data.branchId);
@@ -34,6 +42,8 @@ export const createExpenseService = async (
     amount: data.amount,
     category: data.category,
     notes: data.notes ?? null,
+    recordedById: data.recordedById ?? userId,
+    recordedByName: data.recordedByName ?? null,
   };
 
   return await expensesRepo.createExpense(newExpense);
@@ -50,7 +60,14 @@ export const getExpenseByIdService = async (
 
   const biz = await businessRepo.findBusinessById(expenseItem.businessId);
   if (!biz || biz.userId !== userId) {
-    throw new ForbiddenError("Unauthorized: You do not have access to this expense");
+    const staffMember = await staffRepo.findActiveStaffAssignmentByUserId(userId);
+    if (
+      !staffMember ||
+      staffMember.businessId !== expenseItem.businessId ||
+      staffMember.branchId !== expenseItem.branchId
+    ) {
+      throw new ForbiddenError("Unauthorized: You do not have access to this expense");
+    }
   }
 
   return expenseItem;

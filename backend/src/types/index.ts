@@ -4,6 +4,7 @@ import { expense, sale } from "../db/sales-expense-management";
 export * from "./sales";
 export * from "./bidr";
 export * from "./business-health";
+export * from "./staff";
 
 export type Business = typeof business.$inferSelect;
 export type NewBusiness = typeof business.$inferInsert;
@@ -30,4 +31,5 @@ export interface AuthenticatedUser {
 export interface AuthenticatedRequest extends Request {
   user: AuthenticatedUser;
   session?: any;
+  staffAssignment?: import("./staff").StaffAssignment;
 }

@@ -2,6 +2,7 @@ import crypto from "crypto";
 import * as salesRepo from "../repositories/sales.repository";
 import * as businessRepo from "../repositories/business.repository";
 import * as branchRepo from "../repositories/branch.repository";
+import * as staffRepo from "../repositories/staff.repository";
 import { NotFoundError, ForbiddenError, BadRequestError } from "../helpers/errors";
 import type { Sale, NewSale, CreateSaleInput, UpdateSaleInput } from "../types";
 
@@ -14,7 +15,14 @@ export const createSaleService = async (
     throw new NotFoundError("Business not found");
   }
   if (biz.userId !== userId) {
-    throw new ForbiddenError("Unauthorized: You do not own this business");
+    const staffMember = await staffRepo.findActiveStaffAssignmentByUserId(userId);
+    if (
+      !staffMember ||
+      staffMember.businessId !== data.businessId ||
+      staffMember.branchId !== data.branchId
+    ) {
+      throw new ForbiddenError("Unauthorized: You do not have permission to record sales for this business/branch");
+    }
   }
 
   const br = await branchRepo.findBranchById(data.branchId);
@@ -43,6 +51,8 @@ export const createSaleService = async (
     notes: data.notes ?? null,
     status,
     paidAt,
+    recordedById: data.recordedById ?? userId,
+    recordedByName: data.recordedByName ?? null,
   };
 
   return await salesRepo.createSale(newSale);
@@ -59,7 +69,14 @@ export const getSaleByIdService = async (
 
   const biz = await businessRepo.findBusinessById(saleItem.businessId);
   if (!biz || biz.userId !== userId) {
-    throw new ForbiddenError("Unauthorized: You do not have access to this sale");
+    const staffMember = await staffRepo.findActiveStaffAssignmentByUserId(userId);
+    if (
+      !staffMember ||
+      staffMember.businessId !== saleItem.businessId ||
+      staffMember.branchId !== saleItem.branchId
+    ) {
+      throw new ForbiddenError("Unauthorized: You do not have access to this sale");
+    }
   }
 
   return saleItem;
@@ -75,12 +92,19 @@ export const resolveUserBusinessId = async (
       throw new NotFoundError("Business not found");
     }
     if (biz.userId !== userId) {
-      throw new ForbiddenError("Unauthorized: You do not own this business");
+      const staffMember = await staffRepo.findActiveStaffAssignmentByUserId(userId);
+      if (!staffMember || staffMember.businessId !== requestedBusinessId) {
+        throw new ForbiddenError("Unauthorized: You do not own this business");
+      }
     }
     return biz.id;
   }
   const businesses = await businessRepo.findBusinessesByUserId(userId);
   if (!businesses || businesses.length === 0) {
+    const staffMember = await staffRepo.findActiveStaffAssignmentByUserId(userId);
+    if (staffMember) {
+      return staffMember.businessId;
+    }
     throw new NotFoundError("No registered business found for this merchant. Please register a business first.");
   }
   return businesses[0]!.id;

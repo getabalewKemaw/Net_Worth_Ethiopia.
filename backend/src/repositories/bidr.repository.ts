@@ -78,6 +78,12 @@ export const settleDebt = async (
   if (data?.notes !== undefined) {
     setValues.notes = data.notes;
   }
+  if (data?.recordedById !== undefined) {
+    setValues.recordedById = data.recordedById;
+  }
+  if (data?.recordedByName !== undefined) {
+    setValues.recordedByName = data.recordedByName;
+  }
 
   const [result] = await db
     .update(sale)

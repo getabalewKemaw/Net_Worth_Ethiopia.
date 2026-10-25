@@ -19,6 +19,8 @@ export type SaleEntry = {
   paidAt?: string | null;
   time: string;
   createdAt?: string;
+  recordedById?: string | null;
+  recordedByName?: string | null;
 };
 
 export type ExpenseEntry = {
@@ -31,6 +33,8 @@ export type ExpenseEntry = {
   notes?: string | null;
   time: string;
   createdAt?: string;
+  recordedById?: string | null;
+  recordedByName?: string | null;
 };
 
 export type SaleInput = Omit<SaleEntry, "id" | "time">;
