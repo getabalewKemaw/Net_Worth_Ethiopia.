@@ -57,6 +57,7 @@ export function DebtCard({ debt, onPress, onSettle }: DebtCardProps) {
           >
             <Text
               style={{
+                fontFamily: 'Lexend_700Bold',
                 fontSize: 15,
                 fontWeight: '700',
                 color: colors.text,
@@ -69,6 +70,7 @@ export function DebtCard({ debt, onPress, onSettle }: DebtCardProps) {
           <View className="flex-1">
             <Text
               style={{
+                fontFamily: 'Lexend_700Bold',
                 fontSize: 16,
                 fontWeight: '700',
                 color: colors.text,
@@ -81,6 +83,7 @@ export function DebtCard({ debt, onPress, onSettle }: DebtCardProps) {
 
             <Text
               style={{
+                fontFamily: 'Lexend_400Regular',
                 fontSize: 13,
                 fontWeight: '400',
                 color: colors.textSecondary,
@@ -97,6 +100,7 @@ export function DebtCard({ debt, onPress, onSettle }: DebtCardProps) {
         <View className="items-end">
           <Text
             style={{
+              fontFamily: 'Lexend_800ExtraBold',
               fontSize: 17,
               fontWeight: '800',
               color: debt.status === 'settled' ? '#065F46' : colors.text,
@@ -104,7 +108,7 @@ export function DebtCard({ debt, onPress, onSettle }: DebtCardProps) {
             }}
           >
             {debt.amount.toLocaleString()}{' '}
-            <Text style={{ fontSize: 12, fontWeight: '600', color: colors.textSecondary }}>
+            <Text style={{ fontFamily: 'Lexend_600SemiBold', fontSize: 12, fontWeight: '600', color: colors.textSecondary }}>
               ETB
             </Text>
           </Text>
@@ -116,6 +120,7 @@ export function DebtCard({ debt, onPress, onSettle }: DebtCardProps) {
             />
             <Text
               style={{
+                fontFamily: 'Lexend_600SemiBold',
                 fontSize: 12,
                 fontWeight: '600',
                 color: status.color,
@@ -142,6 +147,7 @@ export function DebtCard({ debt, onPress, onSettle }: DebtCardProps) {
               <PhoneIcon size={14} color="#D97706" />
               <Text
                 style={{
+                  fontFamily: 'Lexend_600SemiBold',
                   fontSize: 13,
                   fontWeight: '600',
                   color: '#D97706',
@@ -153,6 +159,7 @@ export function DebtCard({ debt, onPress, onSettle }: DebtCardProps) {
           ) : (
             <Text
               style={{
+                fontFamily: 'Lexend_400Regular',
                 fontSize: 12,
                 fontWeight: '400',
                 color: colors.textSecondary,
@@ -180,6 +187,7 @@ export function DebtCard({ debt, onPress, onSettle }: DebtCardProps) {
             <CheckIcon size={14} color="#FFFFFF" strokeWidth={2.5} />
             <Text
               style={{
+                fontFamily: 'Lexend_700Bold',
                 fontSize: 13,
                 fontWeight: '700',
                 color: '#FFFFFF',

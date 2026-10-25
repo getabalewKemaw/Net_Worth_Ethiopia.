@@ -11,12 +11,32 @@ import { useBusinessStore } from '@/store/business-store';
 import { initLocalDatabase } from '@/db/migrations';
 import { useNetworkSync } from '@/hooks/use-network-sync';
 
-import { Platform } from 'react-native';
+import { Platform, Text, TextInput } from 'react-native';
+import {
+  useFonts,
+  Lexend_300Light,
+  Lexend_400Regular,
+  Lexend_500Medium,
+  Lexend_600SemiBold,
+  Lexend_700Bold,
+  Lexend_800ExtraBold,
+} from '@expo-google-fonts/lexend';
+
+// Configure default font for React Native Text & TextInput host components
+if ((Text as any).defaultProps == null) {
+  (Text as any).defaultProps = {};
+}
+(Text as any).defaultProps.style = { fontFamily: 'Lexend_400Regular' };
+
+if ((TextInput as any).defaultProps == null) {
+  (TextInput as any).defaultProps = {};
+}
+(TextInput as any).defaultProps.style = { fontFamily: 'Lexend_400Regular' };
 
 if (Platform.OS === 'web' && typeof document !== 'undefined') {
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = 'https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap';
+  link.href = 'https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap';
   document.head.appendChild(link);
 }
 
@@ -24,6 +44,20 @@ SplashScreen.preventAutoHideAsync();
 WebBrowser.maybeCompleteAuthSession();
 
 export default function TabLayout() {
+  const [fontsLoaded, fontError] = useFonts({
+    Lexend_300Light,
+    Lexend_400Regular,
+    Lexend_500Medium,
+    Lexend_600SemiBold,
+    Lexend_700Bold,
+    Lexend_800ExtraBold,
+    'Lexend': Lexend_400Regular,
+    'Lexend-Regular': Lexend_400Regular,
+    'Lexend-Medium': Lexend_500Medium,
+    'Lexend-SemiBold': Lexend_600SemiBold,
+    'Lexend-Bold': Lexend_700Bold,
+  });
+
   const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
   const segments = useSegments();
@@ -76,6 +110,10 @@ export default function TabLayout() {
       }
     }
   }, [session, isPending, activeBusiness, isBusinessPending, segments, router]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
 
   return (
     <ThemeProvider value={DefaultTheme}>

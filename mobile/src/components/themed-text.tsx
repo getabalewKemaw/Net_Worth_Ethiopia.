@@ -25,6 +25,12 @@ export function ThemedText({ style, type = 'default', themeColor, className, ...
 
   const getFontFamily = (typeStr: string) => {
     if (typeStr === 'code') return Fonts.mono;
+    if (typeStr === 'title' || typeStr === 'subtitle' || typeStr === 'smallBold') {
+      return 'Lexend_700Bold';
+    }
+    if (typeStr === 'default' || typeStr === 'small') {
+      return 'Lexend_500Medium';
+    }
     return Fonts.sans;
   };
 

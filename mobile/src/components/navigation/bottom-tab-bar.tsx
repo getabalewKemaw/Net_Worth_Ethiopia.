@@ -378,6 +378,7 @@ export function BottomTabBar({ state, descriptors, navigation }: BottomTabBarPro
                 style={[
                   styles.tabLabel,
                   {
+                    fontFamily: isFocused ? 'Lexend_700Bold' : 'Lexend_500Medium',
                     color: isFocused ? activeColor : inactiveColor,
                     fontWeight: isFocused ? '700' : '500',
                   },
@@ -427,6 +428,7 @@ const styles = StyleSheet.create({
     marginBottom: 3,
   },
   tabLabel: {
+    fontFamily: 'Lexend_500Medium',
     fontSize: 11,
     textAlign: 'center',
     letterSpacing: 0.1,

@@ -90,7 +90,7 @@ export function DebtFilterBar({
             placeholder="Search customer, phone, item..."
             placeholderTextColor={colors.textSecondary}
             className="flex-1 ml-2.5 text-[14px] py-0"
-            style={{ color: colors.text }}
+            style={{ color: colors.text, fontFamily: 'Lexend_400Regular' }}
           />
           {searchQuery.length > 0 && (
             <Pressable onPress={() => setSearchQuery('')} hitSlop={8}>
@@ -144,6 +144,7 @@ export function DebtFilterBar({
               >
                 <Text
                   style={{
+                    fontFamily: isActive ? 'Lexend_700Bold' : 'Lexend_500Medium',
                     fontSize: 13,
                     fontWeight: isActive ? '700' : '500',
                     color: isActive ? '#D97706' : colors.textSecondary,
@@ -167,6 +168,7 @@ export function DebtFilterBar({
                   >
                     <Text
                       style={{
+                        fontFamily: 'Lexend_700Bold',
                         fontSize: 10,
                         fontWeight: '700',
                         color: tab.alert
@@ -211,7 +213,7 @@ export function DebtFilterBar({
             <View className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full self-center mb-4" />
 
             <View className="flex-row items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-              <Text style={{ fontSize: 16, fontWeight: '800', color: colors.text }}>
+              <Text style={{ fontFamily: 'Lexend_800ExtraBold', fontSize: 16, fontWeight: '800', color: colors.text }}>
                 Sort Dube records
               </Text>
               <Pressable onPress={() => setShowSortModal(false)} hitSlop={6}>
@@ -237,6 +239,7 @@ export function DebtFilterBar({
                     <View className="flex-1 pr-2">
                       <Text
                         style={{
+                          fontFamily: 'Lexend_600SemiBold',
                           fontSize: 14,
                           fontWeight: '700',
                           color: isSelected ? '#D97706' : colors.text,
@@ -244,7 +247,7 @@ export function DebtFilterBar({
                       >
                         {opt.label}
                       </Text>
-                      <Text style={{ fontSize: 12, fontWeight: '400', color: colors.textSecondary, marginTop: 1 }}>
+                      <Text style={{ fontFamily: 'Lexend_400Regular', fontSize: 12, fontWeight: '400', color: colors.textSecondary, marginTop: 1 }}>
                         {opt.desc}
                       </Text>
                     </View>

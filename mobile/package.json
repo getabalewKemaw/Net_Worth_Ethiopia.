@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "dependencies": {
     "@better-auth/expo": "^1.6.29",
+    "@expo-google-fonts/lexend": "^0.4.1",
     "@expo/ui": "~57.0.10",
     "@hookform/resolvers": "^5.9.1",
     "better-auth": "^1.6.29",
