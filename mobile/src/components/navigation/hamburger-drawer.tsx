@@ -1,24 +1,24 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Pressable,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Platform,
-  Animated,
-  Dimensions,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { router, usePathname } from 'expo-router';
+import { useRef, useState } from 'react';
+import {
+  Alert,
+  Animated,
+  Dimensions,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SyncStatusBadge } from '@/components/common/sync-status-badge';
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
-import { useBusinessStore } from '@/store/business-store';
 import { authClient } from '@/lib/auth-client';
-import { SyncStatusBadge } from '@/components/common/sync-status-badge';
+import { useBusinessStore } from '@/store/business-store';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DRAWER_WIDTH = Math.min(330, SCREEN_WIDTH * 0.82);
@@ -40,12 +40,21 @@ export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
     items: [
       { id: 'branches', label: 'Branch Locations', icon: '🏬', route: '/(business)/branches' },
       { id: 'business-profile', label: 'Business Profile', icon: '🏢', route: '/(business)/business-profile' },
+      { id: 'staff', label: 'Staff & Roles', icon: '👥', route: '/staff' },
     ],
   },
   {
     title: 'Financial Intelligence',
     items: [
       { id: 'health', label: 'Business Health', icon: '⭐️', route: '/health' },
+      { id: 'financial', label: 'Financial Profile', icon: '🏦', route: '/financial-profile' },
+    ],
+  },
+  {
+    title: 'System & Account',
+    items: [
+      { id: 'profile', label: 'Merchant Profile', icon: '👤', route: '/profile' },
+      { id: 'privacy', label: 'Privacy & Terms', icon: '🔒', route: '/privacy' },
     ],
   },
 ];
