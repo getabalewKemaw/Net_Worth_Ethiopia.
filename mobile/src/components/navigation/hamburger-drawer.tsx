@@ -1,24 +1,24 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  View,
-  Pressable,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Platform,
-  Animated,
-  Dimensions,
-  Alert,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { router, usePathname } from 'expo-router';
+import { useRef, useState } from 'react';
+import {
+  Alert,
+  Animated,
+  Dimensions,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { SyncStatusBadge } from '@/components/common/sync-status-badge';
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
-import { useBusinessStore } from '@/store/business-store';
 import { authClient } from '@/lib/auth-client';
-import { SyncStatusBadge } from '@/components/common/sync-status-badge';
+import { useBusinessStore } from '@/store/business-store';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const DRAWER_WIDTH = Math.min(330, SCREEN_WIDTH * 0.82);
@@ -35,16 +35,6 @@ export interface TabCategory {
 }
 
 export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
-  {
-    title: 'Main Operations',
-    items: [
-      { id: 'dashboard', label: 'Dashboard', icon: '🏠', route: '/' },
-      { id: 'sales', label: 'Sales & Orders', icon: '🛒', route: '/sales' },
-      { id: 'text-fetching', label: 'Text Fetching', icon: '💬', route: '/text-fetching' },
-      { id: 'bidr', label: 'Bidr (Customer Debt)', icon: '📜', route: '/bidr', badge: 'Credit' },
-      { id: 'expenses', label: 'Expenses', icon: '💸', route: '/expenses' },
-    ],
-  },
   {
     title: 'Business & Branches',
     items: [
@@ -64,7 +54,7 @@ export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
     title: 'System & Account',
     items: [
       { id: 'profile', label: 'Merchant Profile', icon: '👤', route: '/profile' },
-      { id: 'privacy', label: 'Privacy & Terms', icon: '🔒', route: '/privacy' },
+      { id: 'privacy', label: 'Privacy & Policy', icon: '🔒', route: '/privacy' },
     ],
   },
 ];
@@ -78,7 +68,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
-  const slideAnim = useRef(new Animated.Value(-DRAWER_WIDTH)).current;
+  const slideAnim = useRef(new Animated.Value(DRAWER_WIDTH)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const { data: session } = authClient.useSession();
@@ -115,7 +105,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
   const closeDrawer = (callback?: () => void) => {
     Animated.parallel([
       Animated.timing(slideAnim, {
-        toValue: -DRAWER_WIDTH,
+        toValue: DRAWER_WIDTH,
         duration: 220,
         useNativeDriver: true,
       }),
@@ -173,8 +163,31 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
           },
         ]}
       >
-        <View className="flex-row items-center gap-3">
-          {/* Hamburger Menu Trigger Button */}
+        {/* Left Side: App Logo & Business Identity */}
+        <View style={styles.headerLeft}>
+          <Image
+            source={require('@/assets/images/logo/networth.jpg')}
+            style={styles.headerBarLogo}
+            contentFit="cover"
+          />
+
+          <View style={styles.headerTitleContainer}>
+            <ThemedText style={styles.headerBusinessName} numberOfLines={1}>
+              {activeBusiness?.name || 'NetWorth Ethiopia'}
+            </ThemedText>
+            <View style={styles.headerBranchRow}>
+              <View style={styles.branchStatusDot} />
+              <ThemedText style={styles.headerBranchName} numberOfLines={1}>
+                {activeBranch?.name || 'Main Branch'}
+              </ThemedText>
+            </View>
+          </View>
+        </View>
+
+        {/* Right Side: Network Status Indicator & Hamburger Drawer Trigger */}
+        <View style={styles.headerRight}>
+          <SyncStatusBadge />
+
           <Pressable
             onPress={openDrawer}
             style={styles.hamburgerBtn}
@@ -184,27 +197,10 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
           >
             <View style={styles.hamburgerLinesContainer}>
               <View style={[styles.hamburgerLine, { width: 18, backgroundColor: '#0F172A' }]} />
-              <View style={[styles.hamburgerLine, { width: 13, backgroundColor: '#065F46' }]} />
+              <View style={[styles.hamburgerLine, { width: 13, backgroundColor: '#065F46', alignSelf: 'flex-end' }]} />
               <View style={[styles.hamburgerLine, { width: 18, backgroundColor: '#0F172A' }]} />
             </View>
           </Pressable>
-
-          <View className="gap-0.5">
-            <ThemedText className="text-[15px] font-black tracking-tight" style={{ color: '#0F172A' }}>
-              {activeBusiness?.name || 'NetWorth Ethiopia'}
-            </ThemedText>
-            <View className="flex-row items-center gap-1.5">
-              <View className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <ThemedText className="text-[11px] font-medium text-slate-500">
-                {activeBranch?.name || 'Main Branch'}
-              </ThemedText>
-            </View>
-          </View>
-        </View>
-
-        <View className="flex-row items-center gap-2">
-          {/* Dynamic Offline / Online / Syncing Status Badge */}
-          <SyncStatusBadge />
         </View>
       </View>
 
@@ -226,7 +222,7 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
             <Pressable style={StyleSheet.absoluteFill} onPress={() => closeDrawer()} />
           </Animated.View>
 
-          {/* Left-Sided Drawer Container */}
+          {/* Right-Sided Drawer Container */}
           <Animated.View
             style={[
               styles.drawerWrapper,
@@ -241,7 +237,11 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
               <View style={styles.drawerHeader}>
                 <View className="flex-row items-center gap-3">
                   <View style={styles.brandIconBox}>
-                    <ThemedText style={styles.brandIconText}>NW</ThemedText>
+                    <Image
+                      source={require('@/assets/images/logo/networth.jpg')}
+                      style={styles.brandLogoImage}
+                      contentFit="cover"
+                    />
                   </View>
                   <View>
                     <View className="flex-row items-center gap-1.5">
@@ -382,9 +382,16 @@ export function HamburgerHeader({ activeTabId = 'dashboard' }: HamburgerDrawerPr
                   <ThemedText style={styles.signOutBtnText}>Sign Out</ThemedText>
                 </Pressable>
 
-                <ThemedText style={styles.versionLabel}>
-                  NetWorth Ethiopia • v1.0.0
-                </ThemedText>
+                <View style={styles.footerBrandingRow}>
+                  <Image
+                    source={require('@/assets/images/logo/networth.jpg')}
+                    style={styles.footerLogo}
+                    contentFit="cover"
+                  />
+                  <ThemedText style={styles.versionLabel}>
+                    NetWorth Ethiopia • v1.0.0
+                  </ThemedText>
+                </View>
               </View>
             </SafeAreaView>
           </Animated.View>
@@ -398,17 +405,63 @@ const styles = StyleSheet.create({
   headerBar: {
     width: '100%',
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderBottomWidth: 1,
     zIndex: 10,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    marginRight: 10,
+  },
+  headerBarLogo: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  headerTitleContainer: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  headerBusinessName: {
+    fontSize: 15,
+    fontWeight: '900',
+    letterSpacing: -0.3,
+    color: '#0F172A',
+  },
+  headerBranchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 1,
+  },
+  branchStatusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10B981',
+  },
+  headerBranchName: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   hamburgerBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 38,
+    height: 38,
+    borderRadius: 11,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -435,26 +488,10 @@ const styles = StyleSheet.create({
     height: 2,
     borderRadius: 1.5,
   },
-  onlineBadge: {
-    paddingHorizontal: 9,
-    paddingVertical: 4.5,
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#ECFDF5',
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-  pulsingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#059669',
-  },
   modalRoot: {
     flex: 1,
     flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   backdropOverlay: {
     position: 'absolute',
@@ -465,20 +502,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15, 23, 42, 0.45)',
   },
   drawerWrapper: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
     height: '100%',
     backgroundColor: '#FFFFFF',
+    borderLeftWidth: 1,
+    borderLeftColor: '#F1F5F9',
     ...Platform.select({
       ios: {
         shadowColor: '#000000',
-        shadowOffset: { width: 5, height: 0 },
-        shadowOpacity: 0.22,
-        shadowRadius: 15,
+        shadowOffset: { width: -4, height: 0 },
+        shadowOpacity: 0.18,
+        shadowRadius: 16,
       },
       android: {
         elevation: 20,
       },
       web: {
-        boxShadow: '4px 0 24px rgba(0, 0, 0, 0.15)',
+        boxShadow: '-4px 0 24px rgba(0, 0, 0, 0.12)',
       },
     }),
   },
@@ -496,18 +539,43 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   brandIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#065F46',
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
-  brandIconText: {
-    color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 14,
-    letterSpacing: -0.5,
+  brandLogoImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+  },
+  footerBrandingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  footerLogo: {
+    width: 16,
+    height: 16,
+    borderRadius: 4,
   },
   etPill: {
     paddingHorizontal: 5,

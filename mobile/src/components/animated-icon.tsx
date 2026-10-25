@@ -33,7 +33,13 @@ export function AnimatedSplashOverlay() {
     },
   });
 
-  const image = <Image className="w-[76px] h-[71px]" source={require('@/assets/images/expo-logo.png')} />;
+  const image = (
+    <Image
+      className="w-[100px] h-[100px] rounded-[24px]"
+      source={require('@/assets/images/logo/networth.jpg')}
+      contentFit="cover"
+    />
+  );
 
   return animate ? (
     <Animated.View
@@ -43,7 +49,7 @@ export function AnimatedSplashOverlay() {
           scheduleOnRN(setVisible, false);
         }
       })}
-      className="absolute top-0 bottom-0 left-0 right-0 bg-[#208AEF] items-center justify-center z-[1000]">
+      className="absolute top-0 bottom-0 left-0 right-0 bg-[#D8FCE0] items-center justify-center z-[1000]">
       {image}
     </Animated.View>
   ) : (
@@ -53,7 +59,7 @@ export function AnimatedSplashOverlay() {
           setAnimate(true);
         });
       }}
-      className="absolute top-0 bottom-0 left-0 right-0 bg-[#208AEF] items-center justify-center z-[1000]">
+      className="absolute top-0 bottom-0 left-0 right-0 bg-[#D8FCE0] items-center justify-center z-[1000]">
       {image}
     </View>
   );
@@ -104,7 +110,7 @@ export function AnimatedIcon() {
 
       <Animated.View entering={keyframe.duration(DURATION)} className="rounded-[40px] w-32 h-32 absolute" style={{ experimental_backgroundImage: `linear-gradient(180deg, #3C9FFE, #0274DF)` } as any} />
       <Animated.View className="justify-center items-center" entering={logoKeyframe.duration(DURATION)}>
-        <Image className="w-[76px] h-[71px]" source={require('@/assets/images/expo-logo.png')} />
+        <Image className="w-[84px] h-[84px] rounded-[22px]" source={require('@/assets/images/logo/networth.jpg')} contentFit="cover" />
       </Animated.View>
     </View>
   );

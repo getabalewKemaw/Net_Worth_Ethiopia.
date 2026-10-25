@@ -379,3 +379,46 @@ export function MapPinIcon({ size = 20, color = '#64748B', strokeWidth = 2 }: Ic
   );
 }
 
+export function WifiIcon({ size = 18, color = '#10B981', strokeWidth = 2 }: IconProps) {
+  return (
+    <SafeSvg size={size} fallbackSymbol="📶" fallbackColor={color}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M5 12.55a11 11 0 0 1 14.08 0" />
+        <Path d="M1.42 9a16 16 0 0 1 21.16 0" />
+        <Path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+        <Line x1="12" y1="20" x2="12.01" y2="20" />
+      </Svg>
+    </SafeSvg>
+  );
+}
+
+export function WifiOffIcon({ size = 18, color = '#F59E0B', strokeWidth = 2 }: IconProps) {
+  return (
+    <SafeSvg size={size} fallbackSymbol="📵" fallbackColor={color}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Line x1="1" y1="1" x2="23" y2="23" />
+        <Path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
+        <Path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39" />
+        <Path d="M10.71 5.05A16 16 0 0 1 22.58 9" />
+        <Path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88" />
+        <Path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
+        <Line x1="12" y1="20" x2="12.01" y2="20" />
+      </Svg>
+    </SafeSvg>
+  );
+}
+
+export function CloudUploadIcon({ size = 18, color = '#2563EB', strokeWidth = 2 }: IconProps) {
+  return (
+    <SafeSvg size={size} fallbackSymbol="☁" fallbackColor={color}>
+      <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M16 16l-4-4-4 4" />
+        <Path d="M12 12v9" />
+        <Path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
+        <Polyline points="16 16 12 12 8 16" />
+      </Svg>
+    </SafeSvg>
+  );
+}
+
+

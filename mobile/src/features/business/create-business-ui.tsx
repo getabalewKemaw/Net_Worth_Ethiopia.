@@ -1,5 +1,6 @@
 import React from "react";
 import { View, ScrollView, Pressable } from "react-native";
+import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInLeft, FadeInRight, Layout } from "react-native-reanimated";
 
@@ -57,6 +58,11 @@ export const CreateBusinessUI: React.FC<CreateBusinessUIProps> = ({ hookProps })
       <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 40, gap: 16 }} keyboardShouldPersistTaps="handled">
         {/* Header */}
         <View className="mb-2 gap-2">
+          <Image
+            source={require('@/assets/images/logo/networth.jpg')}
+            style={{ width: 44, height: 44, borderRadius: 12, marginBottom: 2 }}
+            contentFit="cover"
+          />
           <ThemedText type="title" className="text-[28px] font-extrabold">Register Your Business</ThemedText>
           <ThemedText className="text-sm leading-5" style={{ color: theme.textSecondary }}>
             Let&apos;s set up your profile to start tracking your finances.
