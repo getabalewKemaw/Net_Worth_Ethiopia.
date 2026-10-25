@@ -36,35 +36,16 @@ export interface TabCategory {
 
 export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
   {
-    title: 'Main Operations',
-    items: [
-      { id: 'dashboard', label: 'Dashboard', icon: '🏠', route: '/' },
-      { id: 'sales', label: 'Sales & Orders', icon: '🛒', route: '/sales' },
-      { id: 'text-fetching', label: 'Text Fetching', icon: '💬', route: '/text-fetching' },
-      { id: 'bidr', label: 'Bidr (Customer Debt)', icon: '📜', route: '/bidr', badge: 'Credit' },
-      { id: 'expenses', label: 'Expenses', icon: '💸', route: '/expenses' },
-    ],
-  },
-  {
     title: 'Business & Branches',
     items: [
       { id: 'branches', label: 'Branch Locations', icon: '🏬', route: '/(business)/branches' },
       { id: 'business-profile', label: 'Business Profile', icon: '🏢', route: '/(business)/business-profile' },
-      { id: 'staff', label: 'Staff & Roles', icon: '👥', route: '/staff' },
     ],
   },
   {
     title: 'Financial Intelligence',
     items: [
       { id: 'health', label: 'Business Health', icon: '⭐️', route: '/health' },
-      { id: 'financial', label: 'Financial Profile', icon: '🏦', route: '/financial-profile' },
-    ],
-  },
-  {
-    title: 'System & Account',
-    items: [
-      { id: 'profile', label: 'Merchant Profile', icon: '👤', route: '/profile' },
-      { id: 'privacy', label: 'Privacy & Terms', icon: '🔒', route: '/privacy' },
     ],
   },
 ];
