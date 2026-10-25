@@ -11,6 +11,11 @@ const lexend = Lexend({
 export const metadata: Metadata = {
   title: "NetWorth Ethiopia · Enterprise Portal",
   description: "Official Microfinance Underwriting Dossier & Central Administration System",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

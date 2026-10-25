@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAdminStore } from "@/store/admin-store";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,6 @@ import {
   ShieldCheck,
   Search,
   ArrowRight,
-  Layers,
   Lock,
   Mail,
   AlertCircle,
@@ -60,10 +60,15 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col justify-between p-6 max-w-5xl mx-auto w-full font-sans">
       <header className="flex items-center justify-between py-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-emerald-700 flex items-center justify-center text-white shadow-xs">
-            <Layers className="w-5 h-5" />
-          </div>
+        <div className="flex items-center gap-3">
+          <Image
+            src="/logo.png"
+            alt="NetWorth Ethiopia Logo"
+            width={40}
+            height={40}
+            className="rounded-xl shadow-xs object-contain"
+            priority
+          />
           <div>
             <span className="text-base font-black tracking-tight text-slate-900">
               NetWorth <span className="text-emerald-700">Ethiopia</span>
