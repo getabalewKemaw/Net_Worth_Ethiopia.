@@ -50,7 +50,7 @@ export const MERCHANT_TAB_CATEGORIES: TabCategory[] = [
     items: [
       { id: 'branches', label: 'Branch Locations', icon: '🏬', route: '/(business)/branches' },
       { id: 'business-profile', label: 'Business Profile', icon: '🏢', route: '/(business)/business-profile' },
-      { id: 'staff', label: 'Staff & Roles', icon: '👥', route: '/staff' },
+      { id: 'staff', label: 'Staff & Roles', icon: '👥', route: '/(business)/staff' },
     ],
   },
   {
