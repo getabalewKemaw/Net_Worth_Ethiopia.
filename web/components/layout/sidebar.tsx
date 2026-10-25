@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -10,7 +11,6 @@ import {
   Users,
   Settings,
   ShieldCheck,
-  Layers,
   LogOut,
 } from "lucide-react";
 
@@ -33,9 +33,13 @@ export function Sidebar() {
   return (
     <aside className="w-60 border-r border-slate-200 bg-white flex flex-col shrink-0 h-screen sticky top-0 shadow-xs z-40">
       <div className="h-12 px-4 border-b border-slate-200 flex items-center gap-2.5 bg-slate-50/50">
-        <div className="w-7 h-7 rounded-lg bg-emerald-700 flex items-center justify-center text-white shadow-2xs">
-          <Layers className="w-4 h-4" />
-        </div>
+        <Image
+          src="/logo.png"
+          alt="NetWorth ET"
+          width={28}
+          height={28}
+          className="rounded-lg shadow-2xs object-contain shrink-0"
+        />
         <div>
           <span className="text-xs font-black tracking-tight text-slate-900">
             NetWorth <span className="text-emerald-700">ET</span>

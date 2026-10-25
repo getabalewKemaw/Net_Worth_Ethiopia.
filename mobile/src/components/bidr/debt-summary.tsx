@@ -40,6 +40,7 @@ export function DebtSummary({
       <View className="px-5 pb-3">
         <Text
           style={{
+            fontFamily: 'Lexend_800ExtraBold',
             fontSize: 22,
             fontWeight: '800',
             color: colors.text,
@@ -50,6 +51,7 @@ export function DebtSummary({
         </Text>
         <Text
           style={{
+            fontFamily: 'Lexend_400Regular',
             fontSize: 13,
             fontWeight: '400',
             color: colors.textSecondary,
@@ -77,6 +79,7 @@ export function DebtSummary({
             <View className="flex-row items-center justify-between">
               <Text
                 style={{
+                  fontFamily: 'Lexend_600SemiBold',
                   fontSize: 12,
                   fontWeight: '600',
                   color: colors.textSecondary,
@@ -92,7 +95,7 @@ export function DebtSummary({
                   borderRadius: 10,
                 }}
               >
-                <Text style={{ fontSize: 11, fontWeight: '700', color: '#D97706' }}>
+                <Text style={{ fontFamily: 'Lexend_700Bold', fontSize: 11, fontWeight: '700', color: '#D97706' }}>
                   {pendingCount} {pendingCount === 1 ? 'record' : 'records'}
                 </Text>
               </View>
@@ -101,6 +104,7 @@ export function DebtSummary({
             {/* Hero Balance Amount */}
             <Text
               style={{
+                fontFamily: 'Lexend_800ExtraBold',
                 fontSize: 32,
                 fontWeight: '800',
                 color: colors.text,
@@ -109,7 +113,7 @@ export function DebtSummary({
               }}
             >
               {totalPending.toLocaleString()}{' '}
-              <Text style={{ fontSize: 16, fontWeight: '600', color: colors.textSecondary }}>
+              <Text style={{ fontFamily: 'Lexend_600SemiBold', fontSize: 16, fontWeight: '600', color: colors.textSecondary }}>
                 ETB
               </Text>
             </Text>
@@ -134,6 +138,7 @@ export function DebtSummary({
                   <AlertCircleIcon size={12} color={overdueCount > 0 ? '#DC2626' : colors.textSecondary} />
                   <Text
                     style={{
+                      fontFamily: 'Lexend_600SemiBold',
                       fontSize: 11,
                       fontWeight: '600',
                       color: overdueCount > 0 ? '#DC2626' : colors.textSecondary,
@@ -144,12 +149,13 @@ export function DebtSummary({
                 </View>
                 <Text
                   style={{
+                    fontFamily: 'Lexend_700Bold',
                     fontSize: 14,
                     fontWeight: '700',
                     color: overdueCount > 0 ? '#DC2626' : colors.text,
                   }}
                 >
-                  {overdueTotal.toLocaleString()} <Text style={{ fontSize: 10, fontWeight: '500', color: colors.textSecondary }}>ETB</Text>
+                  {overdueTotal.toLocaleString()} <Text style={{ fontFamily: 'Lexend_500Medium', fontSize: 10, fontWeight: '500', color: colors.textSecondary }}>ETB</Text>
                 </Text>
               </Pressable>
 
@@ -163,6 +169,7 @@ export function DebtSummary({
                   <ClockIcon size={12} color={dueWithinWeekCount > 0 ? '#D97706' : colors.textSecondary} />
                   <Text
                     style={{
+                      fontFamily: 'Lexend_600SemiBold',
                       fontSize: 11,
                       fontWeight: '600',
                       color: dueWithinWeekCount > 0 ? '#D97706' : colors.textSecondary,
@@ -173,12 +180,13 @@ export function DebtSummary({
                 </View>
                 <Text
                   style={{
+                    fontFamily: 'Lexend_700Bold',
                     fontSize: 14,
                     fontWeight: '700',
                     color: dueWithinWeekCount > 0 ? '#D97706' : colors.text,
                   }}
                 >
-                  {dueWithinWeekTotal.toLocaleString()} <Text style={{ fontSize: 10, fontWeight: '500', color: colors.textSecondary }}>ETB</Text>
+                  {dueWithinWeekTotal.toLocaleString()} <Text style={{ fontFamily: 'Lexend_500Medium', fontSize: 10, fontWeight: '500', color: colors.textSecondary }}>ETB</Text>
                 </Text>
               </Pressable>
 
@@ -191,6 +199,7 @@ export function DebtSummary({
                   <CheckCircleIcon size={12} color="#065F46" />
                   <Text
                     style={{
+                      fontFamily: 'Lexend_600SemiBold',
                       fontSize: 11,
                       fontWeight: '600',
                       color: colors.textSecondary,
@@ -201,12 +210,13 @@ export function DebtSummary({
                 </View>
                 <Text
                   style={{
+                    fontFamily: 'Lexend_700Bold',
                     fontSize: 14,
                     fontWeight: '700',
                     color: '#065F46',
                   }}
                 >
-                  {totalSettled.toLocaleString()} <Text style={{ fontSize: 10, fontWeight: '500', color: colors.textSecondary }}>ETB</Text>
+                  {totalSettled.toLocaleString()} <Text style={{ fontFamily: 'Lexend_500Medium', fontSize: 10, fontWeight: '500', color: colors.textSecondary }}>ETB</Text>
                 </Text>
               </Pressable>
             </View>

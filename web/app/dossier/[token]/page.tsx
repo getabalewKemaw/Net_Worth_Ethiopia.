@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, use, Suspense } from "react";
+import Image from "next/image";
 import { useDossierStore } from "@/store/dossier-store";
 import { HealthGauge } from "@/components/mfo/health-gauge";
 import { LoanCapacityCard } from "@/components/mfo/loan-capacity-card";
@@ -18,7 +19,6 @@ import {
   TrendingUp,
   FileCheck2,
   AlertTriangle,
-  Layers,
 } from "lucide-react";
 
 interface PageProps {
@@ -28,8 +28,15 @@ interface PageProps {
 function DossierLoadingFallback() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 text-center font-sans">
-      <div className="w-12 h-12 rounded-2xl bg-emerald-700 text-white flex items-center justify-center animate-pulse mb-4 shadow-sm">
-        <Layers className="w-6 h-6" />
+      <div className="relative mb-4">
+        <Image
+          src="/logo.png"
+          alt="NetWorth Logo"
+          width={52}
+          height={52}
+          className="rounded-2xl shadow-sm animate-pulse object-contain"
+          priority
+        />
       </div>
       <h2 className="text-sm font-bold text-slate-800">Verifying Bank Authorization Token...</h2>
       <p className="text-xs text-slate-500 font-medium mt-1">
@@ -126,9 +133,14 @@ function DossierContent({ params }: PageProps) {
       <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3.5 shadow-2xs">
         <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-700 flex items-center justify-center text-white shadow-xs">
-              <Layers className="w-5 h-5" />
-            </div>
+            <Image
+              src="/logo.png"
+              alt="NetWorth Ethiopia"
+              width={38}
+              height={38}
+              className="rounded-xl shadow-xs object-contain shrink-0"
+              priority
+            />
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-black tracking-tight text-slate-900">

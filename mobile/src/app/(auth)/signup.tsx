@@ -66,15 +66,23 @@ export default function SignupScreen() {
                 contentFit="contain"
               />
             </View>
-            <Text className="text-white text-3xl font-extrabold mb-2 text-center tracking-tight">Create Account</Text>
-            <Text className="text-white/95 text-base font-medium text-center px-4">Sign up to start tracking your net worth</Text>
+            <Text className="text-white text-3xl font-extrabold mb-2 text-center tracking-tight" style={{ fontFamily: 'Lexend_800ExtraBold' }}>
+              Create Account
+            </Text>
+            <Text className="text-white/95 text-base font-medium text-center px-4" style={{ fontFamily: 'Lexend_500Medium' }}>
+              Sign up to start tracking your net worth
+            </Text>
           </View>
 
           <AuthCard className="pt-6">
             <View className="bg-amber-50 rounded-xl px-5 py-4 mb-6 border border-amber-200">
-              <Text className="text-[11px] tracking-widest uppercase font-bold text-amber-700 mb-1">Registration Notice</Text>
-              <Text className="text-sm font-semibold text-amber-900 leading-tight mb-2">Google account not registered</Text>
-              <Text className="text-[13px] leading-5 text-amber-800">
+              <Text className="text-[11px] tracking-widest uppercase font-bold text-amber-700 mb-1" style={{ fontFamily: 'Lexend_700Bold' }}>
+                Registration Notice
+              </Text>
+              <Text className="text-sm font-semibold text-amber-900 leading-tight mb-2" style={{ fontFamily: 'Lexend_600SemiBold' }}>
+                Google account not registered
+              </Text>
+              <Text className="text-[13px] leading-5 text-amber-800" style={{ fontFamily: 'Lexend_400Regular' }}>
                 {notice}
               </Text>
             </View>
@@ -86,7 +94,7 @@ export default function SignupScreen() {
                 onValueChange={setChecked}
                 color={isChecked ? theme.primary : undefined}
               />
-              <Text className="text-sm text-gray-700 flex-1 font-medium leading-tight">
+              <Text className="text-sm text-gray-700 flex-1 font-medium leading-tight" style={{ fontFamily: 'Lexend_500Medium' }}>
                 I agree to the Terms of Service and Privacy Policy
               </Text>
             </View>
@@ -101,10 +109,10 @@ export default function SignupScreen() {
             </View>
 
             <View className="flex-row justify-center items-center mt-2 mb-2">
-              <Text className="text-sm text-gray-600 font-medium">Already have an account? </Text>
+              <Text className="text-sm text-gray-600 font-medium" style={{ fontFamily: 'Lexend_500Medium' }}>Already have an account? </Text>
               <Link href="/(auth)/login" asChild>
                 <TouchableOpacity>
-                  <Text className="text-sm font-bold ml-1" style={{ color: theme.primary }}>Log in</Text>
+                  <Text className="text-sm font-bold ml-1" style={{ color: theme.primary, fontFamily: 'Lexend_700Bold' }}>Log in</Text>
                 </TouchableOpacity>
               </Link>
             </View>

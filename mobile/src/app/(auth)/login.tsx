@@ -58,8 +58,12 @@ export default function LoginScreen() {
                 contentFit="contain"
               />
             </View>
-            <Text className="text-white text-3xl font-extrabold mb-2 text-center tracking-tight">Welcome Back</Text>
-            <Text className="text-white/95 text-base font-medium text-center px-4">Log in to continue to NetWorth</Text>
+            <Text className="text-white text-3xl font-extrabold mb-2 text-center tracking-tight" style={{ fontFamily: 'Lexend_800ExtraBold' }}>
+              Welcome Back
+            </Text>
+            <Text className="text-white/95 text-base font-medium text-center px-4" style={{ fontFamily: 'Lexend_500Medium' }}>
+              Log in to continue to NetWorth
+            </Text>
           </View>
 
           <AuthCard>
@@ -70,10 +74,10 @@ export default function LoginScreen() {
             />
 
             <View className="flex-row justify-center items-center mt-4 mb-2">
-              <Text className="text-sm text-gray-600 font-medium">Don&apos;t have an account? </Text>
+              <Text className="text-sm text-gray-600 font-medium" style={{ fontFamily: 'Lexend_500Medium' }}>Don&apos;t have an account? </Text>
               <Link href="/(auth)/signup" asChild>
                 <TouchableOpacity>
-                  <Text className="text-sm font-bold ml-1" style={{ color: theme.primary }}>Sign up</Text>
+                  <Text className="text-sm font-bold ml-1" style={{ color: theme.primary, fontFamily: 'Lexend_700Bold' }}>Sign up</Text>
                 </TouchableOpacity>
               </Link>
             </View>
