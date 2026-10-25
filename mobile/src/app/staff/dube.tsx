@@ -78,7 +78,7 @@ export default function StaffDubeScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-slate-950">
+    <SafeAreaView edges={['top']} className="flex-1 bg-slate-50">
       <StaffHeader onRefresh={handleRefresh} />
 
       <ScrollView
@@ -89,25 +89,25 @@ export default function StaffDubeScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            tintColor="#F59E0B"
-            colors={['#F59E0B']}
+            tintColor="#065F46"
+            colors={['#065F46']}
           />
         }
       >
         {/* Dube Ledger Hero Card */}
-        <View className="mx-4 mt-3 rounded-2xl bg-slate-900 border border-amber-900/50 p-4 shadow-sm">
-          <View className="flex-row items-center justify-between pb-2 border-b border-slate-800">
+        <View className="mx-4 mt-3 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+          <View className="flex-row items-center justify-between pb-2 border-b border-slate-100">
             <View>
-              <Text className="text-[11px] font-extrabold text-amber-400 uppercase tracking-wider">
+              <Text className="text-[11px] font-extrabold text-[#D97706] uppercase tracking-wider">
                 Branch Customer Credit Notebook
               </Text>
-              <Text className="text-xs text-slate-400 mt-0.5">
-                Outstanding Dube Ledger (Bole Branch)
+              <Text className="text-xs text-slate-500 mt-0.5">
+                Outstanding Dube Ledger
               </Text>
             </View>
 
-            <View className="bg-amber-950/60 px-2.5 py-1 rounded-full border border-amber-800/40">
-              <Text className="text-[11px] font-bold text-amber-300">
+            <View className="bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
+              <Text className="text-[11px] font-bold text-amber-800">
                 {debts.filter((d) => d.status === 'pending').length} Active Debts
               </Text>
             </View>
@@ -115,19 +115,19 @@ export default function StaffDubeScreen() {
 
           <View className="flex-row items-center justify-between mt-3">
             <View>
-              <Text className="text-[10px] text-slate-400 uppercase font-semibold">
+              <Text className="text-[10px] text-slate-500 uppercase font-semibold">
                 Total Outstanding Credit
               </Text>
-              <Text className="text-xl font-black text-white">
+              <Text className="text-xl font-black text-slate-900">
                 {totalActiveCredit.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
               </Text>
             </View>
 
             <View className="items-end">
-              <Text className="text-[10px] text-slate-400 uppercase font-semibold">
+              <Text className="text-[10px] text-slate-500 uppercase font-semibold">
                 Recovered Today
               </Text>
-              <Text className="text-base font-extrabold text-emerald-400">
+              <Text className="text-base font-extrabold text-[#065F46]">
                 +{(shiftMetrics?.dubeRecovered ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
               </Text>
             </View>
@@ -138,7 +138,7 @@ export default function StaffDubeScreen() {
         <View className="mx-4 mt-3.5">
           <Pressable
             onPress={() => setShowIssueModal(true)}
-            className="w-full py-3.5 px-4 bg-amber-600 rounded-2xl flex-row items-center justify-center border border-amber-500 shadow-sm active:opacity-85"
+            className="w-full py-3.5 px-4 bg-[#065F46] rounded-2xl flex-row items-center justify-center border border-emerald-800 shadow-sm active:opacity-85"
           >
             <View className="w-6 h-6 rounded-full bg-white/20 items-center justify-center mr-2">
               <PlusIcon size={14} color="#FFFFFF" strokeWidth={3} />
@@ -148,14 +148,14 @@ export default function StaffDubeScreen() {
         </View>
 
         {/* Search Bar */}
-        <View className="mx-4 mt-3.5 flex-row items-center bg-slate-900 border border-slate-800 rounded-xl px-3 py-2">
+        <View className="mx-4 mt-3.5 flex-row items-center bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm">
           <SearchIcon size={16} color="#64748B" />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search by customer name or phone..."
-            placeholderTextColor="#64748B"
-            className="flex-1 ml-2 text-xs text-white"
+            placeholderTextColor="#94A3B8"
+            className="flex-1 ml-2 text-xs text-slate-900"
           />
         </View>
 
@@ -170,13 +170,13 @@ export default function StaffDubeScreen() {
                 onPress={() => setFilterStatus(st)}
                 className={`py-1.5 px-3 rounded-full border ${
                   isSelected
-                    ? 'bg-amber-600/30 border-amber-500'
-                    : 'bg-slate-900 border-slate-800'
+                    ? 'bg-[#065F46] border-[#065F46]'
+                    : 'bg-white border-slate-200'
                 }`}
               >
                 <Text
                   className={`text-xs font-bold ${
-                    isSelected ? 'text-amber-300' : 'text-slate-400'
+                    isSelected ? 'text-white' : 'text-slate-600'
                   }`}
                 >
                   {label}
@@ -189,16 +189,16 @@ export default function StaffDubeScreen() {
         {/* Debt Cards Feed */}
         {isLoading && debts.length === 0 ? (
           <View className="items-center justify-center py-12">
-            <ActivityIndicator size="large" color="#F59E0B" />
-            <Text className="text-slate-400 text-xs mt-3">Loading branch customer credit...</Text>
+            <ActivityIndicator size="large" color="#065F46" />
+            <Text className="text-slate-500 text-xs mt-3">Loading branch customer credit...</Text>
           </View>
         ) : debts.length === 0 ? (
-          <View className="mx-4 mt-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-8 items-center justify-center">
+          <View className="mx-4 mt-4 bg-white border border-slate-200 rounded-2xl p-8 items-center justify-center shadow-sm">
             <Text className="text-3xl mb-2">👥</Text>
-            <Text className="text-slate-200 font-bold text-sm text-center">
+            <Text className="text-slate-900 font-bold text-sm text-center">
               No customer credit records found
             </Text>
-            <Text className="text-slate-400 text-xs text-center mt-1">
+            <Text className="text-slate-500 text-xs text-center mt-1">
               Tap &quot;Issue Customer Dube&quot; to give store credit to trusted buyers.
             </Text>
           </View>
@@ -211,43 +211,43 @@ export default function StaffDubeScreen() {
               return (
                 <View
                   key={item.id}
-                  className={`bg-slate-900/90 border rounded-2xl p-3.5 mb-2.5 shadow-sm ${
+                  className={`bg-white border rounded-2xl p-3.5 mb-2.5 shadow-sm ${
                     isSettled
-                      ? 'border-slate-800/60 opacity-70'
+                      ? 'border-slate-200 opacity-75'
                       : overdue
-                      ? 'border-red-900/70'
-                      : 'border-slate-800'
+                      ? 'border-red-200 bg-red-50/20'
+                      : 'border-slate-200'
                   }`}
                 >
-                  <View className="flex-row items-center justify-between pb-2 border-b border-slate-800/60">
+                  <View className="flex-row items-center justify-between pb-2 border-b border-slate-100">
                     <View className="flex-1 mr-2">
-                      <Text className="text-sm font-extrabold text-white" numberOfLines={1}>
+                      <Text className="text-sm font-extrabold text-slate-900" numberOfLines={1}>
                         {item.customerName || 'Customer'}
                       </Text>
                       {item.customerPhone && (
-                        <Text className="text-xs text-slate-400 mt-0.5">
+                        <Text className="text-xs text-slate-500 mt-0.5">
                           📞 {item.customerPhone}
                         </Text>
                       )}
                     </View>
 
                     <View className="items-end">
-                      <Text className={`text-base font-black ${isSettled ? 'text-slate-400' : 'text-amber-400'}`}>
+                      <Text className={`text-base font-black ${isSettled ? 'text-slate-400' : 'text-amber-700'}`}>
                         {item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                       </Text>
                       <View className="flex-row items-center mt-0.5">
                         <View
-                          className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                          className={`px-1.5 py-0.5 rounded ${
                             isSettled
-                              ? 'bg-slate-800 text-slate-400'
+                              ? 'bg-slate-100'
                               : overdue
-                              ? 'bg-red-950/80 border border-red-700/60'
-                              : 'bg-amber-950/80 border border-amber-700/60'
+                              ? 'bg-red-50 border border-red-200'
+                              : 'bg-amber-50 border border-amber-200'
                           }`}
                         >
                           <Text
                             className={`text-[9px] font-bold ${
-                              isSettled ? 'text-slate-400' : overdue ? 'text-red-300' : 'text-amber-300'
+                              isSettled ? 'text-slate-600' : overdue ? 'text-red-700' : 'text-amber-800'
                             }`}
                           >
                             {isSettled ? '✓ SETTLED' : overdue ? '⚠️ OVERDUE' : '⏳ ACTIVE'}
@@ -260,11 +260,11 @@ export default function StaffDubeScreen() {
                   <View className="flex-row items-center justify-between pt-2.5">
                     <View className="flex-1 mr-2">
                       {item.description && (
-                        <Text className="text-xs text-slate-300" numberOfLines={1}>
+                        <Text className="text-xs text-slate-700" numberOfLines={1}>
                           {item.description}
                         </Text>
                       )}
-                      <Text className="text-[10px] text-slate-400 mt-0.5">
+                      <Text className="text-[10px] text-slate-500 mt-0.5">
                         Due: {item.dueDate || 'No promised date'}
                       </Text>
                     </View>
@@ -272,7 +272,7 @@ export default function StaffDubeScreen() {
                     {!isSettled && (
                       <Pressable
                         onPress={() => setSelectedDebtToSettle(item)}
-                        className="py-1.5 px-3.5 bg-emerald-600 rounded-xl active:opacity-85"
+                        className="py-1.5 px-3.5 bg-[#065F46] rounded-xl active:opacity-85"
                       >
                         <Text className="text-xs font-black text-white">Settle Debt</Text>
                       </Pressable>

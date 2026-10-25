@@ -104,57 +104,57 @@ export function AddStaffExpenseModal({
           <View style={styles.handleBar} />
 
           {/* Modal Header */}
-          <View className="flex-row items-center justify-between pb-3 border-b border-slate-800">
+          <View className="flex-row items-center justify-between pb-3 border-b border-slate-100">
             <View className="flex-row items-center gap-2">
-              <View className="w-8 h-8 rounded-full bg-red-500/20 items-center justify-center border border-red-500/30">
+              <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center border border-red-200">
                 <Text className="text-base">💸</Text>
               </View>
               <View>
-                <Text className="text-lg font-extrabold text-white">Record Petty Expense</Text>
-                <Text className="text-xs text-red-400 font-semibold">Deducted from Drawer Cash · Branch Locked</Text>
+                <Text className="text-lg font-extrabold text-slate-900">Record Petty Expense</Text>
+                <Text className="text-xs text-red-700 font-semibold">Deducted from Drawer Cash · Branch Locked</Text>
               </View>
             </View>
             <Pressable onPress={handleClose} hitSlop={8} className="p-1">
-              <XIcon size={20} color="#94A3B8" />
+              <XIcon size={20} color="#64748B" />
             </Pressable>
           </View>
 
           {/* Amount Input */}
           <View className="mt-4">
-            <Text className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-1.5">
+            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
               Expense Amount (ETB) *
             </Text>
-            <View className="flex-row items-center bg-slate-900 border border-slate-700 rounded-xl px-4 py-2">
-              <Text className="text-lg font-extrabold text-red-400 mr-2">ETB</Text>
+            <View className="flex-row items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2">
+              <Text className="text-lg font-extrabold text-red-600 mr-2">ETB</Text>
               <TextInput
                 value={amount}
                 onChangeText={setAmount}
                 placeholder="0.00"
-                placeholderTextColor="#64748B"
+                placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
                 autoFocus
-                className="flex-1 text-xl font-black text-white"
+                className="flex-1 text-xl font-black text-slate-900"
               />
             </View>
           </View>
 
           {/* Description */}
           <View className="mt-3.5">
-            <Text className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-1.5">
+            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
               Description *
             </Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
               placeholder="e.g. Packaging bags, Cleaning supplies, Transport"
-              placeholderTextColor="#64748B"
-              className="bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white"
+              placeholderTextColor="#94A3B8"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900"
             />
           </View>
 
           {/* Category Chips */}
           <View className="mt-3.5">
-            <Text className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-2">
+            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">
               Expense Category
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-2">
@@ -166,13 +166,13 @@ export function AddStaffExpenseModal({
                     onPress={() => setCategory(cat)}
                     className={`py-1.5 px-3 rounded-xl border mr-2 ${
                       isSelected
-                        ? 'bg-red-950/60 border-red-500'
-                        : 'bg-slate-900 border-slate-800'
+                        ? 'bg-red-50 border-red-500'
+                        : 'bg-slate-50 border-slate-200'
                     }`}
                   >
                     <Text
                       className={`text-xs font-bold ${
-                        isSelected ? 'text-red-300' : 'text-slate-400'
+                        isSelected ? 'text-red-700' : 'text-slate-600'
                       }`}
                     >
                       {cat}
@@ -185,15 +185,15 @@ export function AddStaffExpenseModal({
 
           {/* Notes */}
           <View className="mt-3.5">
-            <Text className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-1.5">
+            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
               Note (Optional)
             </Text>
             <TextInput
               value={notes}
               onChangeText={setNotes}
               placeholder="e.g. Approved by shop supervisor"
-              placeholderTextColor="#64748B"
-              className="bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white"
+              placeholderTextColor="#94A3B8"
+              className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900"
             />
           </View>
 
@@ -201,15 +201,15 @@ export function AddStaffExpenseModal({
           <View className="mt-6 flex-row gap-3">
             <Pressable
               onPress={handleClose}
-              className="flex-1 py-3.5 rounded-xl border border-slate-700 items-center justify-center active:opacity-70"
+              className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white items-center justify-center active:opacity-70"
             >
-              <Text className="text-sm font-bold text-slate-300">Cancel</Text>
+              <Text className="text-sm font-bold text-slate-700">Cancel</Text>
             </Pressable>
 
             <Pressable
               onPress={handleSubmit}
               disabled={isSubmitting}
-              className="flex-2 py-3.5 px-6 rounded-xl bg-red-600 border border-red-500 items-center justify-center flex-row gap-2 active:opacity-80"
+              className="flex-2 py-3.5 px-6 rounded-xl bg-red-600 border border-red-700 items-center justify-center flex-row gap-2 active:opacity-80"
             >
               {isSubmitting ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
@@ -230,25 +230,28 @@ export function AddStaffExpenseModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
   sheet: {
-    backgroundColor: '#0F172A',
+    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     borderTopWidth: 1,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: '#1E293B',
+    borderColor: '#E2E8F0',
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 36 : 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 20,
   },
   handleBar: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#334155',
+    backgroundColor: '#CBD5E1',
     alignSelf: 'center',
     marginBottom: 12,
   },

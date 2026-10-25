@@ -76,17 +76,17 @@ export default function StaffSalesScreen() {
   const getPaymentBadge = (method: string) => {
     switch (method) {
       case 'telebirr':
-        return { label: '📱 Telebirr', bg: 'bg-violet-950/60', text: 'text-violet-300', border: 'border-violet-700/60' };
+        return { label: '📱 Telebirr', bg: 'bg-violet-50', text: 'text-violet-800', border: 'border-violet-200' };
       case 'cbe':
-        return { label: '🏦 CBE Birr', bg: 'bg-blue-950/60', text: 'text-blue-300', border: 'border-blue-700/60' };
+        return { label: '🏦 CBE Birr', bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-200' };
       case 'cash':
       default:
-        return { label: '💵 Cash', bg: 'bg-emerald-950/60', text: 'text-emerald-300', border: 'border-emerald-700/60' };
+        return { label: '💵 Cash', bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-200' };
     }
   };
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-slate-950">
+    <SafeAreaView edges={['top']} className="flex-1 bg-slate-50">
       {/* Shared Branch Header */}
       <StaffHeader onRefresh={handleRefresh} />
 
@@ -98,8 +98,8 @@ export default function StaffSalesScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            tintColor="#10B981"
-            colors={['#10B981']}
+            tintColor="#065F46"
+            colors={['#065F46']}
           />
         }
       >
@@ -110,7 +110,7 @@ export default function StaffSalesScreen() {
         <View className="mx-4 mt-4 flex-row gap-3">
           <Pressable
             onPress={() => setShowQuickSaleModal(true)}
-            className="flex-1 py-3.5 px-4 bg-emerald-600 rounded-2xl flex-row items-center justify-center border border-emerald-500 shadow-sm active:opacity-85"
+            className="flex-1 py-3.5 px-4 bg-[#065F46] rounded-2xl flex-row items-center justify-center border border-emerald-800 shadow-sm active:opacity-85"
           >
             <View className="w-6 h-6 rounded-full bg-white/20 items-center justify-center mr-2">
               <PlusIcon size={14} color="#FFFFFF" strokeWidth={3} />
@@ -120,26 +120,26 @@ export default function StaffSalesScreen() {
 
           <Pressable
             onPress={() => router.push('/staff/dube' as any)}
-            className="py-3.5 px-4 bg-slate-900 rounded-2xl flex-row items-center justify-center border border-slate-700 active:opacity-85"
+            className="py-3.5 px-4 bg-white rounded-2xl flex-row items-center justify-center border border-slate-300 shadow-sm active:opacity-85"
           >
             <Text className="text-base mr-1.5">📝</Text>
-            <Text className="text-slate-200 font-bold text-sm">Issue Dube</Text>
+            <Text className="text-slate-800 font-bold text-sm">Issue Dube</Text>
           </Pressable>
         </View>
 
         {/* Shift Sales Feed Header */}
-        <View className="mx-4 mt-6 flex-row items-center justify-between pb-2 border-b border-slate-800">
+        <View className="mx-4 mt-6 flex-row items-center justify-between pb-2 border-b border-slate-200">
           <View className="flex-row items-center">
-            <Text className="text-sm font-extrabold text-white mr-2">
+            <Text className="text-sm font-extrabold text-slate-900 mr-2">
               Shift Sales Feed
             </Text>
-            <View className="bg-slate-800 px-2 py-0.5 rounded-full">
-              <Text className="text-[11px] font-bold text-slate-400">
+            <View className="bg-slate-200 px-2 py-0.5 rounded-full">
+              <Text className="text-[11px] font-bold text-slate-700">
                 {sales.length} today
               </Text>
             </View>
           </View>
-          <Text className="text-[11px] text-slate-400">
+          <Text className="text-[11px] text-slate-500">
             Auto-Attributed & Locked
           </Text>
         </View>
@@ -147,23 +147,23 @@ export default function StaffSalesScreen() {
         {/* Sales Feed Content */}
         {isLoading && sales.length === 0 ? (
           <View className="items-center justify-center py-12">
-            <ActivityIndicator size="large" color="#10B981" />
-            <Text className="text-slate-400 text-xs mt-3">Loading counter sales...</Text>
+            <ActivityIndicator size="large" color="#065F46" />
+            <Text className="text-slate-500 text-xs mt-3">Loading counter sales...</Text>
           </View>
         ) : sales.length === 0 ? (
-          <View className="mx-4 mt-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-8 items-center justify-center">
+          <View className="mx-4 mt-4 bg-white border border-slate-200 rounded-2xl p-8 items-center justify-center shadow-sm">
             <Text className="text-3xl mb-2">🛒</Text>
-            <Text className="text-slate-200 font-bold text-sm text-center">
+            <Text className="text-slate-900 font-bold text-sm text-center">
               No sales recorded this shift yet
             </Text>
-            <Text className="text-slate-400 text-xs text-center mt-1 mb-4">
+            <Text className="text-slate-500 text-xs text-center mt-1 mb-4">
               Tap &quot;Quick Instant Sale&quot; to checkout walk-in customers instantly.
             </Text>
             <Pressable
               onPress={() => setShowQuickSaleModal(true)}
-              className="py-2.5 px-4 bg-emerald-600/30 border border-emerald-500/50 rounded-xl"
+              className="py-2.5 px-4 bg-emerald-50 border border-emerald-200 rounded-xl"
             >
-              <Text className="text-emerald-300 font-extrabold text-xs">
+              <Text className="text-[#065F46] font-extrabold text-xs">
                 + Record First Sale
               </Text>
             </Pressable>
@@ -175,7 +175,7 @@ export default function StaffSalesScreen() {
               return (
                 <View
                   key={item.id}
-                  className="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-3.5 mb-2.5 flex-row items-center justify-between shadow-sm"
+                  className="bg-white border border-slate-200 rounded-2xl p-3.5 mb-2.5 flex-row items-center justify-between shadow-sm"
                 >
                   <View className="flex-1 mr-3">
                     <View className="flex-row items-center mb-1">
@@ -189,25 +189,25 @@ export default function StaffSalesScreen() {
                       </Text>
                     </View>
 
-                    <Text className="text-sm font-bold text-slate-100" numberOfLines={1}>
+                    <Text className="text-sm font-bold text-slate-900" numberOfLines={1}>
                       {item.description || 'Instant Sale'}
                     </Text>
 
                     {item.customer && (
-                      <Text className="text-xs text-slate-400 mt-0.5" numberOfLines={1}>
+                      <Text className="text-xs text-slate-500 mt-0.5" numberOfLines={1}>
                         Customer: {item.customer}
                       </Text>
                     )}
 
                     {item.recordedByName && (
-                      <Text className="text-[10px] text-emerald-400/80 mt-1">
+                      <Text className="text-[10px] text-[#065F46] mt-1">
                         Cashier: {item.recordedByName}
                       </Text>
                     )}
                   </View>
 
                   <View className="items-end">
-                    <Text className="text-base font-black text-emerald-400">
+                    <Text className="text-base font-black text-[#065F46]">
                       +{item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </Text>
                     <Text className="text-[10px] text-slate-400 font-semibold">ETB</Text>

@@ -59,19 +59,19 @@ export function StaffHeader({ onRefresh }: StaffHeaderProps) {
   };
 
   return (
-    <View className="bg-slate-900 px-4 pt-2 pb-3 border-b border-slate-800">
+    <View className="bg-white px-4 pt-2 pb-3 border-b border-slate-200">
       <View className="flex-row items-center justify-between">
         {/* Branch Lock Identifier */}
         <View className="flex-1 mr-2">
-          <Text className="text-[11px] font-bold text-emerald-400 uppercase tracking-widest" numberOfLines={1}>
+          <Text className="text-[11px] font-bold text-[#065F46] uppercase tracking-widest" numberOfLines={1}>
             {assignedBusinessName || 'NetWorth POS'}
           </Text>
           <View className="flex-row items-center mt-0.5">
-            <Text className="text-base font-extrabold text-white mr-1.5" numberOfLines={1}>
+            <Text className="text-base font-extrabold text-slate-900 mr-1.5" numberOfLines={1}>
               {assignedBranchName || 'Branch Counter'}
             </Text>
-            <View className="bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700 flex-row items-center">
-              <Text className="text-[10px] text-slate-300 font-bold">🔒 LOCKED</Text>
+            <View className="bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 flex-row items-center">
+              <Text className="text-[10px] text-emerald-800 font-bold">🔒 LOCKED</Text>
             </View>
           </View>
         </View>
@@ -82,19 +82,19 @@ export function StaffHeader({ onRefresh }: StaffHeaderProps) {
           <Pressable
             onPress={handleManualRefresh}
             disabled={isRefreshing}
-            className="w-8 h-8 rounded-full bg-slate-800 items-center justify-center border border-slate-700 active:opacity-70"
+            className="w-8 h-8 rounded-full bg-slate-100 items-center justify-center border border-slate-200 active:opacity-70"
             hitSlop={6}
           >
             {isRefreshing ? (
-              <ActivityIndicator size="small" color="#10B981" />
+              <ActivityIndicator size="small" color="#065F46" />
             ) : (
-              <RefreshCwIcon size={14} color="#94A3B8" />
+              <RefreshCwIcon size={14} color="#64748B" />
             )}
           </Pressable>
 
           {/* Cashier profile attribution chip */}
-          <View className="bg-slate-800/90 px-2.5 py-1.5 rounded-full border border-slate-700 flex-row items-center">
-            <Text className="text-xs font-semibold text-emerald-300">
+          <View className="bg-slate-100 px-2.5 py-1.5 rounded-full border border-slate-200 flex-row items-center">
+            <Text className="text-xs font-semibold text-slate-700">
               👤 {staffProfile?.name || 'Sales Staff'}
             </Text>
           </View>
@@ -102,10 +102,10 @@ export function StaffHeader({ onRefresh }: StaffHeaderProps) {
           {/* Logout Action */}
           <Pressable
             onPress={handleLogout}
-            className="w-8 h-8 rounded-full bg-red-950/40 items-center justify-center border border-red-800/50 active:opacity-70"
+            className="w-8 h-8 rounded-full bg-red-50 items-center justify-center border border-red-200 active:opacity-70"
             hitSlop={6}
           >
-            <LogOutIcon size={14} color="#F87171" />
+            <LogOutIcon size={14} color="#EF4444" />
           </Pressable>
         </View>
       </View>

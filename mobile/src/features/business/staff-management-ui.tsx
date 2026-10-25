@@ -187,14 +187,14 @@ export function StaffManagementUI() {
   return (
     <SafeAreaView edges={['top']} className="flex-1" style={{ backgroundColor: colors.background }}>
       {/* Top Header */}
-      <View className="px-5 pt-3 pb-3 border-b border-slate-200 dark:border-slate-800">
+      <View className="px-5 pt-3 pb-3 border-b border-slate-200 bg-white">
         <Pressable className="self-start mb-2 active:opacity-70" onPress={() => router.back()}>
           <ThemedText style={{ color: colors.primary, fontWeight: '700' }}>← Back</ThemedText>
         </Pressable>
 
         <View className="flex-row items-center justify-between">
           <View>
-            <ThemedText type="title" className="text-2xl font-extrabold">
+            <ThemedText type="title" className="text-2xl font-extrabold text-slate-900">
               Staff & Roles
             </ThemedText>
             <ThemedText className="text-xs text-[#60646C]">
@@ -228,43 +228,43 @@ export function StaffManagementUI() {
       >
         {/* KPI Metric Cards */}
         <View className="px-5 mt-4 flex-row gap-2.5">
-          <View className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl">
+          <View className="flex-1 bg-white border border-slate-200 p-3 rounded-2xl shadow-sm">
             <ThemedText className="text-[10px] font-bold text-[#60646C] uppercase">
               Total Cashiers
             </ThemedText>
-            <ThemedText className="text-xl font-black mt-0.5">
+            <ThemedText className="text-xl font-black text-slate-900 mt-0.5">
               {staffList.length}
             </ThemedText>
           </View>
 
-          <View className="flex-1 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/50 p-3 rounded-2xl">
-            <ThemedText className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase">
+          <View className="flex-1 bg-emerald-50 border border-emerald-200 p-3 rounded-2xl">
+            <ThemedText className="text-[10px] font-bold text-emerald-800 uppercase">
               Active Shift Staff
             </ThemedText>
-            <ThemedText className="text-xl font-black text-emerald-700 dark:text-emerald-400 mt-0.5">
+            <ThemedText className="text-xl font-black text-emerald-700 mt-0.5">
               {activeCount}
             </ThemedText>
           </View>
 
-          <View className="flex-1 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 p-3 rounded-2xl">
-            <ThemedText className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase">
+          <View className="flex-1 bg-amber-50 border border-amber-200 p-3 rounded-2xl">
+            <ThemedText className="text-[10px] font-bold text-amber-800 uppercase">
               Pending Invites
             </ThemedText>
-            <ThemedText className="text-xl font-black text-amber-700 dark:text-amber-400 mt-0.5">
+            <ThemedText className="text-xl font-black text-amber-700 mt-0.5">
               {pendingCount}
             </ThemedText>
           </View>
         </View>
 
         {/* Search Input */}
-        <View className="mx-5 mt-4 flex-row items-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2">
+        <View className="mx-5 mt-4 flex-row items-center bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm">
           <SearchIcon size={16} color="#64748B" />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search by cashier name, email, or branch..."
-            placeholderTextColor="#64748B"
-            className="flex-1 ml-2 text-xs text-slate-900 dark:text-white"
+            placeholderTextColor="#94A3B8"
+            className="flex-1 ml-2 text-xs text-slate-900"
           />
         </View>
 
@@ -276,15 +276,15 @@ export function StaffManagementUI() {
                 onPress={() => setSelectedBranchFilter('all')}
                 className={`py-1.5 px-3.5 rounded-full border ${
                   selectedBranchFilter === 'all'
-                    ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100'
-                    : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800'
+                    ? 'bg-[#065F46] border-[#065F46]'
+                    : 'bg-white border-slate-200'
                 }`}
               >
                 <ThemedText
                   className={`text-xs font-bold ${
                     selectedBranchFilter === 'all'
-                      ? 'text-white dark:text-slate-900'
-                      : 'text-slate-600 dark:text-slate-400'
+                      ? 'text-white'
+                      : 'text-slate-600'
                   }`}
                 >
                   All Branches ({staffList.length})
@@ -300,15 +300,15 @@ export function StaffManagementUI() {
                     onPress={() => setSelectedBranchFilter(b.id)}
                     className={`py-1.5 px-3.5 rounded-full border ${
                       isSelected
-                        ? 'bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100'
-                        : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800'
+                        ? 'bg-[#065F46] border-[#065F46]'
+                        : 'bg-white border-slate-200'
                     }`}
                   >
                     <ThemedText
                       className={`text-xs font-bold ${
                         isSelected
-                          ? 'text-white dark:text-slate-900'
-                          : 'text-slate-600 dark:text-slate-400'
+                          ? 'text-white'
+                          : 'text-slate-600'
                       }`}
                     >
                       {b.name} ({count})
@@ -332,9 +332,9 @@ export function StaffManagementUI() {
               <ThemedText className="text-xs text-[#60646C] mt-2">Loading staff roster...</ThemedText>
             </View>
           ) : filteredStaff.length === 0 ? (
-            <View className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-8 rounded-2xl items-center justify-center">
+            <View className="bg-white border border-slate-200 p-8 rounded-2xl items-center justify-center shadow-sm">
               <ThemedText className="text-3xl mb-2">👥</ThemedText>
-              <ThemedText className="font-bold text-sm text-center">
+              <ThemedText className="font-bold text-sm text-slate-900 text-center">
                 No staff cashiers found
               </ThemedText>
               <ThemedText className="text-xs text-[#60646C] text-center mt-1 mb-4">
@@ -352,15 +352,15 @@ export function StaffManagementUI() {
             filteredStaff.map((staff) => (
               <View
                 key={staff.id}
-                className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 mb-3 shadow-sm"
+                className="bg-white border border-slate-200 rounded-2xl p-4 mb-3 shadow-sm"
               >
-                <View className="flex-row items-center justify-between pb-2.5 border-b border-slate-200 dark:border-slate-800">
+                <View className="flex-row items-center justify-between pb-2.5 border-b border-slate-100">
                   <View className="flex-row items-center gap-2.5 flex-1 mr-2">
-                    <View className="w-9 h-9 rounded-full bg-slate-200 dark:bg-slate-800 items-center justify-center">
+                    <View className="w-9 h-9 rounded-full bg-slate-100 items-center justify-center border border-slate-200">
                       <UserIcon size={16} color={colors.primary} />
                     </View>
                     <View className="flex-1">
-                      <ThemedText className="text-sm font-extrabold" numberOfLines={1}>
+                      <ThemedText className="text-sm font-extrabold text-slate-900" numberOfLines={1}>
                         {staff.name || 'Sales Cashier'}
                       </ThemedText>
                       <ThemedText className="text-xs text-[#60646C]" numberOfLines={1}>
@@ -372,15 +372,15 @@ export function StaffManagementUI() {
                   <View
                     className={`px-2 py-0.5 rounded-full ${
                       staff.status === 'active'
-                        ? 'bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800'
-                        : 'bg-amber-100 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800'
+                        ? 'bg-emerald-50 border border-emerald-200'
+                        : 'bg-amber-50 border border-amber-200'
                     }`}
                   >
                     <ThemedText
                       className={`text-[10px] font-extrabold ${
                         staff.status === 'active'
-                          ? 'text-emerald-700 dark:text-emerald-400'
-                          : 'text-amber-700 dark:text-amber-400'
+                          ? 'text-emerald-800'
+                          : 'text-amber-800'
                       }`}
                     >
                       {staff.status === 'active' ? '✓ ACTIVE' : '⏳ PENDING'}
@@ -390,13 +390,13 @@ export function StaffManagementUI() {
 
                 <View className="flex-row items-center justify-between pt-2.5">
                   <View className="flex-row items-center gap-2">
-                    <View className="bg-slate-200 dark:bg-slate-800 px-2.5 py-1 rounded-lg">
-                      <ThemedText className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                    <View className="bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
+                      <ThemedText className="text-[11px] font-bold text-slate-700">
                         🏬 {staff.branchName || 'Branch'}
                       </ThemedText>
                     </View>
-                    <View className="bg-emerald-100/60 dark:bg-emerald-950/50 px-2.5 py-1 rounded-lg">
-                      <ThemedText className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400">
+                    <View className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
+                      <ThemedText className="text-[11px] font-bold text-emerald-800">
                         Role: Counter Sales
                       </ThemedText>
                     </View>
@@ -404,9 +404,9 @@ export function StaffManagementUI() {
 
                   <Pressable
                     onPress={() => handleRevokeStaff(staff)}
-                    className="px-2.5 py-1 rounded-lg bg-red-100 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 active:opacity-75"
+                    className="px-2.5 py-1 rounded-lg bg-red-50 border border-red-200 active:opacity-75"
                   >
-                    <ThemedText className="text-xs font-bold text-red-600 dark:text-red-400">
+                    <ThemedText className="text-xs font-bold text-red-600">
                       Remove
                     </ThemedText>
                   </Pressable>
@@ -424,25 +424,25 @@ export function StaffManagementUI() {
           <View style={styles.sheet}>
             <View style={styles.handleBar} />
 
-            <View className="flex-row items-center justify-between pb-3 border-b border-slate-800">
+            <View className="flex-row items-center justify-between pb-3 border-b border-slate-100">
               <View className="flex-row items-center gap-2">
-                <View className="w-8 h-8 rounded-full bg-emerald-500/20 items-center justify-center border border-emerald-500/30">
-                  <UserIcon size={16} color="#10B981" />
+                <View className="w-8 h-8 rounded-full bg-emerald-50 items-center justify-center border border-emerald-200">
+                  <UserIcon size={16} color={colors.primary} />
                 </View>
                 <View>
-                  <ThemedText className="text-lg font-extrabold text-white">Assign Staff Member</ThemedText>
-                  <ThemedText className="text-xs text-emerald-400 font-semibold">Authorize Branch Counter Access</ThemedText>
+                  <ThemedText className="text-lg font-extrabold text-slate-900">Assign Staff Member</ThemedText>
+                  <ThemedText className="text-xs font-semibold" style={{ color: colors.primary }}>Authorize Branch Counter Access</ThemedText>
                 </View>
               </View>
               <Pressable onPress={() => setShowAssignModal(false)} hitSlop={8} className="p-1">
-                <XIcon size={20} color="#94A3B8" />
+                <XIcon size={20} color="#64748B" />
               </Pressable>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} className="mt-3">
               {/* Branch Selector */}
               <View className="mb-3.5">
-                <ThemedText className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-1.5">
+                <ThemedText className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
                   Select Operating Branch *
                 </ThemedText>
                 <View className="flex-row flex-wrap gap-2">
@@ -453,10 +453,10 @@ export function StaffManagementUI() {
                         key={b.id}
                         onPress={() => setModalBranchId(b.id)}
                         className={`py-2 px-3 rounded-xl border ${
-                          isSelected ? 'bg-emerald-950/80 border-emerald-500' : 'bg-slate-900 border-slate-800'
+                          isSelected ? 'bg-emerald-50 border-emerald-600' : 'bg-slate-50 border-slate-200'
                         }`}
                       >
-                        <ThemedText className={`text-xs font-bold ${isSelected ? 'text-emerald-300' : 'text-slate-400'}`}>
+                        <ThemedText className={`text-xs font-bold ${isSelected ? 'text-emerald-900' : 'text-slate-600'}`}>
                           🏬 {b.name}
                         </ThemedText>
                       </Pressable>
@@ -467,48 +467,48 @@ export function StaffManagementUI() {
 
               {/* Email */}
               <View className="mb-3.5">
-                <ThemedText className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-1.5">
+                <ThemedText className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
                   Staff Email Address *
                 </ThemedText>
                 <TextInput
                   value={modalEmail}
                   onChangeText={setModalEmail}
                   placeholder="e.g. cashier.bole@gmail.com"
-                  placeholderTextColor="#64748B"
+                  placeholderTextColor="#94A3B8"
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  className="bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900"
                 />
               </View>
 
               {/* Nickname / Display Name */}
               <View className="mb-3.5">
-                <ThemedText className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-1.5">
+                <ThemedText className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
                   Staff Name / Nickname (Optional)
                 </ThemedText>
                 <TextInput
                   value={modalName}
                   onChangeText={setModalName}
                   placeholder="e.g. Chala (Day Shift)"
-                  placeholderTextColor="#64748B"
-                  className="bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white"
+                  placeholderTextColor="#94A3B8"
+                  className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900"
                 />
               </View>
 
               {/* Role Selection */}
               <View className="mb-3.5">
-                <ThemedText className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-1.5">
+                <ThemedText className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
                   Counter Role
                 </ThemedText>
                 <Pressable
                   onPress={() => setModalRole('sales')}
-                  className="bg-emerald-950/60 border border-emerald-500 py-2.5 px-3 rounded-xl flex-row items-center gap-2"
+                  className="bg-emerald-50 border border-emerald-300 py-2.5 px-3 rounded-xl flex-row items-center gap-2"
                 >
                   <ThemedText className="text-base">🛒</ThemedText>
                   <View>
-                    <ThemedText className="text-xs font-bold text-emerald-300">Sales Cashier</ThemedText>
-                    <ThemedText className="text-[10px] text-slate-400">Distraction-free POS & Dube Settlement</ThemedText>
+                    <ThemedText className="text-xs font-bold text-emerald-900">Sales Cashier</ThemedText>
+                    <ThemedText className="text-[10px] text-slate-600">Distraction-free POS & Dube Settlement</ThemedText>
                   </View>
                 </Pressable>
               </View>
@@ -518,15 +518,16 @@ export function StaffManagementUI() {
             <View className="mt-4 flex-row gap-3">
               <Pressable
                 onPress={() => setShowAssignModal(false)}
-                className="flex-1 py-3.5 rounded-xl border border-slate-700 items-center justify-center active:opacity-70"
+                className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white items-center justify-center active:opacity-70"
               >
-                <ThemedText className="text-sm font-bold text-slate-300">Cancel</ThemedText>
+                <ThemedText className="text-sm font-bold text-slate-700">Cancel</ThemedText>
               </Pressable>
 
               <Pressable
                 onPress={handleAssignSubmit}
                 disabled={isSubmitting}
-                className="flex-2 py-3.5 px-6 rounded-xl bg-emerald-600 border border-emerald-500 items-center justify-center flex-row gap-2 active:opacity-80"
+                className="flex-2 py-3.5 px-6 rounded-xl items-center justify-center flex-row gap-2 active:opacity-80"
+                style={{ backgroundColor: colors.primary }}
               >
                 {isSubmitting ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
@@ -548,26 +549,29 @@ export function StaffManagementUI() {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.65)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
   },
   sheet: {
-    backgroundColor: '#0F172A',
+    backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     borderTopWidth: 1,
-    borderLeftWidth: 1,
-    borderRightWidth: 1,
-    borderColor: '#1E293B',
+    borderColor: '#E2E8F0',
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: Platform.OS === 'ios' ? 36 : 24,
     maxHeight: '85%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 20,
   },
   handleBar: {
     width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#334155',
+    backgroundColor: '#CBD5E1',
     alignSelf: 'center',
     marginBottom: 12,
   },

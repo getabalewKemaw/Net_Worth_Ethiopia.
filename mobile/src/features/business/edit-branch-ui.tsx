@@ -142,13 +142,13 @@ export const EditBranchUI: React.FC<EditBranchUIProps> = ({ hookProps }) => {
         {/* Assigned Counter Staff Section */}
         <View className="mt-2 gap-2">
           <View className="flex-row items-center justify-between">
-            <ThemedText className="text-base font-semibold">Assigned Counter Staff</ThemedText>
+            <ThemedText className="text-base font-semibold text-slate-900">Assigned Counter Staff</ThemedText>
             {id ? (
               <Pressable
                 onPress={() => setShowAssignModal(true)}
-                className="bg-emerald-600/10 border border-emerald-500/30 px-2.5 py-1 rounded-lg active:opacity-75"
+                className="bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg active:opacity-75"
               >
-                <ThemedText className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                <ThemedText className="text-xs font-bold text-emerald-800">
                   + Assign Staff
                 </ThemedText>
               </Pressable>
@@ -160,10 +160,10 @@ export const EditBranchUI: React.FC<EditBranchUIProps> = ({ hookProps }) => {
 
           {isLoadingStaff ? (
             <View className="p-4 items-center justify-center">
-              <ActivityIndicator size="small" color="#10B981" />
+              <ActivityIndicator size="small" color="#065F46" />
             </View>
           ) : branchStaffList.length === 0 ? (
-            <View className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl items-center justify-center">
+            <View className="bg-slate-50 border border-slate-200 p-4 rounded-xl items-center justify-center">
               <ThemedText className="text-xs text-[#60646C] text-center">
                 No staff assigned yet. Tap &quot;+ Assign Staff&quot; to authorize a sales cashier by email.
               </ThemedText>
@@ -173,25 +173,25 @@ export const EditBranchUI: React.FC<EditBranchUIProps> = ({ hookProps }) => {
               {branchStaffList.map((staff) => (
                 <View
                   key={staff.id}
-                  className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl flex-row items-center justify-between"
+                  className="bg-white border border-slate-200 p-3.5 rounded-xl flex-row items-center justify-between shadow-sm"
                 >
                   <View className="flex-1 mr-2">
                     <View className="flex-row items-center gap-1.5">
-                      <ThemedText className="text-sm font-bold">
+                      <ThemedText className="text-sm font-bold text-slate-900">
                         {staff.name || "Sales Cashier"}
                       </ThemedText>
                       <View
                         className={`px-1.5 py-0.5 rounded ${
                           staff.status === "active"
-                            ? "bg-emerald-100 dark:bg-emerald-950/60"
-                            : "bg-amber-100 dark:bg-amber-950/60"
+                            ? "bg-emerald-50 border border-emerald-200"
+                            : "bg-amber-50 border border-amber-200"
                         }`}
                       >
                         <ThemedText
                           className={`text-[10px] font-bold ${
                             staff.status === "active"
-                              ? "text-emerald-700 dark:text-emerald-400"
-                              : "text-amber-700 dark:text-amber-400"
+                              ? "text-emerald-800"
+                              : "text-amber-800"
                           }`}
                         >
                           {staff.status === "active" ? "✓ Active" : "⏳ Pending"}
@@ -208,9 +208,9 @@ export const EditBranchUI: React.FC<EditBranchUIProps> = ({ hookProps }) => {
 
                   <Pressable
                     onPress={() => handleRevokeStaff(staff)}
-                    className="px-2.5 py-1.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 active:opacity-75"
+                    className="px-2.5 py-1.5 rounded-lg bg-red-50 border border-red-200 active:opacity-75"
                   >
-                    <ThemedText className="text-xs font-bold text-red-600 dark:text-red-400">
+                    <ThemedText className="text-xs font-bold text-red-600">
                       Remove
                     </ThemedText>
                   </Pressable>

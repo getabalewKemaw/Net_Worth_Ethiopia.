@@ -74,7 +74,7 @@ export default function StaffExpensesScreen() {
   }, [expenses]);
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-slate-950">
+    <SafeAreaView edges={['top']} className="flex-1 bg-slate-50">
       <StaffHeader onRefresh={handleRefresh} />
 
       <ScrollView
@@ -85,25 +85,25 @@ export default function StaffExpensesScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            tintColor="#EF4444"
-            colors={['#EF4444']}
+            tintColor="#DC2626"
+            colors={['#DC2626']}
           />
         }
       >
         {/* Expenses Hero Summary Card */}
-        <View className="mx-4 mt-3 rounded-2xl bg-slate-900 border border-red-900/50 p-4 shadow-sm">
-          <View className="flex-row items-center justify-between pb-2 border-b border-slate-800">
+        <View className="mx-4 mt-3 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+          <View className="flex-row items-center justify-between pb-2 border-b border-slate-100">
             <View>
-              <Text className="text-[11px] font-extrabold text-red-400 uppercase tracking-wider">
+              <Text className="text-[11px] font-extrabold text-red-600 uppercase tracking-wider">
                 Branch Petty Operating Expenses
               </Text>
-              <Text className="text-xs text-slate-400 mt-0.5">
+              <Text className="text-xs text-slate-500 mt-0.5">
                 Paid out of counter cash / drawer
               </Text>
             </View>
 
-            <View className="bg-red-950/60 px-2.5 py-1 rounded-full border border-red-800/40">
-              <Text className="text-[11px] font-bold text-red-300">
+            <View className="bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
+              <Text className="text-[11px] font-bold text-red-700">
                 {expenses.length} Records Today
               </Text>
             </View>
@@ -111,16 +111,16 @@ export default function StaffExpensesScreen() {
 
           <View className="flex-row items-center justify-between mt-3">
             <View>
-              <Text className="text-[10px] text-slate-400 uppercase font-semibold">
+              <Text className="text-[10px] text-slate-500 uppercase font-semibold">
                 Total Expenses Deducted
               </Text>
-              <Text className="text-2xl font-black text-red-400">
+              <Text className="text-2xl font-black text-red-600">
                 -{totalShiftExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
               </Text>
             </View>
 
-            <View className="bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
-              <Text className="text-[10px] text-slate-400">Drawer Cash Adjusted</Text>
+            <View className="bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+              <Text className="text-[10px] text-slate-600">Drawer Cash Adjusted</Text>
             </View>
           </View>
         </View>
@@ -129,7 +129,7 @@ export default function StaffExpensesScreen() {
         <View className="mx-4 mt-3.5">
           <Pressable
             onPress={() => setShowAddModal(true)}
-            className="w-full py-3.5 px-4 bg-red-600 rounded-2xl flex-row items-center justify-center border border-red-500 shadow-sm active:opacity-85"
+            className="w-full py-3.5 px-4 bg-red-600 rounded-2xl flex-row items-center justify-center border border-red-700 shadow-sm active:opacity-85"
           >
             <View className="w-6 h-6 rounded-full bg-white/20 items-center justify-center mr-2">
               <PlusIcon size={14} color="#FFFFFF" strokeWidth={3} />
@@ -139,18 +139,18 @@ export default function StaffExpensesScreen() {
         </View>
 
         {/* Shift Expenses Feed Header */}
-        <View className="mx-4 mt-6 flex-row items-center justify-between pb-2 border-b border-slate-800">
+        <View className="mx-4 mt-6 flex-row items-center justify-between pb-2 border-b border-slate-200">
           <View className="flex-row items-center">
-            <Text className="text-sm font-extrabold text-white mr-2">
+            <Text className="text-sm font-extrabold text-slate-900 mr-2">
               Today's Petty Expenses
             </Text>
-            <View className="bg-slate-800 px-2 py-0.5 rounded-full">
-              <Text className="text-[11px] font-bold text-slate-400">
+            <View className="bg-slate-200 px-2 py-0.5 rounded-full">
+              <Text className="text-[11px] font-bold text-slate-700">
                 {expenses.length} recorded
               </Text>
             </View>
           </View>
-          <Text className="text-[11px] text-slate-400">
+          <Text className="text-[11px] text-slate-500">
             Locked to this branch
           </Text>
         </View>
@@ -158,16 +158,16 @@ export default function StaffExpensesScreen() {
         {/* Expenses Feed */}
         {isLoading && expenses.length === 0 ? (
           <View className="items-center justify-center py-12">
-            <ActivityIndicator size="large" color="#EF4444" />
-            <Text className="text-slate-400 text-xs mt-3">Loading branch expenses...</Text>
+            <ActivityIndicator size="large" color="#DC2626" />
+            <Text className="text-slate-500 text-xs mt-3">Loading branch expenses...</Text>
           </View>
         ) : expenses.length === 0 ? (
-          <View className="mx-4 mt-4 bg-slate-900/60 border border-slate-800 rounded-2xl p-8 items-center justify-center">
+          <View className="mx-4 mt-4 bg-white border border-slate-200 rounded-2xl p-8 items-center justify-center shadow-sm">
             <Text className="text-3xl mb-2">💸</Text>
-            <Text className="text-slate-200 font-bold text-sm text-center">
+            <Text className="text-slate-900 font-bold text-sm text-center">
               No expenses recorded today
             </Text>
-            <Text className="text-slate-400 text-xs text-center mt-1">
+            <Text className="text-slate-500 text-xs text-center mt-1">
               Tap &quot;Record Petty Expense&quot; for packaging, supplies, or transport.
             </Text>
           </View>
@@ -176,12 +176,12 @@ export default function StaffExpensesScreen() {
             {expenses.map((item) => (
               <View
                 key={item.id}
-                className="bg-slate-900/90 border border-slate-800/80 rounded-2xl p-3.5 mb-2.5 flex-row items-center justify-between shadow-sm"
+                className="bg-white border border-slate-200 rounded-2xl p-3.5 mb-2.5 flex-row items-center justify-between shadow-sm"
               >
                 <View className="flex-1 mr-3">
                   <View className="flex-row items-center mb-1">
-                    <View className="px-2 py-0.5 rounded-md bg-red-950/60 border border-red-700/60 mr-2">
-                      <Text className="text-[10px] font-black text-red-300">
+                    <View className="px-2 py-0.5 rounded-md bg-red-50 border border-red-200 mr-2">
+                      <Text className="text-[10px] font-black text-red-700">
                         {item.category || 'General'}
                       </Text>
                     </View>
@@ -190,25 +190,25 @@ export default function StaffExpensesScreen() {
                     </Text>
                   </View>
 
-                  <Text className="text-sm font-bold text-slate-100" numberOfLines={1}>
+                  <Text className="text-sm font-bold text-slate-900" numberOfLines={1}>
                     {item.description}
                   </Text>
 
                   {item.notes && (
-                    <Text className="text-xs text-slate-400 mt-0.5" numberOfLines={1}>
+                    <Text className="text-xs text-slate-500 mt-0.5" numberOfLines={1}>
                       Note: {item.notes}
                     </Text>
                   )}
 
                   {item.recordedByName && (
-                    <Text className="text-[10px] text-red-400/80 mt-1">
+                    <Text className="text-[10px] text-red-600 mt-1">
                       Cashier: {item.recordedByName}
                     </Text>
                   )}
                 </View>
 
                 <View className="items-end">
-                  <Text className="text-base font-black text-red-400">
+                  <Text className="text-base font-black text-red-600">
                     -{item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </Text>
                   <Text className="text-[10px] text-slate-400 font-semibold">ETB</Text>

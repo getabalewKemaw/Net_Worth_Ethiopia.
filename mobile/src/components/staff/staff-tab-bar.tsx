@@ -18,17 +18,17 @@ const TAB_CONFIGS: Record<string, { label: string; icon: string; activeColor: st
   index: {
     label: 'Counter Sales',
     icon: '🧾',
-    activeColor: '#10B981',
+    activeColor: '#065F46',
   },
   dube: {
     label: 'Customer Dube',
     icon: '👥',
-    activeColor: '#F59E0B',
+    activeColor: '#D97706',
   },
   expenses: {
     label: 'Expenses',
     icon: '💸',
-    activeColor: '#EF4444',
+    activeColor: '#DC2626',
   },
 };
 
@@ -51,7 +51,7 @@ export function StaffTabBar({ state, descriptors, navigation }: StaffTabBarProps
           const config = TAB_CONFIGS[route.name] || {
             label: route.name,
             icon: '📋',
-            activeColor: '#10B981',
+            activeColor: '#065F46',
           };
 
           const onPress = () => {
@@ -72,7 +72,7 @@ export function StaffTabBar({ state, descriptors, navigation }: StaffTabBarProps
               onPress={onPress}
               style={[
                 styles.tabItem,
-                isFocused && { backgroundColor: 'rgba(15, 23, 42, 0.9)' },
+                isFocused && { backgroundColor: `${config.activeColor}14` },
               ]}
               hitSlop={4}
             >
@@ -91,7 +91,7 @@ export function StaffTabBar({ state, descriptors, navigation }: StaffTabBarProps
                 style={[
                   styles.tabLabel,
                   {
-                    color: isFocused ? '#FFFFFF' : '#94A3B8',
+                    color: isFocused ? config.activeColor : '#64748B',
                     fontWeight: isFocused ? '800' : '600',
                   },
                 ]}
@@ -108,11 +108,16 @@ export function StaffTabBar({ state, descriptors, navigation }: StaffTabBarProps
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#0F172A',
+    backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
-    borderTopColor: '#1E293B',
+    borderTopColor: '#E2E8F0',
     paddingTop: 8,
     paddingHorizontal: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 8,
   },
   barInner: {
     flexDirection: 'row',
