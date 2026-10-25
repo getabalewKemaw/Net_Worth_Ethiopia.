@@ -22,10 +22,19 @@ interface QuickSaleModalProps {
   onSuccess: () => Promise<void>;
 }
 
-const PAYMENT_OPTIONS: { key: PaymentMethod; label: string; icon: string; bg: string; activeBorder: string; activeText: string }[] = [
-  { key: 'cash', label: 'Cash', icon: '💵', bg: 'bg-emerald-50', activeBorder: 'border-emerald-600', activeText: 'text-emerald-950' },
-  { key: 'telebirr', label: 'Telebirr', icon: '📱', bg: 'bg-violet-50', activeBorder: 'border-violet-600', activeText: 'text-violet-950' },
-  { key: 'cbe', label: 'CBE Birr', icon: '🏦', bg: 'bg-blue-50', activeBorder: 'border-blue-600', activeText: 'text-blue-950' },
+interface PaymentOption {
+  key: PaymentMethod;
+  label: string;
+  icon: string;
+  bg: string;
+  activeBorder: string;
+  activeText: string;
+}
+
+const PAYMENT_OPTIONS: PaymentOption[] = [
+  { key: 'cash', label: 'Cash', icon: '💵', bg: '#ECFDF5', activeBorder: '#059669', activeText: '#064E3B' },
+  { key: 'telebirr', label: 'Telebirr', icon: '📱', bg: '#F5F3FF', activeBorder: '#7C3AED', activeText: '#4C1D95' },
+  { key: 'cbe', label: 'CBE Birr', icon: '🏦', bg: '#EFF6FF', activeBorder: '#2563EB', activeText: '#1E3A8A' },
 ];
 
 export function QuickSaleModal({ visible, onClose, onSuccess }: QuickSaleModalProps) {
@@ -65,7 +74,6 @@ export function QuickSaleModal({ visible, onClose, onSuccess }: QuickSaleModalPr
 
     try {
       setIsSubmitting(true);
-
       const saleDesc = description.trim() || 'Counter Sale';
 
       await localSalesRepo.createSaleAtomic(
@@ -103,28 +111,26 @@ export function QuickSaleModal({ visible, onClose, onSuccess }: QuickSaleModalPr
           <View style={styles.handleBar} />
 
           {/* Title & Close */}
-          <View className="flex-row items-center justify-between pb-3 border-b border-slate-100">
-            <View className="flex-row items-center gap-2">
-              <View className="w-8 h-8 rounded-full bg-emerald-50 items-center justify-center border border-emerald-200">
-                <Text className="text-base">🛒</Text>
+          <View style={styles.headerRow}>
+            <View style={styles.headerTitleLeft}>
+              <View style={styles.iconCircle}>
+                <Text style={{ fontSize: 16 }}>🛒</Text>
               </View>
               <View>
-                <Text className="text-lg font-extrabold text-slate-900">Record Counter Sale</Text>
-                <Text className="text-xs text-[#065F46] font-semibold">Instant Checkout · 0ms Latency</Text>
+                <Text style={styles.headerTitle}>Record Counter Sale</Text>
+                <Text style={styles.headerSubtitle}>Instant Checkout · 0ms Latency</Text>
               </View>
             </View>
-            <Pressable onPress={handleClose} hitSlop={8} className="p-1">
+            <Pressable onPress={handleClose} hitSlop={8} style={{ padding: 4 }}>
               <XIcon size={20} color="#64748B" />
             </Pressable>
           </View>
 
           {/* Amount Input */}
-          <View className="mt-4">
-            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-              Sale Amount (ETB) *
-            </Text>
-            <View className="flex-row items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5">
-              <Text className="text-xl font-extrabold text-[#065F46] mr-2">ETB</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.fieldLabel}>Sale Amount (ETB) *</Text>
+            <View style={styles.amountInputContainer}>
+              <Text style={styles.etbPrefix}>ETB</Text>
               <TextInput
                 value={amount}
                 onChangeText={setAmount}
@@ -132,34 +138,36 @@ export function QuickSaleModal({ visible, onClose, onSuccess }: QuickSaleModalPr
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
                 autoFocus
-                className="flex-1 text-2xl font-black text-slate-900"
+                style={styles.amountTextInput}
               />
             </View>
           </View>
 
           {/* Payment Method Selector */}
-          <View className="mt-4">
-            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">
-              Payment Method *
-            </Text>
-            <View className="flex-row gap-2">
+          <View style={styles.formGroup}>
+            <Text style={styles.fieldLabel}>Payment Method *</Text>
+            <View style={styles.methodsRow}>
               {PAYMENT_OPTIONS.map((opt) => {
                 const isSelected = paymentMethod === opt.key;
                 return (
                   <Pressable
                     key={opt.key}
                     onPress={() => setPaymentMethod(opt.key)}
-                    className={`flex-1 py-3 px-2 rounded-xl border items-center justify-center ${
-                      isSelected
-                        ? `${opt.bg} ${opt.activeBorder} shadow-sm`
-                        : 'bg-slate-50 border-slate-200'
-                    }`}
+                    style={[
+                      styles.methodBtn,
+                      isSelected && {
+                        backgroundColor: opt.bg,
+                        borderColor: opt.activeBorder,
+                      },
+                    ]}
                   >
-                    <Text className="text-lg mb-1">{opt.icon}</Text>
+                    <Text style={{ fontSize: 18, marginBottom: 4 }}>{opt.icon}</Text>
                     <Text
-                      className={`text-xs font-extrabold ${
-                        isSelected ? opt.activeText : 'text-slate-600'
-                      }`}
+                      style={[
+                        styles.methodText,
+                        { color: isSelected ? opt.activeText : '#475569' },
+                        isSelected && { fontWeight: '800' },
+                      ]}
                     >
                       {opt.label}
                     </Text>
@@ -170,53 +178,46 @@ export function QuickSaleModal({ visible, onClose, onSuccess }: QuickSaleModalPr
           </View>
 
           {/* Description */}
-          <View className="mt-4">
-            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-              Item / Description Note
-            </Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.fieldLabel}>Item / Description Note</Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
               placeholder="e.g. 5kg Sugar, Coffee, Retail checkout"
               placeholderTextColor="#94A3B8"
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-900"
+              style={styles.standardInput}
             />
           </View>
 
           {/* Optional Customer Name */}
-          <View className="mt-3">
-            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-              Customer Name (Optional)
-            </Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.fieldLabel}>Customer Name (Optional)</Text>
             <TextInput
               value={customerName}
               onChangeText={setCustomerName}
               placeholder="e.g. Walk-in or Customer Name"
               placeholderTextColor="#94A3B8"
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900"
+              style={styles.standardInput}
             />
           </View>
 
           {/* Action Buttons */}
-          <View className="mt-6 flex-row gap-3">
-            <Pressable
-              onPress={handleClose}
-              className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white items-center justify-center active:opacity-70"
-            >
-              <Text className="text-sm font-bold text-slate-700">Cancel</Text>
+          <View style={styles.actionsRow}>
+            <Pressable onPress={handleClose} style={styles.cancelBtn}>
+              <Text style={styles.cancelBtnText}>Cancel</Text>
             </Pressable>
 
             <Pressable
               onPress={handleSubmit}
               disabled={isSubmitting}
-              className="flex-2 py-3.5 px-6 rounded-xl bg-[#065F46] border border-emerald-800 items-center justify-center flex-row gap-2 active:opacity-80"
+              style={styles.submitBtn}
             >
               {isSubmitting ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
                 <>
                   <CheckCircleIcon size={16} color="#FFFFFF" />
-                  <Text className="text-sm font-black text-white">Record Sale</Text>
+                  <Text style={styles.submitBtnText}>Record Sale</Text>
                 </>
               )}
             </Pressable>
@@ -254,5 +255,145 @@ const styles = StyleSheet.create({
     backgroundColor: '#CBD5E1',
     alignSelf: 'center',
     marginBottom: 12,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  headerTitleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#ECFDF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    color: '#065F46',
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  formGroup: {
+    marginTop: 14,
+  },
+  fieldLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  amountInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  etbPrefix: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#065F46',
+    marginRight: 8,
+  },
+  amountTextInput: {
+    flex: 1,
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#0F172A',
+    paddingVertical: 0,
+  },
+  methodsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  methodBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  methodText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  standardInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: '#0F172A',
+  },
+  actionsRow: {
+    marginTop: 20,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  submitBtn: {
+    flex: 2,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#065F46',
+    borderWidth: 1,
+    borderColor: '#064E3B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  submitBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 });

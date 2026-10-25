@@ -7,6 +7,7 @@ import {
   TextInput,
   RefreshControl,
   ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStaffStore } from '@/store/staff-store';
@@ -78,13 +79,13 @@ export default function StaffDubeScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-slate-50">
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
       <StaffHeader onRefresh={handleRefresh} />
 
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -95,39 +96,31 @@ export default function StaffDubeScreen() {
         }
       >
         {/* Dube Ledger Hero Card */}
-        <View className="mx-4 mt-3 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-          <View className="flex-row items-center justify-between pb-2 border-b border-slate-100">
+        <View style={styles.heroCard}>
+          <View style={styles.heroCardHeader}>
             <View>
-              <Text className="text-[11px] font-extrabold text-[#D97706] uppercase tracking-wider">
-                Branch Customer Credit Notebook
-              </Text>
-              <Text className="text-xs text-slate-500 mt-0.5">
-                Outstanding Dube Ledger
-              </Text>
+              <Text style={styles.heroCardTitle}>Branch Customer Credit Notebook</Text>
+              <Text style={styles.heroCardSubtitle}>Outstanding Dube Ledger</Text>
             </View>
 
-            <View className="bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-              <Text className="text-[11px] font-bold text-amber-800">
+            <View style={styles.activeDebtsPill}>
+              <Text style={styles.activeDebtsPillText}>
                 {debts.filter((d) => d.status === 'pending').length} Active Debts
               </Text>
             </View>
           </View>
 
-          <View className="flex-row items-center justify-between mt-3">
+          <View style={styles.heroCardMetrics}>
             <View>
-              <Text className="text-[10px] text-slate-500 uppercase font-semibold">
-                Total Outstanding Credit
-              </Text>
-              <Text className="text-xl font-black text-slate-900">
+              <Text style={styles.metricLabel}>Total Outstanding Credit</Text>
+              <Text style={styles.metricValueLarge}>
                 {totalActiveCredit.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
               </Text>
             </View>
 
-            <View className="items-end">
-              <Text className="text-[10px] text-slate-500 uppercase font-semibold">
-                Recovered Today
-              </Text>
-              <Text className="text-base font-extrabold text-[#065F46]">
+            <View style={{ alignItems: 'flex-end' }}>
+              <Text style={styles.metricLabel}>Recovered Today</Text>
+              <Text style={styles.metricValueGreen}>
                 +{(shiftMetrics?.dubeRecovered ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
               </Text>
             </View>
@@ -135,32 +128,32 @@ export default function StaffDubeScreen() {
         </View>
 
         {/* Action Button: Issue Customer Dube */}
-        <View className="mx-4 mt-3.5">
+        <View style={styles.issueActionContainer}>
           <Pressable
             onPress={() => setShowIssueModal(true)}
-            className="w-full py-3.5 px-4 bg-[#065F46] rounded-2xl flex-row items-center justify-center border border-emerald-800 shadow-sm active:opacity-85"
+            style={styles.issueActionBtn}
           >
-            <View className="w-6 h-6 rounded-full bg-white/20 items-center justify-center mr-2">
+            <View style={styles.plusIconCircle}>
               <PlusIcon size={14} color="#FFFFFF" strokeWidth={3} />
             </View>
-            <Text className="text-white font-extrabold text-sm">Issue Customer Dube</Text>
+            <Text style={styles.issueActionText}>Issue Customer Dube</Text>
           </Pressable>
         </View>
 
         {/* Search Bar */}
-        <View className="mx-4 mt-3.5 flex-row items-center bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm">
+        <View style={styles.searchContainer}>
           <SearchIcon size={16} color="#64748B" />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search by customer name or phone..."
             placeholderTextColor="#94A3B8"
-            className="flex-1 ml-2 text-xs text-slate-900"
+            style={styles.searchInput}
           />
         </View>
 
         {/* Filter Pills */}
-        <View className="mx-4 mt-3 flex-row gap-2">
+        <View style={styles.filterPillsRow}>
           {(['all', 'pending', 'settled'] as DebtFilterStatus[]).map((st) => {
             const isSelected = filterStatus === st;
             const label = st === 'all' ? 'All' : st === 'pending' ? 'Active Credit' : 'Settled History';
@@ -168,16 +161,16 @@ export default function StaffDubeScreen() {
               <Pressable
                 key={st}
                 onPress={() => setFilterStatus(st)}
-                className={`py-1.5 px-3 rounded-full border ${
-                  isSelected
-                    ? 'bg-[#065F46] border-[#065F46]'
-                    : 'bg-white border-slate-200'
-                }`}
+                style={[
+                  styles.filterPill,
+                  isSelected ? styles.filterPillActive : styles.filterPillInactive,
+                ]}
               >
                 <Text
-                  className={`text-xs font-bold ${
-                    isSelected ? 'text-white' : 'text-slate-600'
-                  }`}
+                  style={[
+                    styles.filterPillText,
+                    { color: isSelected ? '#FFFFFF' : '#475569' },
+                  ]}
                 >
                   {label}
                 </Text>
@@ -188,22 +181,20 @@ export default function StaffDubeScreen() {
 
         {/* Debt Cards Feed */}
         {isLoading && debts.length === 0 ? (
-          <View className="items-center justify-center py-12">
+          <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#065F46" />
-            <Text className="text-slate-500 text-xs mt-3">Loading branch customer credit...</Text>
+            <Text style={styles.loadingText}>Loading branch customer credit...</Text>
           </View>
         ) : debts.length === 0 ? (
-          <View className="mx-4 mt-4 bg-white border border-slate-200 rounded-2xl p-8 items-center justify-center shadow-sm">
-            <Text className="text-3xl mb-2">👥</Text>
-            <Text className="text-slate-900 font-bold text-sm text-center">
-              No customer credit records found
-            </Text>
-            <Text className="text-slate-500 text-xs text-center mt-1">
+          <View style={styles.emptyCard}>
+            <Text style={{ fontSize: 36, marginBottom: 8 }}>👥</Text>
+            <Text style={styles.emptyTitle}>No customer credit records found</Text>
+            <Text style={styles.emptySubtitle}>
               Tap &quot;Issue Customer Dube&quot; to give store credit to trusted buyers.
             </Text>
           </View>
         ) : (
-          <View className="mx-4 mt-3">
+          <View style={styles.listContainer}>
             {debts.map((item) => {
               const isSettled = item.status === 'settled';
               const overdue = !isSettled && isOverdue(item.dueDate);
@@ -211,44 +202,46 @@ export default function StaffDubeScreen() {
               return (
                 <View
                   key={item.id}
-                  className={`bg-white border rounded-2xl p-3.5 mb-2.5 shadow-sm ${
-                    isSettled
-                      ? 'border-slate-200 opacity-75'
-                      : overdue
-                      ? 'border-red-200 bg-red-50/20'
-                      : 'border-slate-200'
-                  }`}
+                  style={[
+                    styles.debtCard,
+                    isSettled && { opacity: 0.75 },
+                    overdue && { backgroundColor: '#FEF2F2', borderColor: '#FECACA' },
+                  ]}
                 >
-                  <View className="flex-row items-center justify-between pb-2 border-b border-slate-100">
-                    <View className="flex-1 mr-2">
-                      <Text className="text-sm font-extrabold text-slate-900" numberOfLines={1}>
+                  <View style={styles.debtCardHeader}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={styles.customerName} numberOfLines={1}>
                         {item.customerName || 'Customer'}
                       </Text>
                       {item.customerPhone && (
-                        <Text className="text-xs text-slate-500 mt-0.5">
+                        <Text style={styles.customerPhone}>
                           📞 {item.customerPhone}
                         </Text>
                       )}
                     </View>
 
-                    <View className="items-end">
-                      <Text className={`text-base font-black ${isSettled ? 'text-slate-400' : 'text-amber-700'}`}>
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={[styles.debtAmount, { color: isSettled ? '#94A3B8' : '#B45309' }]}>
                         {item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                       </Text>
-                      <View className="flex-row items-center mt-0.5">
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
                         <View
-                          className={`px-1.5 py-0.5 rounded ${
+                          style={[
+                            styles.statusTag,
                             isSettled
-                              ? 'bg-slate-100'
+                              ? { backgroundColor: '#F1F5F9' }
                               : overdue
-                              ? 'bg-red-50 border border-red-200'
-                              : 'bg-amber-50 border border-amber-200'
-                          }`}
+                              ? { backgroundColor: '#FEE2E2', borderWidth: 1, borderColor: '#FCA5A5' }
+                              : { backgroundColor: '#FEF3C7', borderWidth: 1, borderColor: '#FDE68A' },
+                          ]}
                         >
                           <Text
-                            className={`text-[9px] font-bold ${
-                              isSettled ? 'text-slate-600' : overdue ? 'text-red-700' : 'text-amber-800'
-                            }`}
+                            style={[
+                              styles.statusTagText,
+                              {
+                                color: isSettled ? '#64748B' : overdue ? '#B91C1C' : '#92400E',
+                              },
+                            ]}
                           >
                             {isSettled ? '✓ SETTLED' : overdue ? '⚠️ OVERDUE' : '⏳ ACTIVE'}
                           </Text>
@@ -257,14 +250,14 @@ export default function StaffDubeScreen() {
                     </View>
                   </View>
 
-                  <View className="flex-row items-center justify-between pt-2.5">
-                    <View className="flex-1 mr-2">
+                  <View style={styles.debtCardFooter}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
                       {item.description && (
-                        <Text className="text-xs text-slate-700" numberOfLines={1}>
+                        <Text style={styles.debtDesc} numberOfLines={1}>
                           {item.description}
                         </Text>
                       )}
-                      <Text className="text-[10px] text-slate-500 mt-0.5">
+                      <Text style={styles.dueDateText}>
                         Due: {item.dueDate || 'No promised date'}
                       </Text>
                     </View>
@@ -272,9 +265,9 @@ export default function StaffDubeScreen() {
                     {!isSettled && (
                       <Pressable
                         onPress={() => setSelectedDebtToSettle(item)}
-                        className="py-1.5 px-3.5 bg-[#065F46] rounded-xl active:opacity-85"
+                        style={styles.settleBtn}
                       >
-                        <Text className="text-xs font-black text-white">Settle Debt</Text>
+                        <Text style={styles.settleBtnText}>Settle Debt</Text>
                       </Pressable>
                     )}
                   </View>
@@ -302,3 +295,276 @@ export default function StaffDubeScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  heroCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  heroCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  heroCardTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#D97706',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  heroCardSubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  activeDebtsPill: {
+    backgroundColor: '#FFFBEB',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  activeDebtsPillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#92400E',
+  },
+  heroCardMetrics: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  metricLabel: {
+    fontSize: 10,
+    color: '#64748B',
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  metricValueLarge: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#0F172A',
+    marginTop: 2,
+  },
+  metricValueGreen: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#065F46',
+    marginTop: 2,
+  },
+  issueActionContainer: {
+    marginHorizontal: 16,
+    marginTop: 14,
+  },
+  issueActionBtn: {
+    width: '100%',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#065F46',
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#064E3B',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  plusIconCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  issueActionText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  searchContainer: {
+    marginHorizontal: 16,
+    marginTop: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.02,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 12,
+    color: '#0F172A',
+    paddingVertical: 0,
+  },
+  filterPillsRow: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  filterPill: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  filterPillActive: {
+    backgroundColor: '#065F46',
+    borderColor: '#065F46',
+  },
+  filterPillInactive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E2E8F0',
+  },
+  filterPillText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  loadingText: {
+    color: '#64748B',
+    fontSize: 12,
+    marginTop: 12,
+  },
+  emptyCard: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  emptyTitle: {
+    color: '#0F172A',
+    fontWeight: '700',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    color: '#64748B',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  listContainer: {
+    marginHorizontal: 16,
+    marginTop: 12,
+  },
+  debtCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  debtCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  customerName: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  customerPhone: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  debtAmount: {
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  statusTag: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  statusTagText: {
+    fontSize: 9,
+    fontWeight: '800',
+  },
+  debtCardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 10,
+  },
+  debtDesc: {
+    fontSize: 12,
+    color: '#334155',
+  },
+  dueDateText: {
+    fontSize: 10,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  settleBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    backgroundColor: '#065F46',
+    borderRadius: 10,
+  },
+  settleBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+});

@@ -11,6 +11,7 @@ import {
   Platform,
   RefreshControl,
   StyleSheet,
+  Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -18,6 +19,7 @@ import { router } from 'expo-router';
 import { ThemedText } from '@/components/themed-text';
 import { useTheme } from '@/hooks/use-theme';
 import { useBusinessStore } from '@/store/business-store';
+import { useStaffStore } from '@/store/staff-store';
 import * as staffService from '@/service/staff';
 import { localStaffRepo } from '@/repositories/local-staff.repo';
 import type { StaffAssignment, StaffRole } from '@/types/staff';
@@ -99,23 +101,26 @@ export function StaffManagementUI() {
     await loadAllStaff();
   };
 
+  const assignStaff = useStaffStore((s) => s.assignStaff);
+  const revokeStaff = useStaffStore((s) => s.revokeStaff);
+
   const handleRevokeStaff = (staff: StaffWithBranch) => {
     Alert.alert(
       'Revoke Staff Access',
-      `Are you sure you want to remove ${staff.name || staff.email} from ${staff.branchName || 'their branch'}? They will no longer be authorized to record transactions.`,
+      `Are you sure you want to remove ${staff.name || staff.email} from ${staff.branchName || 'this branch'}? Their counter access will be immediately revoked.`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Remove',
+          text: 'Revoke Access',
           style: 'destructive',
           onPress: async () => {
             try {
-              await staffService.revokeStaff(staff.branchId, staff.id);
-              await localStaffRepo.deleteStaffAssignment(staff.id);
-              Alert.alert('Access Revoked', `${staff.email} has been removed.`);
-              loadAllStaff();
+              await revokeStaff(staff.branchId, staff.id);
+              await loadAllStaff();
+              Alert.alert('Success', 'Staff access has been revoked.');
             } catch (err: any) {
-              Alert.alert('Revocation Failed', err.message || 'Could not revoke staff access.');
+              console.error('[StaffManagement] Revoke error:', err);
+              Alert.alert('Error', err?.message || 'Could not revoke staff assignment.');
             }
           },
         },
@@ -124,7 +129,9 @@ export function StaffManagementUI() {
   };
 
   const openAssignModal = () => {
-    setModalBranchId(branches[0]?.id || '');
+    if (branches && branches.length > 0) {
+      setModalBranchId(branches[0].id);
+    }
     setModalEmail('');
     setModalName('');
     setModalRole('sales');
@@ -135,48 +142,61 @@ export function StaffManagementUI() {
     const trimmedEmail = modalEmail.trim().toLowerCase();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+    if (!trimmedEmail) {
+      Alert.alert('Missing Email', 'Please enter a valid staff email address.');
+      return;
+    }
+    if (!emailRegex.test(trimmedEmail)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email format.');
+      return;
+    }
     if (!modalBranchId) {
-      Alert.alert('Branch Required', 'Please select a branch to assign the staff member to.');
+      Alert.alert('Missing Branch', 'Please select an operating branch for this staff member.');
       return;
     }
 
-    if (!trimmedEmail || !emailRegex.test(trimmedEmail)) {
-      Alert.alert('Valid Email Required', 'Please enter a valid staff email address.');
+    const alreadyAssigned = staffList.some(
+      (s) => s.branchId === modalBranchId && s.email.toLowerCase() === trimmedEmail
+    );
+    if (alreadyAssigned) {
+      Alert.alert('Already Assigned', `This email is already assigned to the selected branch.`);
       return;
     }
 
     try {
       setIsSubmitting(true);
-      await staffService.assignStaff(modalBranchId, {
-        email: trimmedEmail,
-        name: modalName.trim() || undefined,
-        role: modalRole,
-      });
+      const targetBranch = branches.find((b) => b.id === modalBranchId);
+
+      await assignStaff(
+        modalBranchId,
+        trimmedEmail,
+        modalName.trim() || undefined,
+        modalRole
+      );
 
       setShowAssignModal(false);
-      const targetBranch = branches.find((b) => b.id === modalBranchId);
       Alert.alert(
         'Staff Assigned',
-        `${trimmedEmail} has been assigned to ${targetBranch?.name || 'the branch'}. Their branch counter access will activate immediately when they sign in.`
+        `Assigned ${trimmedEmail} to ${targetBranch?.name || 'the branch'}. They can now sign in and operate the counter.`
       );
-      loadAllStaff();
+      await loadAllStaff();
     } catch (err: any) {
-      Alert.alert('Assignment Failed', err.message || 'Could not assign staff member.');
+      console.error('[StaffManagement] Assign error:', err);
+      Alert.alert('Error', err?.message || 'Could not assign staff member.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const filteredStaff = useMemo(() => {
-    return staffList.filter((item) => {
-      const matchBranch = selectedBranchFilter === 'all' || item.branchId === selectedBranchFilter;
+    return staffList.filter((s) => {
+      const matchBranch = selectedBranchFilter === 'all' || s.branchId === selectedBranchFilter;
       const q = searchQuery.toLowerCase().trim();
       const matchQuery =
         !q ||
-        item.email.toLowerCase().includes(q) ||
-        (item.name && item.name.toLowerCase().includes(q)) ||
-        (item.branchName && item.branchName.toLowerCase().includes(q));
-
+        (s.name && s.name.toLowerCase().includes(q)) ||
+        s.email.toLowerCase().includes(q) ||
+        (s.branchName && s.branchName.toLowerCase().includes(q));
       return matchBranch && matchQuery;
     });
   }, [staffList, selectedBranchFilter, searchQuery]);
@@ -185,36 +205,35 @@ export function StaffManagementUI() {
   const pendingCount = useMemo(() => staffList.filter((s) => s.status === 'pending').length, [staffList]);
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1" style={{ backgroundColor: colors.background }}>
+    <SafeAreaView edges={['top']} style={[styles.safeArea, { backgroundColor: colors.background }]}>
       {/* Top Header */}
-      <View className="px-5 pt-3 pb-3 border-b border-slate-200 bg-white">
-        <Pressable className="self-start mb-2 active:opacity-70" onPress={() => router.back()}>
+      <View style={styles.header}>
+        <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <ThemedText style={{ color: colors.primary, fontWeight: '700' }}>← Back</ThemedText>
         </Pressable>
 
-        <View className="flex-row items-center justify-between">
+        <View style={styles.headerRow}>
           <View>
-            <ThemedText type="title" className="text-2xl font-extrabold text-slate-900">
+            <ThemedText type="title" style={styles.headerTitle}>
               Staff & Roles
             </ThemedText>
-            <ThemedText className="text-xs text-[#60646C]">
+            <ThemedText style={styles.headerSubtitle}>
               {activeBusiness?.name || 'Company'} · Branch Counter Cashiers
             </ThemedText>
           </View>
 
           <Pressable
             onPress={openAssignModal}
-            className="px-3.5 py-2 rounded-xl flex-row items-center gap-1.5 active:opacity-80"
-            style={{ backgroundColor: colors.primary }}
+            style={[styles.assignBtn, { backgroundColor: colors.primary }]}
           >
             <PlusIcon size={16} color="#FFFFFF" strokeWidth={2.5} />
-            <ThemedText className="text-white font-bold text-xs">Assign Staff</ThemedText>
+            <ThemedText style={styles.assignBtnText}>Assign Staff</ThemedText>
           </Pressable>
         </View>
       </View>
 
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
         refreshControl={
@@ -227,65 +246,53 @@ export function StaffManagementUI() {
         }
       >
         {/* KPI Metric Cards */}
-        <View className="px-5 mt-4 flex-row gap-2.5">
-          <View className="flex-1 bg-white border border-slate-200 p-3 rounded-2xl shadow-sm">
-            <ThemedText className="text-[10px] font-bold text-[#60646C] uppercase">
-              Total Cashiers
-            </ThemedText>
-            <ThemedText className="text-xl font-black text-slate-900 mt-0.5">
-              {staffList.length}
-            </ThemedText>
+        <View style={styles.kpiRow}>
+          <View style={styles.kpiCard}>
+            <ThemedText style={styles.kpiLabel}>Total Cashiers</ThemedText>
+            <ThemedText style={styles.kpiValueDark}>{staffList.length}</ThemedText>
           </View>
 
-          <View className="flex-1 bg-emerald-50 border border-emerald-200 p-3 rounded-2xl">
-            <ThemedText className="text-[10px] font-bold text-emerald-800 uppercase">
-              Active Shift Staff
-            </ThemedText>
-            <ThemedText className="text-xl font-black text-emerald-700 mt-0.5">
-              {activeCount}
-            </ThemedText>
+          <View style={[styles.kpiCard, styles.kpiCardGreen]}>
+            <ThemedText style={styles.kpiLabelGreen}>Active Shift Staff</ThemedText>
+            <ThemedText style={styles.kpiValueGreen}>{activeCount}</ThemedText>
           </View>
 
-          <View className="flex-1 bg-amber-50 border border-amber-200 p-3 rounded-2xl">
-            <ThemedText className="text-[10px] font-bold text-amber-800 uppercase">
-              Pending Invites
-            </ThemedText>
-            <ThemedText className="text-xl font-black text-amber-700 mt-0.5">
-              {pendingCount}
-            </ThemedText>
+          <View style={[styles.kpiCard, styles.kpiCardAmber]}>
+            <ThemedText style={styles.kpiLabelAmber}>Pending Invites</ThemedText>
+            <ThemedText style={styles.kpiValueAmber}>{pendingCount}</ThemedText>
           </View>
         </View>
 
         {/* Search Input */}
-        <View className="mx-5 mt-4 flex-row items-center bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-sm">
+        <View style={styles.searchBar}>
           <SearchIcon size={16} color="#64748B" />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search by cashier name, email, or branch..."
             placeholderTextColor="#94A3B8"
-            className="flex-1 ml-2 text-xs text-slate-900"
+            style={styles.searchInput}
           />
         </View>
 
         {/* Branch Filter Pills */}
         {branches.length > 1 && (
-          <View className="mt-3">
+          <View style={{ marginTop: 12 }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 8 }}>
               <Pressable
                 onPress={() => setSelectedBranchFilter('all')}
-                className={`py-1.5 px-3.5 rounded-full border ${
+                style={[
+                  styles.filterPill,
                   selectedBranchFilter === 'all'
-                    ? 'bg-[#065F46] border-[#065F46]'
-                    : 'bg-white border-slate-200'
-                }`}
+                    ? { backgroundColor: '#065F46', borderColor: '#065F46' }
+                    : { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0' },
+                ]}
               >
                 <ThemedText
-                  className={`text-xs font-bold ${
-                    selectedBranchFilter === 'all'
-                      ? 'text-white'
-                      : 'text-slate-600'
-                  }`}
+                  style={[
+                    styles.filterPillText,
+                    { color: selectedBranchFilter === 'all' ? '#FFFFFF' : '#475569' },
+                  ]}
                 >
                   All Branches ({staffList.length})
                 </ThemedText>
@@ -298,18 +305,18 @@ export function StaffManagementUI() {
                   <Pressable
                     key={b.id}
                     onPress={() => setSelectedBranchFilter(b.id)}
-                    className={`py-1.5 px-3.5 rounded-full border ${
+                    style={[
+                      styles.filterPill,
                       isSelected
-                        ? 'bg-[#065F46] border-[#065F46]'
-                        : 'bg-white border-slate-200'
-                    }`}
+                        ? { backgroundColor: '#065F46', borderColor: '#065F46' }
+                        : { backgroundColor: '#FFFFFF', borderColor: '#E2E8F0' },
+                    ]}
                   >
                     <ThemedText
-                      className={`text-xs font-bold ${
-                        isSelected
-                          ? 'text-white'
-                          : 'text-slate-600'
-                      }`}
+                      style={[
+                        styles.filterPillText,
+                        { color: isSelected ? '#FFFFFF' : '#475569' },
+                      ]}
                     >
                       {b.name} ({count})
                     </ThemedText>
@@ -321,82 +328,78 @@ export function StaffManagementUI() {
         )}
 
         {/* Staff Members List */}
-        <View className="px-5 mt-4">
-          <ThemedText className="text-xs font-bold uppercase tracking-wider text-[#60646C] mb-2.5">
+        <View style={styles.staffListContainer}>
+          <ThemedText style={styles.sectionHeaderTitle}>
             Authorized Cashiers ({filteredStaff.length})
           </ThemedText>
 
           {isLoading ? (
-            <View className="py-12 items-center justify-center">
+            <View style={styles.loadingBox}>
               <ActivityIndicator size="large" color={colors.primary} />
-              <ThemedText className="text-xs text-[#60646C] mt-2">Loading staff roster...</ThemedText>
+              <ThemedText style={styles.loadingText}>Loading staff roster...</ThemedText>
             </View>
           ) : filteredStaff.length === 0 ? (
-            <View className="bg-white border border-slate-200 p-8 rounded-2xl items-center justify-center shadow-sm">
-              <ThemedText className="text-3xl mb-2">👥</ThemedText>
-              <ThemedText className="font-bold text-sm text-slate-900 text-center">
+            <View style={styles.emptyCard}>
+              <ThemedText style={{ fontSize: 36, marginBottom: 8 }}>👥</ThemedText>
+              <ThemedText style={styles.emptyTitle}>
                 No staff cashiers found
               </ThemedText>
-              <ThemedText className="text-xs text-[#60646C] text-center mt-1 mb-4">
+              <ThemedText style={styles.emptySubtitle}>
                 Assign sales cashiers by email to allow them to operate your branch counters.
               </ThemedText>
               <Pressable
                 onPress={openAssignModal}
-                className="px-4 py-2 rounded-xl"
-                style={{ backgroundColor: colors.primary }}
+                style={[styles.firstAssignBtn, { backgroundColor: colors.primary }]}
               >
-                <ThemedText className="text-white font-bold text-xs">+ Assign First Staff</ThemedText>
+                <ThemedText style={styles.firstAssignBtnText}>+ Assign First Staff</ThemedText>
               </Pressable>
             </View>
           ) : (
             filteredStaff.map((staff) => (
-              <View
-                key={staff.id}
-                className="bg-white border border-slate-200 rounded-2xl p-4 mb-3 shadow-sm"
-              >
-                <View className="flex-row items-center justify-between pb-2.5 border-b border-slate-100">
-                  <View className="flex-row items-center gap-2.5 flex-1 mr-2">
-                    <View className="w-9 h-9 rounded-full bg-slate-100 items-center justify-center border border-slate-200">
+              <View key={staff.id} style={styles.staffCard}>
+                <View style={styles.staffCardHeader}>
+                  <View style={styles.staffAvatarRow}>
+                    <View style={styles.avatarCircle}>
                       <UserIcon size={16} color={colors.primary} />
                     </View>
-                    <View className="flex-1">
-                      <ThemedText className="text-sm font-extrabold text-slate-900" numberOfLines={1}>
+                    <View style={{ flex: 1 }}>
+                      <ThemedText style={styles.staffNameText} numberOfLines={1}>
                         {staff.name || 'Sales Cashier'}
                       </ThemedText>
-                      <ThemedText className="text-xs text-[#60646C]" numberOfLines={1}>
+                      <ThemedText style={styles.staffEmailText} numberOfLines={1}>
                         {staff.email}
                       </ThemedText>
                     </View>
                   </View>
 
                   <View
-                    className={`px-2 py-0.5 rounded-full ${
+                    style={[
+                      styles.statusPill,
                       staff.status === 'active'
-                        ? 'bg-emerald-50 border border-emerald-200'
-                        : 'bg-amber-50 border border-amber-200'
-                    }`}
+                        ? { backgroundColor: '#ECFDF5', borderColor: '#A7F3D0' }
+                        : { backgroundColor: '#FFFBEB', borderColor: '#FDE68A' },
+                    ]}
                   >
                     <ThemedText
-                      className={`text-[10px] font-extrabold ${
-                        staff.status === 'active'
-                          ? 'text-emerald-800'
-                          : 'text-amber-800'
-                      }`}
+                      style={[
+                        styles.statusPillText,
+                        { color: staff.status === 'active' ? '#065F46' : '#92400E' },
+                      ]}
                     >
                       {staff.status === 'active' ? '✓ ACTIVE' : '⏳ PENDING'}
                     </ThemedText>
                   </View>
                 </View>
 
-                <View className="flex-row items-center justify-between pt-2.5">
-                  <View className="flex-row items-center gap-2">
-                    <View className="bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">
-                      <ThemedText className="text-[11px] font-bold text-slate-700">
+                <View style={styles.staffCardFooter}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <View style={styles.branchChip}>
+                      <ThemedText style={styles.branchChipText}>
                         🏬 {staff.branchName || 'Branch'}
                       </ThemedText>
                     </View>
-                    <View className="bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100">
-                      <ThemedText className="text-[11px] font-bold text-emerald-800">
+                    <View style={styles.roleChip}>
+                      <ThemedText style={styles.roleChipText}>
                         Role: Counter Sales
                       </ThemedText>
                     </View>
@@ -404,11 +407,9 @@ export function StaffManagementUI() {
 
                   <Pressable
                     onPress={() => handleRevokeStaff(staff)}
-                    className="px-2.5 py-1 rounded-lg bg-red-50 border border-red-200 active:opacity-75"
+                    style={styles.removeBtn}
                   >
-                    <ThemedText className="text-xs font-bold text-red-600">
-                      Remove
-                    </ThemedText>
+                    <ThemedText style={styles.removeBtnText}>Remove</ThemedText>
                   </Pressable>
                 </View>
               </View>
@@ -424,39 +425,47 @@ export function StaffManagementUI() {
           <View style={styles.sheet}>
             <View style={styles.handleBar} />
 
-            <View className="flex-row items-center justify-between pb-3 border-b border-slate-100">
-              <View className="flex-row items-center gap-2">
-                <View className="w-8 h-8 rounded-full bg-emerald-50 items-center justify-center border border-emerald-200">
+            <View style={styles.modalHeaderRow}>
+              <View style={styles.modalTitleLeft}>
+                <View style={styles.modalIconCircle}>
                   <UserIcon size={16} color={colors.primary} />
                 </View>
                 <View>
-                  <ThemedText className="text-lg font-extrabold text-slate-900">Assign Staff Member</ThemedText>
-                  <ThemedText className="text-xs font-semibold" style={{ color: colors.primary }}>Authorize Branch Counter Access</ThemedText>
+                  <ThemedText style={styles.modalTitle}>Assign Staff Member</ThemedText>
+                  <ThemedText style={[styles.modalSubtitle, { color: colors.primary }]}>
+                    Authorize Branch Counter Access
+                  </ThemedText>
                 </View>
               </View>
-              <Pressable onPress={() => setShowAssignModal(false)} hitSlop={8} className="p-1">
+              <Pressable onPress={() => setShowAssignModal(false)} hitSlop={8} style={{ padding: 4 }}>
                 <XIcon size={20} color="#64748B" />
               </Pressable>
             </View>
 
-            <ScrollView showsVerticalScrollIndicator={false} className="mt-3">
+            <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 12 }}>
               {/* Branch Selector */}
-              <View className="mb-3.5">
-                <ThemedText className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
+              <View style={styles.formGroup}>
+                <ThemedText style={styles.fieldLabel}>
                   Select Operating Branch *
                 </ThemedText>
-                <View className="flex-row flex-wrap gap-2">
+                <View style={styles.branchPickerRow}>
                   {branches.map((b) => {
                     const isSelected = modalBranchId === b.id;
                     return (
                       <Pressable
                         key={b.id}
                         onPress={() => setModalBranchId(b.id)}
-                        className={`py-2 px-3 rounded-xl border ${
-                          isSelected ? 'bg-emerald-50 border-emerald-600' : 'bg-slate-50 border-slate-200'
-                        }`}
+                        style={[
+                          styles.branchPickerChip,
+                          isSelected && styles.branchPickerChipActive,
+                        ]}
                       >
-                        <ThemedText className={`text-xs font-bold ${isSelected ? 'text-emerald-900' : 'text-slate-600'}`}>
+                        <ThemedText
+                          style={[
+                            styles.branchPickerChipText,
+                            { color: isSelected ? '#064E3B' : '#475569' },
+                          ]}
+                        >
                           🏬 {b.name}
                         </ThemedText>
                       </Pressable>
@@ -466,8 +475,8 @@ export function StaffManagementUI() {
               </View>
 
               {/* Email */}
-              <View className="mb-3.5">
-                <ThemedText className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
+              <View style={styles.formGroup}>
+                <ThemedText style={styles.fieldLabel}>
                   Staff Email Address *
                 </ThemedText>
                 <TextInput
@@ -478,13 +487,13 @@ export function StaffManagementUI() {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900"
+                  style={styles.standardInput}
                 />
               </View>
 
               {/* Nickname / Display Name */}
-              <View className="mb-3.5">
-                <ThemedText className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
+              <View style={styles.formGroup}>
+                <ThemedText style={styles.fieldLabel}>
                   Staff Name / Nickname (Optional)
                 </ThemedText>
                 <TextInput
@@ -492,49 +501,48 @@ export function StaffManagementUI() {
                   onChangeText={setModalName}
                   placeholder="e.g. Chala (Day Shift)"
                   placeholderTextColor="#94A3B8"
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900"
+                  style={styles.standardInput}
                 />
               </View>
 
               {/* Role Selection */}
-              <View className="mb-3.5">
-                <ThemedText className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-                  Counter Role
-                </ThemedText>
+              <View style={styles.formGroup}>
+                <ThemedText style={styles.fieldLabel}>Counter Role</ThemedText>
                 <Pressable
                   onPress={() => setModalRole('sales')}
-                  className="bg-emerald-50 border border-emerald-300 py-2.5 px-3 rounded-xl flex-row items-center gap-2"
+                  style={styles.modalRoleCard}
                 >
-                  <ThemedText className="text-base">🛒</ThemedText>
+                  <ThemedText style={{ fontSize: 18 }}>🛒</ThemedText>
                   <View>
-                    <ThemedText className="text-xs font-bold text-emerald-900">Sales Cashier</ThemedText>
-                    <ThemedText className="text-[10px] text-slate-600">Distraction-free POS & Dube Settlement</ThemedText>
+                    <ThemedText style={styles.modalRoleTitle}>Sales Cashier</ThemedText>
+                    <ThemedText style={styles.modalRoleSubtitle}>
+                      Distraction-free POS & Dube Settlement
+                    </ThemedText>
                   </View>
                 </Pressable>
               </View>
             </ScrollView>
 
             {/* Actions */}
-            <View className="mt-4 flex-row gap-3">
+            <View style={styles.modalActionsRow}>
               <Pressable
                 onPress={() => setShowAssignModal(false)}
-                className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white items-center justify-center active:opacity-70"
+                style={styles.cancelBtn}
               >
-                <ThemedText className="text-sm font-bold text-slate-700">Cancel</ThemedText>
+                <ThemedText style={styles.cancelBtnText}>Cancel</ThemedText>
               </Pressable>
 
               <Pressable
                 onPress={handleAssignSubmit}
                 disabled={isSubmitting}
-                className="flex-2 py-3.5 px-6 rounded-xl items-center justify-center flex-row gap-2 active:opacity-80"
-                style={{ backgroundColor: colors.primary }}
+                style={[styles.modalSubmitBtn, { backgroundColor: colors.primary }]}
               >
                 {isSubmitting ? (
                   <ActivityIndicator size="small" color="#FFFFFF" />
                 ) : (
                   <>
                     <CheckCircleIcon size={16} color="#FFFFFF" />
-                    <ThemedText className="text-sm font-black text-white">Assign Staff</ThemedText>
+                    <ThemedText style={styles.modalSubmitBtnText}>Assign Staff</ThemedText>
                   </>
                 )}
               </Pressable>
@@ -547,6 +555,308 @@ export function StaffManagementUI() {
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+  },
+  backBtn: {
+    alignSelf: 'flex-start',
+    marginBottom: 8,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: '#60646C',
+    marginTop: 2,
+  },
+  assignBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  assignBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  kpiRow: {
+    paddingHorizontal: 20,
+    marginTop: 16,
+    flexDirection: 'row',
+    gap: 10,
+  },
+  kpiCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 12,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  kpiCardGreen: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+  },
+  kpiCardAmber: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+  },
+  kpiLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#60646C',
+    textTransform: 'uppercase',
+  },
+  kpiLabelGreen: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#065F46',
+    textTransform: 'uppercase',
+  },
+  kpiLabelAmber: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#92400E',
+    textTransform: 'uppercase',
+  },
+  kpiValueDark: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#0F172A',
+    marginTop: 2,
+  },
+  kpiValueGreen: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#065F46',
+    marginTop: 2,
+  },
+  kpiValueAmber: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#B45309',
+    marginTop: 2,
+  },
+  searchBar: {
+    marginHorizontal: 20,
+    marginTop: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.02,
+    shadowRadius: 3,
+    elevation: 1,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 12,
+    color: '#0F172A',
+    paddingVertical: 0,
+  },
+  filterPill: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  filterPillText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  staffListContainer: {
+    paddingHorizontal: 20,
+    marginTop: 16,
+  },
+  sectionHeaderTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    color: '#60646C',
+    marginBottom: 10,
+  },
+  loadingBox: {
+    paddingVertical: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    fontSize: 12,
+    color: '#60646C',
+    marginTop: 8,
+  },
+  emptyCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  emptyTitle: {
+    fontWeight: '700',
+    fontSize: 14,
+    color: '#0F172A',
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 12,
+    color: '#60646C',
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  firstAssignBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  firstAssignBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  staffCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  staffCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  staffAvatarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+    marginRight: 8,
+  },
+  avatarCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  staffNameText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  staffEmailText: {
+    fontSize: 12,
+    color: '#60646C',
+    marginTop: 1,
+  },
+  statusPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  statusPillText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  staffCardFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 10,
+  },
+  branchChip: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  branchChipText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  roleChip: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  roleChipText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#065F46',
+  },
+  removeBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  removeBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#DC2626',
+  },
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.45)',
@@ -574,5 +884,141 @@ const styles = StyleSheet.create({
     backgroundColor: '#CBD5E1',
     alignSelf: 'center',
     marginBottom: 12,
+  },
+  modalHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  modalTitleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  modalIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#ECFDF5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  modalSubtitle: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  formGroup: {
+    marginBottom: 14,
+  },
+  fieldLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  branchPickerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  branchPickerChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+  },
+  branchPickerChipActive: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#059669',
+  },
+  branchPickerChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  standardInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: '#0F172A',
+  },
+  modalRoleCard: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  modalRoleTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#064E3B',
+  },
+  modalRoleSubtitle: {
+    fontSize: 10,
+    color: '#475569',
+    marginTop: 1,
+  },
+  modalActionsRow: {
+    marginTop: 16,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  modalSubmitBtn: {
+    flex: 2,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  modalSubmitBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 });

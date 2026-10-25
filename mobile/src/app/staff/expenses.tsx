@@ -6,6 +6,7 @@ import {
   Pressable,
   RefreshControl,
   ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useStaffStore } from '@/store/staff-store';
@@ -74,13 +75,13 @@ export default function StaffExpensesScreen() {
   }, [expenses]);
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-slate-50">
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
       <StaffHeader onRefresh={handleRefresh} />
 
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -91,127 +92,106 @@ export default function StaffExpensesScreen() {
         }
       >
         {/* Expenses Hero Summary Card */}
-        <View className="mx-4 mt-3 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
-          <View className="flex-row items-center justify-between pb-2 border-b border-slate-100">
+        <View style={styles.heroCard}>
+          <View style={styles.heroCardHeader}>
             <View>
-              <Text className="text-[11px] font-extrabold text-red-600 uppercase tracking-wider">
-                Branch Petty Operating Expenses
-              </Text>
-              <Text className="text-xs text-slate-500 mt-0.5">
-                Paid out of counter cash / drawer
-              </Text>
+              <Text style={styles.heroCardTitle}>Branch Petty Operating Expenses</Text>
+              <Text style={styles.heroCardSubtitle}>Paid out of counter cash / drawer</Text>
             </View>
 
-            <View className="bg-red-50 px-2.5 py-1 rounded-full border border-red-200">
-              <Text className="text-[11px] font-bold text-red-700">
-                {expenses.length} Records Today
-              </Text>
+            <View style={styles.countBadge}>
+              <Text style={styles.countBadgeText}>{expenses.length} Records Today</Text>
             </View>
           </View>
 
-          <View className="flex-row items-center justify-between mt-3">
+          <View style={styles.heroCardMetrics}>
             <View>
-              <Text className="text-[10px] text-slate-500 uppercase font-semibold">
-                Total Expenses Deducted
-              </Text>
-              <Text className="text-2xl font-black text-red-600">
+              <Text style={styles.metricLabel}>Total Expenses Deducted</Text>
+              <Text style={styles.metricValueRed}>
                 -{totalShiftExpenses.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
               </Text>
             </View>
 
-            <View className="bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
-              <Text className="text-[10px] text-slate-600">Drawer Cash Adjusted</Text>
+            <View style={styles.drawerAdjustedBadge}>
+              <Text style={styles.drawerAdjustedText}>Drawer Cash Adjusted</Text>
             </View>
           </View>
         </View>
 
         {/* Action Button: Record Expense */}
-        <View className="mx-4 mt-3.5">
+        <View style={styles.actionContainer}>
           <Pressable
             onPress={() => setShowAddModal(true)}
-            className="w-full py-3.5 px-4 bg-red-600 rounded-2xl flex-row items-center justify-center border border-red-700 shadow-sm active:opacity-85"
+            style={styles.actionBtn}
           >
-            <View className="w-6 h-6 rounded-full bg-white/20 items-center justify-center mr-2">
+            <View style={styles.plusIconCircle}>
               <PlusIcon size={14} color="#FFFFFF" strokeWidth={3} />
             </View>
-            <Text className="text-white font-extrabold text-sm">Record Petty Expense</Text>
+            <Text style={styles.actionBtnText}>Record Petty Expense</Text>
           </Pressable>
         </View>
 
         {/* Shift Expenses Feed Header */}
-        <View className="mx-4 mt-6 flex-row items-center justify-between pb-2 border-b border-slate-200">
-          <View className="flex-row items-center">
-            <Text className="text-sm font-extrabold text-slate-900 mr-2">
-              Today's Petty Expenses
-            </Text>
-            <View className="bg-slate-200 px-2 py-0.5 rounded-full">
-              <Text className="text-[11px] font-bold text-slate-700">
-                {expenses.length} recorded
-              </Text>
+        <View style={styles.feedHeaderRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.feedTitle}>Today's Petty Expenses</Text>
+            <View style={styles.feedCountBadge}>
+              <Text style={styles.feedCountText}>{expenses.length} recorded</Text>
             </View>
           </View>
-          <Text className="text-[11px] text-slate-500">
-            Locked to this branch
-          </Text>
+          <Text style={styles.feedSubtitle}>Locked to this branch</Text>
         </View>
 
         {/* Expenses Feed */}
         {isLoading && expenses.length === 0 ? (
-          <View className="items-center justify-center py-12">
+          <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#DC2626" />
-            <Text className="text-slate-500 text-xs mt-3">Loading branch expenses...</Text>
+            <Text style={styles.loadingText}>Loading branch expenses...</Text>
           </View>
         ) : expenses.length === 0 ? (
-          <View className="mx-4 mt-4 bg-white border border-slate-200 rounded-2xl p-8 items-center justify-center shadow-sm">
-            <Text className="text-3xl mb-2">💸</Text>
-            <Text className="text-slate-900 font-bold text-sm text-center">
-              No expenses recorded today
-            </Text>
-            <Text className="text-slate-500 text-xs text-center mt-1">
+          <View style={styles.emptyCard}>
+            <Text style={{ fontSize: 36, marginBottom: 8 }}>💸</Text>
+            <Text style={styles.emptyTitle}>No expenses recorded today</Text>
+            <Text style={styles.emptySubtitle}>
               Tap &quot;Record Petty Expense&quot; for packaging, supplies, or transport.
             </Text>
           </View>
         ) : (
-          <View className="mx-4 mt-2">
+          <View style={styles.listContainer}>
             {expenses.map((item) => (
-              <View
-                key={item.id}
-                className="bg-white border border-slate-200 rounded-2xl p-3.5 mb-2.5 flex-row items-center justify-between shadow-sm"
-              >
-                <View className="flex-1 mr-3">
-                  <View className="flex-row items-center mb-1">
-                    <View className="px-2 py-0.5 rounded-md bg-red-50 border border-red-200 mr-2">
-                      <Text className="text-[10px] font-black text-red-700">
+              <View key={item.id} style={styles.expenseItemCard}>
+                <View style={{ flex: 1, marginRight: 12 }}>
+                  <View style={styles.badgeRow}>
+                    <View style={styles.categoryBadge}>
+                      <Text style={styles.categoryBadgeText}>
                         {item.category || 'General'}
                       </Text>
                     </View>
-                    <Text className="text-[11px] text-slate-400">
-                      {item.time || 'Today'}
-                    </Text>
+                    <Text style={styles.timeText}>{item.time || 'Today'}</Text>
                   </View>
 
-                  <Text className="text-sm font-bold text-slate-900" numberOfLines={1}>
+                  <Text style={styles.descText} numberOfLines={1}>
                     {item.description}
                   </Text>
 
                   {item.notes && (
-                    <Text className="text-xs text-slate-500 mt-0.5" numberOfLines={1}>
+                    <Text style={styles.noteText} numberOfLines={1}>
                       Note: {item.notes}
                     </Text>
                   )}
 
                   {item.recordedByName && (
-                    <Text className="text-[10px] text-red-600 mt-1">
+                    <Text style={styles.cashierText}>
                       Cashier: {item.recordedByName}
                     </Text>
                   )}
                 </View>
 
-                <View className="items-end">
-                  <Text className="text-base font-black text-red-600">
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={styles.amountText}>
                     -{item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </Text>
-                  <Text className="text-[10px] text-slate-400 font-semibold">ETB</Text>
+                  <Text style={styles.etbLabel}>ETB</Text>
                 </View>
               </View>
             ))}
@@ -228,3 +208,262 @@ export default function StaffExpensesScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  heroCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  heroCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  heroCardTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#DC2626',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  heroCardSubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  countBadge: {
+    backgroundColor: '#FEF2F2',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  countBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#B91C1C',
+  },
+  heroCardMetrics: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+  },
+  metricLabel: {
+    fontSize: 10,
+    color: '#64748B',
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  metricValueRed: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#DC2626',
+    marginTop: 2,
+  },
+  drawerAdjustedBadge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  drawerAdjustedText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  actionContainer: {
+    marginHorizontal: 16,
+    marginTop: 14,
+  },
+  actionBtn: {
+    width: '100%',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#DC2626',
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#B91C1C',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  plusIconCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  actionBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  feedHeaderRow: {
+    marginHorizontal: 16,
+    marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  feedTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginRight: 8,
+  },
+  feedCountBadge: {
+    backgroundColor: '#E2E8F0',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  feedCountText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  feedSubtitle: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  loadingText: {
+    color: '#64748B',
+    fontSize: 12,
+    marginTop: 12,
+  },
+  emptyCard: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  emptyTitle: {
+    color: '#0F172A',
+    fontWeight: '700',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    color: '#64748B',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  listContainer: {
+    marginHorizontal: 16,
+    marginTop: 10,
+  },
+  expenseItemCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  categoryBadge: {
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  categoryBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#B91C1C',
+  },
+  timeText: {
+    fontSize: 11,
+    color: '#94A3B8',
+  },
+  descText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  noteText: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  cashierText: {
+    fontSize: 10,
+    color: '#DC2626',
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  amountText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#DC2626',
+  },
+  etbLabel: {
+    fontSize: 10,
+    color: '#94A3B8',
+    fontWeight: '600',
+  },
+});

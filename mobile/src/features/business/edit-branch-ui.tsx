@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Pressable, Alert, ActivityIndicator } from "react-native";
+import { View, ScrollView, Pressable, Alert, ActivityIndicator, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 
@@ -140,77 +140,79 @@ export const EditBranchUI: React.FC<EditBranchUIProps> = ({ hookProps }) => {
         />
 
         {/* Assigned Counter Staff Section */}
-        <View className="mt-2 gap-2">
-          <View className="flex-row items-center justify-between">
-            <ThemedText className="text-base font-semibold text-slate-900">Assigned Counter Staff</ThemedText>
+        <View style={staffStyles.section}>
+          <View style={staffStyles.headerRow}>
+            <ThemedText style={staffStyles.sectionTitle}>Assigned Counter Staff</ThemedText>
             {id ? (
               <Pressable
                 onPress={() => setShowAssignModal(true)}
-                className="bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg active:opacity-75"
+                style={staffStyles.assignBtn}
               >
-                <ThemedText className="text-xs font-bold text-emerald-800">
+                <ThemedText style={staffStyles.assignBtnText}>
                   + Assign Staff
                 </ThemedText>
               </Pressable>
             ) : null}
           </View>
-          <ThemedText className="text-xs text-[#60646C]">
+          <ThemedText style={staffStyles.sectionSubtitle}>
             Sales cashiers authorized to operate this branch counter and receive Dube payments.
           </ThemedText>
 
           {isLoadingStaff ? (
-            <View className="p-4 items-center justify-center">
+            <View style={staffStyles.loadingContainer}>
               <ActivityIndicator size="small" color="#065F46" />
             </View>
           ) : branchStaffList.length === 0 ? (
-            <View className="bg-slate-50 border border-slate-200 p-4 rounded-xl items-center justify-center">
-              <ThemedText className="text-xs text-[#60646C] text-center">
+            <View style={staffStyles.emptyContainer}>
+              <ThemedText style={staffStyles.emptyText}>
                 No staff assigned yet. Tap &quot;+ Assign Staff&quot; to authorize a sales cashier by email.
               </ThemedText>
             </View>
           ) : (
-            <View className="gap-2">
+            <View style={{ gap: 8 }}>
               {branchStaffList.map((staff) => (
                 <View
                   key={staff.id}
-                  className="bg-white border border-slate-200 p-3.5 rounded-xl flex-row items-center justify-between shadow-sm"
+                  style={staffStyles.staffCard}
                 >
-                  <View className="flex-1 mr-2">
-                    <View className="flex-row items-center gap-1.5">
-                      <ThemedText className="text-sm font-bold text-slate-900">
+                  <View style={{ flex: 1, marginRight: 8 }}>
+                    <View style={staffStyles.staffTitleRow}>
+                      <ThemedText style={staffStyles.staffName}>
                         {staff.name || "Sales Cashier"}
                       </ThemedText>
                       <View
-                        className={`px-1.5 py-0.5 rounded ${
+                        style={[
+                          staffStyles.statusBadge,
                           staff.status === "active"
-                            ? "bg-emerald-50 border border-emerald-200"
-                            : "bg-amber-50 border border-amber-200"
-                        }`}
+                            ? staffStyles.statusBadgeActive
+                            : staffStyles.statusBadgePending,
+                        ]}
                       >
                         <ThemedText
-                          className={`text-[10px] font-bold ${
-                            staff.status === "active"
-                              ? "text-emerald-800"
-                              : "text-amber-800"
-                          }`}
+                          style={[
+                            staffStyles.statusBadgeText,
+                            {
+                              color: staff.status === "active" ? "#065F46" : "#92400E",
+                            },
+                          ]}
                         >
                           {staff.status === "active" ? "✓ Active" : "⏳ Pending"}
                         </ThemedText>
                       </View>
                     </View>
-                    <ThemedText className="text-xs text-[#60646C] mt-0.5">
+                    <ThemedText style={staffStyles.staffEmail}>
                       {staff.email}
                     </ThemedText>
-                    <ThemedText className="text-[10px] text-[#60646C] mt-0.5">
+                    <ThemedText style={staffStyles.staffRole}>
                       Role: {staff.role === "sales" ? "Counter Sales & POS" : staff.role}
                     </ThemedText>
                   </View>
 
                   <Pressable
                     onPress={() => handleRevokeStaff(staff)}
-                    className="px-2.5 py-1.5 rounded-lg bg-red-50 border border-red-200 active:opacity-75"
+                    style={staffStyles.removeBtn}
                   >
-                    <ThemedText className="text-xs font-bold text-red-600">
+                    <ThemedText style={staffStyles.removeBtnText}>
                       Remove
                     </ThemedText>
                   </Pressable>
@@ -269,4 +271,124 @@ export const EditBranchUI: React.FC<EditBranchUIProps> = ({ hookProps }) => {
     </SafeAreaView>
   );
 };
+
+const staffStyles = StyleSheet.create({
+  section: {
+    marginTop: 8,
+    gap: 8,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    color: '#60646C',
+  },
+  assignBtn: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  assignBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#065F46',
+  },
+  loadingContainer: {
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyContainer: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: 12,
+    color: '#60646C',
+    textAlign: 'center',
+  },
+  staffCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 14,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  staffTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  staffName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  statusBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  statusBadgeActive: {
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  statusBadgePending: {
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+  },
+  statusBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  staffEmail: {
+    fontSize: 12,
+    color: '#60646C',
+    marginTop: 2,
+  },
+  staffRole: {
+    fontSize: 10,
+    color: '#60646C',
+    marginTop: 2,
+  },
+  removeBtn: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  removeBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#DC2626',
+  },
+});
 

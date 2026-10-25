@@ -6,6 +6,7 @@ import {
   Pressable,
   RefreshControl,
   ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -31,32 +32,19 @@ export default function StaffSalesScreen() {
     if (!assignedBusinessId || !assignedBranchId) return;
 
     try {
-      // Fetch all local sales for this branch
       const branchSales = await localSalesRepo.getSales(
         assignedBusinessId,
         assignedBranchId,
         50
       );
 
-      // Filter for today's transactions
-      const now = new Date();
-      const todayYear = now.getFullYear();
-      const todayMonth = now.getMonth();
-      const todayDate = now.getDate();
-
-      const todayList = branchSales.filter((item) => {
-        if (!item.createdAt) return true;
-        const d = new Date(item.createdAt);
-        return (
-          d.getFullYear() === todayYear &&
-          d.getMonth() === todayMonth &&
-          d.getDate() === todayDate
-        );
-      });
-
-      setSales(todayList);
+      const todayIso = new Date().toISOString().slice(0, 10);
+      const todayOnly = branchSales.filter(
+        (s) => (s.createdAt || '').slice(0, 10) === todayIso
+      );
+      setSales(todayOnly);
     } catch (err) {
-      console.error('[StaffSalesScreen] Failed to load sales:', err);
+      console.error('[StaffSales] Error loading shift sales:', err);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -76,24 +64,27 @@ export default function StaffSalesScreen() {
   const getPaymentBadge = (method: string) => {
     switch (method) {
       case 'telebirr':
-        return { label: '📱 Telebirr', bg: 'bg-violet-50', text: 'text-violet-800', border: 'border-violet-200' };
-      case 'cbe':
-        return { label: '🏦 CBE Birr', bg: 'bg-blue-50', text: 'text-blue-800', border: 'border-blue-200' };
-      case 'cash':
+        return { label: '📱 Telebirr', bg: '#F5F3FF', border: '#DDD6FE', text: '#6D28D9' };
+      case 'cbe_birr':
+        return { label: '🏦 CBE Birr', bg: '#EFF6FF', border: '#BFDBFE', text: '#1D4ED8' };
+      case 'bank':
+      case 'bank_transfer':
+        return { label: '🏛️ Bank', bg: '#F0FDF4', border: '#BBF7D0', text: '#15803D' };
+      case 'dube':
+        return { label: '👥 Dube Credit', bg: '#FFFBEB', border: '#FDE68A', text: '#B45309' };
       default:
-        return { label: '💵 Cash', bg: 'bg-emerald-50', text: 'text-emerald-800', border: 'border-emerald-200' };
+        return { label: '💵 Cash', bg: '#ECFDF5', border: '#A7F3D0', text: '#065F46' };
     }
   };
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-slate-50">
-      {/* Shared Branch Header */}
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
       <StaffHeader onRefresh={handleRefresh} />
 
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 32 }}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -107,110 +98,95 @@ export default function StaffSalesScreen() {
         <ShiftDrawerCard />
 
         {/* Counter Workspace Action Bar */}
-        <View className="mx-4 mt-4 flex-row gap-3">
+        <View style={styles.actionRow}>
           <Pressable
             onPress={() => setShowQuickSaleModal(true)}
-            className="flex-1 py-3.5 px-4 bg-[#065F46] rounded-2xl flex-row items-center justify-center border border-emerald-800 shadow-sm active:opacity-85"
+            style={styles.primaryActionBtn}
           >
-            <View className="w-6 h-6 rounded-full bg-white/20 items-center justify-center mr-2">
+            <View style={styles.plusIconCircle}>
               <PlusIcon size={14} color="#FFFFFF" strokeWidth={3} />
             </View>
-            <Text className="text-white font-extrabold text-sm">Quick Instant Sale</Text>
+            <Text style={styles.primaryActionText}>Quick Instant Sale</Text>
           </Pressable>
 
           <Pressable
             onPress={() => router.push('/staff/dube' as any)}
-            className="py-3.5 px-4 bg-white rounded-2xl flex-row items-center justify-center border border-slate-300 shadow-sm active:opacity-85"
+            style={styles.secondaryActionBtn}
           >
-            <Text className="text-base mr-1.5">📝</Text>
-            <Text className="text-slate-800 font-bold text-sm">Issue Dube</Text>
+            <Text style={{ fontSize: 16, marginRight: 6 }}>📝</Text>
+            <Text style={styles.secondaryActionText}>Issue Dube</Text>
           </Pressable>
         </View>
 
         {/* Shift Sales Feed Header */}
-        <View className="mx-4 mt-6 flex-row items-center justify-between pb-2 border-b border-slate-200">
-          <View className="flex-row items-center">
-            <Text className="text-sm font-extrabold text-slate-900 mr-2">
-              Shift Sales Feed
-            </Text>
-            <View className="bg-slate-200 px-2 py-0.5 rounded-full">
-              <Text className="text-[11px] font-bold text-slate-700">
-                {sales.length} today
-              </Text>
+        <View style={styles.feedHeaderRow}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={styles.feedTitle}>Shift Sales Feed</Text>
+            <View style={styles.countBadge}>
+              <Text style={styles.countText}>{sales.length} today</Text>
             </View>
           </View>
-          <Text className="text-[11px] text-slate-500">
-            Auto-Attributed & Locked
-          </Text>
+          <Text style={styles.feedSubtitle}>Auto-Attributed & Locked</Text>
         </View>
 
         {/* Sales Feed Content */}
         {isLoading && sales.length === 0 ? (
-          <View className="items-center justify-center py-12">
+          <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#065F46" />
-            <Text className="text-slate-500 text-xs mt-3">Loading counter sales...</Text>
+            <Text style={styles.loadingText}>Loading counter sales...</Text>
           </View>
         ) : sales.length === 0 ? (
-          <View className="mx-4 mt-4 bg-white border border-slate-200 rounded-2xl p-8 items-center justify-center shadow-sm">
-            <Text className="text-3xl mb-2">🛒</Text>
-            <Text className="text-slate-900 font-bold text-sm text-center">
-              No sales recorded this shift yet
-            </Text>
-            <Text className="text-slate-500 text-xs text-center mt-1 mb-4">
+          <View style={styles.emptyCard}>
+            <Text style={{ fontSize: 36, marginBottom: 8 }}>🛒</Text>
+            <Text style={styles.emptyTitle}>No sales recorded this shift yet</Text>
+            <Text style={styles.emptySubtitle}>
               Tap &quot;Quick Instant Sale&quot; to checkout walk-in customers instantly.
             </Text>
             <Pressable
               onPress={() => setShowQuickSaleModal(true)}
-              className="py-2.5 px-4 bg-emerald-50 border border-emerald-200 rounded-xl"
+              style={styles.firstSaleBtn}
             >
-              <Text className="text-[#065F46] font-extrabold text-xs">
-                + Record First Sale
-              </Text>
+              <Text style={styles.firstSaleText}>+ Record First Sale</Text>
             </Pressable>
           </View>
         ) : (
-          <View className="mx-4 mt-2">
+          <View style={styles.salesListContainer}>
             {sales.map((item) => {
               const badge = getPaymentBadge(item.paymentMethod || 'cash');
               return (
-                <View
-                  key={item.id}
-                  className="bg-white border border-slate-200 rounded-2xl p-3.5 mb-2.5 flex-row items-center justify-between shadow-sm"
-                >
-                  <View className="flex-1 mr-3">
-                    <View className="flex-row items-center mb-1">
-                      <View className={`px-2 py-0.5 rounded-md border ${badge.bg} ${badge.border} mr-2`}>
-                        <Text className={`text-[10px] font-black ${badge.text}`}>
+                <View key={item.id} style={styles.saleItemCard}>
+                  <View style={{ flex: 1, marginRight: 12 }}>
+                    <View style={styles.badgeRow}>
+                      <View style={[styles.methodBadge, { backgroundColor: badge.bg, borderColor: badge.border }]}>
+                        <Text style={[styles.methodBadgeText, { color: badge.text }]}>
                           {badge.label}
                         </Text>
                       </View>
-                      <Text className="text-[11px] text-slate-400">
-                        {item.time || 'Today'}
-                      </Text>
+                      <Text style={styles.saleTimeText}>{item.time || 'Today'}</Text>
                     </View>
 
-                    <Text className="text-sm font-bold text-slate-900" numberOfLines={1}>
+                    <Text style={styles.saleDescText} numberOfLines={1}>
                       {item.description || 'Instant Sale'}
                     </Text>
 
                     {item.customer && (
-                      <Text className="text-xs text-slate-500 mt-0.5" numberOfLines={1}>
+                      <Text style={styles.saleCustomerText} numberOfLines={1}>
                         Customer: {item.customer}
                       </Text>
                     )}
 
                     {item.recordedByName && (
-                      <Text className="text-[10px] text-[#065F46] mt-1">
+                      <Text style={styles.cashierAttributionText}>
                         Cashier: {item.recordedByName}
                       </Text>
                     )}
                   </View>
 
-                  <View className="items-end">
-                    <Text className="text-base font-black text-[#065F46]">
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={styles.saleAmountText}>
                       +{item.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </Text>
-                    <Text className="text-[10px] text-slate-400 font-semibold">ETB</Text>
+                    <Text style={styles.etbLabel}>ETB</Text>
                   </View>
                 </View>
               );
@@ -228,3 +204,217 @@ export default function StaffSalesScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  actionRow: {
+    marginHorizontal: 16,
+    marginTop: 14,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  primaryActionBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#065F46',
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  plusIconCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  primaryActionText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 14,
+  },
+  secondaryActionBtn: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  secondaryActionText: {
+    color: '#1E293B',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  feedHeaderRow: {
+    marginHorizontal: 16,
+    marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  feedTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginRight: 8,
+  },
+  countBadge: {
+    backgroundColor: '#E2E8F0',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  countText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  feedSubtitle: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  loadingText: {
+    color: '#64748B',
+    fontSize: 12,
+    marginTop: 12,
+    fontWeight: '500',
+  },
+  emptyCard: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    padding: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  emptyTitle: {
+    color: '#0F172A',
+    fontWeight: '700',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    color: '#64748B',
+    fontSize: 12,
+    textAlign: 'center',
+    marginTop: 4,
+    marginBottom: 16,
+  },
+  firstSaleBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    borderRadius: 10,
+  },
+  firstSaleText: {
+    color: '#065F46',
+    fontWeight: '800',
+    fontSize: 12,
+  },
+  salesListContainer: {
+    marginHorizontal: 16,
+    marginTop: 10,
+  },
+  saleItemCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  methodBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    marginRight: 8,
+  },
+  methodBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  saleTimeText: {
+    fontSize: 11,
+    color: '#94A3B8',
+  },
+  saleDescText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  saleCustomerText: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  cashierAttributionText: {
+    fontSize: 10,
+    color: '#065F46',
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  saleAmountText: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#065F46',
+  },
+  etbLabel: {
+    fontSize: 10,
+    color: '#94A3B8',
+    fontWeight: '600',
+  },
+});

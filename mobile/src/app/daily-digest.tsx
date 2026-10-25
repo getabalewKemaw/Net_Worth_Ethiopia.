@@ -6,6 +6,7 @@ import {
   Pressable,
   RefreshControl,
   ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -13,7 +14,7 @@ import { useBusinessStore } from '@/store/business-store';
 import * as staffService from '@/service/staff';
 import { localStaffRepo } from '@/repositories/local-staff.repo';
 import type { DailyDigestResponse, BranchDailyDigest } from '@/types/staff';
-import { CalendarIcon, ChevronRightIcon, RefreshCwIcon } from '@/components/icons';
+import { CalendarIcon, RefreshCwIcon } from '@/components/icons';
 
 const formatDateString = (d: Date): string => {
   return d.toISOString().slice(0, 10);
@@ -59,13 +60,11 @@ export default function DailyDigestScreen() {
 
       setErrorMsg(null);
       try {
-        // 1. Try remote fetch from backend (/api/branches/daily-digest)
         const res = await staffService.fetchDailyDigest(activeBusiness.id, dateStr);
         setDigest(res);
       } catch (err: any) {
         console.warn('[DailyDigest] Remote fetch failed, using local SQLite fallback:', err.message);
 
-        // 2. Offline Fallback: Aggregate local SQLite branch metrics
         try {
           const fallbackBranches: BranchDailyDigest[] = await Promise.all(
             branches.map(async (b) => {
@@ -133,7 +132,6 @@ export default function DailyDigestScreen() {
     const dateObj = new Date(y, m - 1, d);
     dateObj.setDate(dateObj.getDate() + days);
 
-    // Prevent selecting future dates
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (dateObj > today) return;
@@ -144,28 +142,28 @@ export default function DailyDigestScreen() {
   const isToday = selectedDate === formatDateString(new Date());
 
   return (
-    <SafeAreaView edges={['top']} className="flex-1 bg-slate-50">
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
       {/* Top Navigation Bar */}
-      <View className="px-4 py-3 bg-white border-b border-slate-200 flex-row items-center justify-between">
+      <View style={styles.topNav}>
         <Pressable
           onPress={() => router.back()}
-          className="flex-row items-center active:opacity-70 py-1"
+          style={styles.backBtn}
           hitSlop={8}
         >
-          <Text className="text-[#065F46] font-bold text-base mr-1">←</Text>
-          <Text className="text-slate-900 font-extrabold text-base">Back</Text>
+          <Text style={styles.backArrow}>←</Text>
+          <Text style={styles.backText}>Back</Text>
         </Pressable>
 
-        <View className="items-center">
-          <Text className="text-base font-extrabold text-slate-900">Daily Branch Digest</Text>
-          <Text className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">
+        <View style={{ alignItems: 'center' }}>
+          <Text style={styles.navTitle}>Daily Branch Digest</Text>
+          <Text style={styles.navSubtitle}>
             {activeBusiness?.name || 'Multi-Branch Reconciliation'}
           </Text>
         </View>
 
         <Pressable
           onPress={handleRefresh}
-          className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 items-center justify-center active:opacity-70"
+          style={styles.refreshBtn}
           hitSlop={6}
         >
           <RefreshCwIcon size={14} color="#64748B" />
@@ -173,7 +171,7 @@ export default function DailyDigestScreen() {
       </View>
 
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 40 }}
         refreshControl={
@@ -186,44 +184,49 @@ export default function DailyDigestScreen() {
         }
       >
         {/* Date Selector Pill */}
-        <View className="mx-4 mt-3 bg-white border border-slate-200 rounded-2xl p-2.5 flex-row items-center justify-between shadow-sm">
+        <View style={styles.dateSelectorCard}>
           <Pressable
             onPress={() => handleShiftDate(-1)}
-            className="w-8 h-8 rounded-xl bg-slate-100 items-center justify-center border border-slate-200 active:opacity-70"
+            style={styles.dateArrowBtn}
           >
-            <Text className="text-slate-700 font-black text-sm">◀</Text>
+            <Text style={styles.arrowText}>◀</Text>
           </Pressable>
 
-          <View className="flex-row items-center gap-2">
+          <View style={styles.dateCenter}>
             <CalendarIcon size={16} color="#065F46" />
-            <Text className="text-sm font-extrabold text-slate-900">
+            <Text style={styles.dateDisplayTitle}>
               {formatDisplayDate(selectedDate)}
             </Text>
-            <Text className="text-xs text-slate-500">({selectedDate})</Text>
+            <Text style={styles.dateDisplayIso}>({selectedDate})</Text>
           </View>
 
           <Pressable
             onPress={() => handleShiftDate(1)}
             disabled={isToday}
-            className={`w-8 h-8 rounded-xl items-center justify-center border ${
-              isToday
-                ? 'bg-slate-50 border-slate-200 opacity-40'
-                : 'bg-slate-100 border-slate-200 active:opacity-70'
-            }`}
+            style={[
+              styles.dateArrowBtn,
+              isToday && { opacity: 0.4 },
+            ]}
           >
-            <Text className="text-slate-700 font-black text-sm">▶</Text>
+            <Text style={styles.arrowText}>▶</Text>
           </Pressable>
         </View>
 
         {/* Quick Date Short-Cuts */}
-        <View className="mx-4 mt-2 flex-row gap-2">
+        <View style={styles.quickDateRow}>
           <Pressable
             onPress={() => setSelectedDate(formatDateString(new Date()))}
-            className={`py-1 px-3 rounded-full border ${
-              isToday ? 'bg-[#065F46] border-[#065F46]' : 'bg-white border-slate-200'
-            }`}
+            style={[
+              styles.quickDatePill,
+              isToday ? styles.quickDatePillActive : styles.quickDatePillInactive,
+            ]}
           >
-            <Text className={`text-xs font-bold ${isToday ? 'text-white' : 'text-slate-600'}`}>
+            <Text
+              style={[
+                styles.quickDateText,
+                { color: isToday ? '#FFFFFF' : '#475569' },
+              ]}
+            >
               Today
             </Text>
           </Pressable>
@@ -236,11 +239,17 @@ export default function DailyDigestScreen() {
             return (
               <Pressable
                 onPress={() => setSelectedDate(yesterdayStr)}
-                className={`py-1 px-3 rounded-full border ${
-                  isYesterday ? 'bg-[#065F46] border-[#065F46]' : 'bg-white border-slate-200'
-                }`}
+                style={[
+                  styles.quickDatePill,
+                  isYesterday ? styles.quickDatePillActive : styles.quickDatePillInactive,
+                ]}
               >
-                <Text className={`text-xs font-bold ${isYesterday ? 'text-white' : 'text-slate-600'}`}>
+                <Text
+                  style={[
+                    styles.quickDateText,
+                    { color: isYesterday ? '#FFFFFF' : '#475569' },
+                  ]}
+                >
                   Yesterday
                 </Text>
               </Pressable>
@@ -249,73 +258,73 @@ export default function DailyDigestScreen() {
         </View>
 
         {errorMsg ? (
-          <View className="mx-4 mt-3 bg-red-50 border border-red-200 p-3 rounded-xl">
-            <Text className="text-xs text-red-700 font-semibold">{errorMsg}</Text>
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{errorMsg}</Text>
           </View>
         ) : null}
 
         {isLoading ? (
-          <View className="items-center justify-center py-16">
+          <View style={styles.loadingBox}>
             <ActivityIndicator size="large" color="#065F46" />
-            <Text className="text-slate-500 text-xs mt-3">Compiling multi-branch daily audit...</Text>
+            <Text style={styles.loadingText}>Compiling multi-branch daily audit...</Text>
           </View>
         ) : !digest ? (
-          <View className="mx-4 mt-6 bg-white border border-slate-200 p-8 rounded-2xl items-center shadow-sm">
-            <Text className="text-3xl mb-2">📊</Text>
-            <Text className="text-slate-900 font-bold text-sm">No digest data available</Text>
+          <View style={styles.emptyCard}>
+            <Text style={{ fontSize: 36, marginBottom: 8 }}>📊</Text>
+            <Text style={styles.emptyTitle}>No digest data available</Text>
           </View>
         ) : (
           <>
             {/* COMPANY-WIDE RECONCILIATION SUMMARY */}
-            <View className="mx-4 mt-4 bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-              <View className="flex-row items-center justify-between pb-2 border-b border-slate-100">
-                <Text className="text-xs font-black text-slate-700 uppercase tracking-widest">
+            <View style={styles.reconciliationCard}>
+              <View style={styles.cardHeaderRow}>
+                <Text style={styles.cardHeaderTitle}>
                   Company-Wide Reconciliation
                 </Text>
-                <Text className="text-[11px] text-[#065F46] font-bold">
+                <Text style={styles.branchCountTitle}>
                   {digest.branches.length} Operating Branches
                 </Text>
               </View>
 
-              <View className="mt-3">
-                <Text className="text-[11px] text-slate-500 uppercase font-semibold">
+              <View style={{ marginTop: 12 }}>
+                <Text style={styles.metricLabel}>
                   Total Gross Revenue Collected
                 </Text>
-                <Text className="text-2xl font-black text-slate-900 mt-0.5">
+                <Text style={styles.grossRevenueAmount}>
                   {digest.totalInflow.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                 </Text>
               </View>
 
               {/* 2-Column Physical Cash vs Digital Mobile Money Breakdown */}
-              <View className="mt-3.5 flex-row gap-2.5">
+              <View style={styles.breakdownRow}>
                 {/* Physical Cash in Drawers */}
-                <View className="flex-1 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
-                  <View className="flex-row items-center gap-1.5 mb-1">
-                    <Text className="text-base">💵</Text>
-                    <Text className="text-[11px] font-extrabold text-emerald-800 uppercase">
+                <View style={[styles.breakdownBox, styles.cashBox]}>
+                  <View style={styles.boxTitleRow}>
+                    <Text style={{ fontSize: 16 }}>💵</Text>
+                    <Text style={styles.cashBoxTitle}>
                       Physical Cash
                     </Text>
                   </View>
-                  <Text className="text-base font-black text-emerald-900">
+                  <Text style={styles.cashBoxAmount}>
                     {digest.totalCashInDrawer.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                   </Text>
-                  <Text className="text-[10px] text-emerald-700 mt-1">
+                  <Text style={styles.cashBoxSubtitle}>
                     To collect from branch drawers
                   </Text>
                 </View>
 
                 {/* Digital Bank Trails */}
-                <View className="flex-1 bg-blue-50 border border-blue-200 rounded-xl p-3">
-                  <View className="flex-row items-center gap-1.5 mb-1">
-                    <Text className="text-base">📱</Text>
-                    <Text className="text-[11px] font-extrabold text-blue-800 uppercase">
+                <View style={[styles.breakdownBox, styles.digitalBox]}>
+                  <View style={styles.boxTitleRow}>
+                    <Text style={{ fontSize: 16 }}>📱</Text>
+                    <Text style={styles.digitalBoxTitle}>
                       Digital Trails
                     </Text>
                   </View>
-                  <Text className="text-base font-black text-blue-900">
+                  <Text style={styles.digitalBoxAmount}>
                     {digest.totalDigitalInflow.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                   </Text>
-                  <Text className="text-[10px] text-blue-700 mt-1">
+                  <Text style={styles.digitalBoxSubtitle}>
                     Telebirr & CBE in bank accounts
                   </Text>
                 </View>
@@ -323,11 +332,11 @@ export default function DailyDigestScreen() {
 
               {/* Settled Debt Volume */}
               {digest.totalDubeSettled > 0 && (
-                <View className="mt-2.5 pt-2 border-t border-slate-100 flex-row items-center justify-between">
-                  <Text className="text-xs text-amber-800 font-semibold">
+                <View style={styles.dubeSettledRow}>
+                  <Text style={styles.dubeSettledLabel}>
                     👥 Customer Debts Recovered:
                   </Text>
-                  <Text className="text-xs font-black text-amber-700">
+                  <Text style={styles.dubeSettledAmount}>
                     +{digest.totalDubeSettled.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                   </Text>
                 </View>
@@ -335,63 +344,60 @@ export default function DailyDigestScreen() {
             </View>
 
             {/* BRANCH COUNTER AUDITS LIST */}
-            <View className="mx-4 mt-6">
-              <View className="flex-row items-center justify-between mb-2">
-                <Text className="text-xs font-extrabold text-slate-700 uppercase tracking-widest">
+            <View style={styles.auditsContainer}>
+              <View style={styles.auditsHeaderRow}>
+                <Text style={styles.auditsTitle}>
                   Branch Counter Audits
                 </Text>
-                <Text className="text-[11px] text-slate-500">
+                <Text style={styles.auditsSubtitle}>
                   Daily Store Breakdown
                 </Text>
               </View>
 
               {digest.branches.map((b) => (
-                <View
-                  key={b.branchId}
-                  className="bg-white border border-slate-200 rounded-2xl p-4 mb-3.5 shadow-sm"
-                >
+                <View key={b.branchId} style={styles.branchAuditCard}>
                   {/* Branch Card Header */}
-                  <View className="flex-row items-center justify-between pb-2.5 border-b border-slate-100">
-                    <View className="flex-1 mr-2">
-                      <Text className="text-sm font-extrabold text-slate-900">
+                  <View style={styles.branchAuditHeader}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={styles.branchNameText}>
                         🏬 {b.branchName}
                       </Text>
                       {b.cashierName && (
-                        <Text className="text-xs text-[#065F46] font-semibold mt-0.5">
+                        <Text style={styles.branchCashierText}>
                           Cashier: {b.cashierName}
                         </Text>
                       )}
                     </View>
 
-                    <View className="items-end">
-                      <Text className="text-[10px] text-slate-500 uppercase font-semibold">
+                    <View style={{ alignItems: 'flex-end' }}>
+                      <Text style={styles.branchInflowLabel}>
                         Branch Inflow
                       </Text>
-                      <Text className="text-base font-black text-[#065F46]">
+                      <Text style={styles.branchInflowAmount}>
                         {b.metrics.grossInflow.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                       </Text>
                     </View>
                   </View>
 
                   {/* Channel Breakdown */}
-                  <View className="mt-3 flex-row gap-2">
-                    <View className="flex-1 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                      <Text className="text-[10px] text-slate-500 font-semibold">💵 Cash in Drawer</Text>
-                      <Text className="text-xs font-black text-slate-900 mt-0.5">
+                  <View style={styles.channelRow}>
+                    <View style={styles.channelCol}>
+                      <Text style={styles.channelColLabel}>💵 Cash in Drawer</Text>
+                      <Text style={styles.channelColValue}>
                         {b.metrics.cashVolume.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                       </Text>
                     </View>
 
-                    <View className="flex-1 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                      <Text className="text-[10px] text-slate-500 font-semibold">📱 Telebirr</Text>
-                      <Text className="text-xs font-black text-slate-900 mt-0.5">
+                    <View style={styles.channelCol}>
+                      <Text style={styles.channelColLabel}>📱 Telebirr</Text>
+                      <Text style={styles.channelColValue}>
                         {b.metrics.telebirrVolume.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                       </Text>
                     </View>
 
-                    <View className="flex-1 bg-slate-50 p-2 rounded-xl border border-slate-200">
-                      <Text className="text-[10px] text-slate-500 font-semibold">🏦 CBE Birr</Text>
-                      <Text className="text-xs font-black text-slate-900 mt-0.5">
+                    <View style={styles.channelCol}>
+                      <Text style={styles.channelColLabel}>🏦 CBE Birr</Text>
+                      <Text style={styles.channelColValue}>
                         {b.metrics.cbeVolume.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                       </Text>
                     </View>
@@ -399,49 +405,46 @@ export default function DailyDigestScreen() {
 
                   {/* Expenses Callout */}
                   {b.metrics.expenseVolume > 0 && (
-                    <View className="mt-2.5 flex-row items-center justify-between bg-red-50 border border-red-200 px-3 py-1.5 rounded-xl">
-                      <Text className="text-[11px] text-red-700 font-semibold">
+                    <View style={styles.expensesCallout}>
+                      <Text style={styles.expensesCalloutLabel}>
                         💸 Petty Expenses Deducted:
                       </Text>
-                      <Text className="text-[11px] font-black text-red-600">
+                      <Text style={styles.expensesCalloutAmount}>
                         -{b.metrics.expenseVolume.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                       </Text>
                     </View>
                   )}
 
                   {/* Settled Debts Feed */}
-                  <View className="mt-3 pt-2.5 border-t border-slate-100">
-                    <View className="flex-row items-center justify-between mb-1.5">
-                      <Text className="text-xs font-bold text-amber-800">
+                  <View style={styles.debtsSection}>
+                    <View style={styles.debtsSectionHeader}>
+                      <Text style={styles.debtsSectionTitle}>
                         👥 Debts Settled ({b.settledDebtsToday.length})
                       </Text>
                       {b.settledDebtsToday.length > 0 && (
-                        <Text className="text-[10px] text-slate-500">
+                        <Text style={styles.debtsAuditNotice}>
                           Cashier Audit Trail
                         </Text>
                       )}
                     </View>
 
                     {b.settledDebtsToday.length === 0 ? (
-                      <Text className="text-[11px] text-slate-400 italic">
+                      <Text style={styles.noDebtsText}>
                         No customer credit was settled at this branch on this day.
                       </Text>
                     ) : (
-                      <View className="gap-1.5 mt-1">
+                      <View style={{ gap: 6, marginTop: 4 }}>
                         {b.settledDebtsToday.map((debt) => (
-                          <View
-                            key={debt.saleId}
-                            className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex-row items-center justify-between"
-                          >
-                            <View className="flex-1 mr-2">
-                              <Text className="text-xs font-bold text-slate-900">
+                          <View key={debt.saleId} style={styles.debtAuditRow}>
+                            <View style={{ flex: 1, marginRight: 8 }}>
+                              <Text style={styles.debtCustomerName}>
                                 {debt.customerName || 'Customer'}
                               </Text>
-                              <Text className="text-[10px] text-slate-500 mt-0.5">
+                              <Text style={styles.debtAttributionText}>
                                 Logged by {debt.recordedByName || 'Cashier'} · {debt.paymentMethod.toUpperCase()}
                               </Text>
                             </View>
-                            <Text className="text-xs font-black text-amber-700">
+                            <Text style={styles.debtSettledAmount}>
                               +{debt.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
                             </Text>
                           </View>
@@ -458,3 +461,456 @@ export default function DailyDigestScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+  },
+  topNav: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  backArrow: {
+    color: '#065F46',
+    fontWeight: '700',
+    fontSize: 16,
+    marginRight: 4,
+  },
+  backText: {
+    color: '#0F172A',
+    fontWeight: '800',
+    fontSize: 15,
+  },
+  navTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  navSubtitle: {
+    fontSize: 10,
+    color: '#64748B',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  refreshBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  dateSelectorCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  dateArrowBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  arrowText: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#334155',
+  },
+  dateCenter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dateDisplayTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  dateDisplayIso: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  quickDateRow: {
+    marginHorizontal: 16,
+    marginTop: 8,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  quickDatePill: {
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  quickDatePillActive: {
+    backgroundColor: '#065F46',
+    borderColor: '#065F46',
+  },
+  quickDatePillInactive: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E2E8F0',
+  },
+  quickDateText: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  errorBox: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    padding: 12,
+    borderRadius: 12,
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#B91C1C',
+    fontWeight: '600',
+  },
+  loadingBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 64,
+  },
+  loadingText: {
+    color: '#64748B',
+    fontSize: 12,
+    marginTop: 12,
+  },
+  emptyCard: {
+    marginHorizontal: 16,
+    marginTop: 24,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  reconciliationCard: {
+    marginHorizontal: 16,
+    marginTop: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  cardHeaderTitle: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#334155',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  branchCountTitle: {
+    fontSize: 11,
+    color: '#065F46',
+    fontWeight: '700',
+  },
+  metricLabel: {
+    fontSize: 10,
+    color: '#64748B',
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  grossRevenueAmount: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#0F172A',
+    marginTop: 2,
+  },
+  breakdownRow: {
+    marginTop: 14,
+    flexDirection: 'row',
+    gap: 10,
+  },
+  breakdownBox: {
+    flex: 1,
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+  },
+  cashBox: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+  },
+  boxTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  cashBoxTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#064E3B',
+    textTransform: 'uppercase',
+  },
+  cashBoxAmount: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#064E3B',
+  },
+  cashBoxSubtitle: {
+    fontSize: 10,
+    color: '#047857',
+    marginTop: 4,
+  },
+  digitalBox: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#BFDBFE',
+  },
+  digitalBoxTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#1E3A8A',
+    textTransform: 'uppercase',
+  },
+  digitalBoxAmount: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#1E3A8A',
+  },
+  digitalBoxSubtitle: {
+    fontSize: 10,
+    color: '#1D4ED8',
+    marginTop: 4,
+  },
+  dubeSettledRow: {
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dubeSettledLabel: {
+    fontSize: 11,
+    color: '#92400E',
+    fontWeight: '600',
+  },
+  dubeSettledAmount: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#B45309',
+  },
+  auditsContainer: {
+    marginHorizontal: 16,
+    marginTop: 24,
+  },
+  auditsHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  auditsTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#334155',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  auditsSubtitle: {
+    fontSize: 11,
+    color: '#64748B',
+  },
+  branchAuditCard: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  branchAuditHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  branchNameText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  branchCashierText: {
+    fontSize: 11,
+    color: '#065F46',
+    fontWeight: '600',
+    marginTop: 2,
+  },
+  branchInflowLabel: {
+    fontSize: 10,
+    color: '#64748B',
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  branchInflowAmount: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#065F46',
+    marginTop: 1,
+  },
+  channelRow: {
+    marginTop: 12,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  channelCol: {
+    flex: 1,
+    backgroundColor: '#F8FAFC',
+    padding: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  channelColLabel: {
+    fontSize: 9.5,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  channelColValue: {
+    fontSize: 11.5,
+    fontWeight: '900',
+    color: '#0F172A',
+    marginTop: 2,
+  },
+  expensesCallout: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  expensesCalloutLabel: {
+    fontSize: 11,
+    color: '#B91C1C',
+    fontWeight: '600',
+  },
+  expensesCalloutAmount: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#DC2626',
+  },
+  debtsSection: {
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  debtsSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
+  debtsSectionTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#92400E',
+  },
+  debtsAuditNotice: {
+    fontSize: 10,
+    color: '#64748B',
+  },
+  noDebtsText: {
+    fontSize: 11,
+    color: '#94A3B8',
+    fontStyle: 'italic',
+  },
+  debtAuditRow: {
+    backgroundColor: '#F8FAFC',
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  debtCustomerName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#0F172A',
+  },
+  debtAttributionText: {
+    fontSize: 10,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  debtSettledAmount: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#B45309',
+  },
+});

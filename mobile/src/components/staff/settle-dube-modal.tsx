@@ -24,10 +24,19 @@ interface SettleDubeModalProps {
   onSuccess: () => Promise<void>;
 }
 
-const PAYMENT_OPTIONS: { key: PaymentMethod; label: string; icon: string; bg: string; activeBorder: string; activeText: string }[] = [
-  { key: 'cash', label: 'Cash (Drawer)', icon: '💵', bg: 'bg-emerald-50', activeBorder: 'border-emerald-600', activeText: 'text-emerald-950' },
-  { key: 'telebirr', label: 'Telebirr', icon: '📱', bg: 'bg-violet-50', activeBorder: 'border-violet-600', activeText: 'text-violet-950' },
-  { key: 'cbe', label: 'CBE Birr', icon: '🏦', bg: 'bg-blue-50', activeBorder: 'border-blue-600', activeText: 'text-blue-950' },
+interface PaymentOption {
+  key: PaymentMethod;
+  label: string;
+  icon: string;
+  bg: string;
+  activeBorder: string;
+  activeText: string;
+}
+
+const PAYMENT_OPTIONS: PaymentOption[] = [
+  { key: 'cash', label: 'Cash (Drawer)', icon: '💵', bg: '#ECFDF5', activeBorder: '#059669', activeText: '#064E3B' },
+  { key: 'telebirr', label: 'Telebirr', icon: '📱', bg: '#F5F3FF', activeBorder: '#7C3AED', activeText: '#4C1D95' },
+  { key: 'cbe', label: 'CBE Birr', icon: '🏦', bg: '#EFF6FF', activeBorder: '#2563EB', activeText: '#1E3A8A' },
 ];
 
 export function SettleDubeModal({
@@ -86,70 +95,70 @@ export function SettleDubeModal({
           <View style={styles.handleBar} />
 
           {/* Modal Header */}
-          <View className="flex-row items-center justify-between pb-3 border-b border-slate-100">
-            <View className="flex-row items-center gap-2">
-              <View className="w-8 h-8 rounded-full bg-emerald-50 items-center justify-center border border-emerald-200">
-                <Text className="text-base">🤝</Text>
+          <View style={styles.headerRow}>
+            <View style={styles.headerTitleLeft}>
+              <View style={styles.iconCircle}>
+                <Text style={{ fontSize: 16 }}>🤝</Text>
               </View>
               <View>
-                <Text className="text-lg font-extrabold text-slate-900">Settle Customer Debt</Text>
-                <Text className="text-xs text-[#065F46] font-semibold">Shift Drawer Reconciliation</Text>
+                <Text style={styles.headerTitle}>Settle Customer Debt</Text>
+                <Text style={styles.headerSubtitle}>Shift Drawer Reconciliation</Text>
               </View>
             </View>
-            <Pressable onPress={handleClose} hitSlop={8} className="p-1">
+            <Pressable onPress={handleClose} hitSlop={8} style={{ padding: 4 }}>
               <XIcon size={20} color="#64748B" />
             </Pressable>
           </View>
 
           {/* Customer & Debt Overview Card */}
-          <View className="mt-4 bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex-row items-center justify-between">
+          <View style={styles.overviewCard}>
             <View>
-              <Text className="text-sm font-bold text-slate-900">
+              <Text style={styles.customerName}>
                 {debt.customerName || 'Anonymous Customer'}
               </Text>
               {debt.customerPhone && (
-                <Text className="text-xs text-slate-500 mt-0.5">
+                <Text style={styles.customerPhone}>
                   📞 {debt.customerPhone}
                 </Text>
               )}
-              <Text className="text-[11px] text-slate-500 mt-1">
+              <Text style={styles.dueDateText}>
                 Due: {debt.dueDate || 'No due date'}
               </Text>
             </View>
 
-            <View className="items-end">
-              <Text className="text-[10px] text-amber-800 font-bold uppercase">
-                Balance Due
-              </Text>
-              <Text className="text-xl font-black text-amber-700">
+            <View style={{ alignItems: 'flex-end' }}>
+              <Text style={styles.balanceLabel}>Balance Due</Text>
+              <Text style={styles.balanceValue}>
                 {debt.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })} ETB
               </Text>
             </View>
           </View>
 
           {/* Payment Method Selector */}
-          <View className="mt-4">
-            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">
-              Payment Form Received *
-            </Text>
-            <View className="flex-row gap-2">
+          <View style={styles.formGroup}>
+            <Text style={styles.fieldLabel}>Payment Form Received *</Text>
+            <View style={styles.methodsRow}>
               {PAYMENT_OPTIONS.map((opt) => {
                 const isSelected = paymentMethod === opt.key;
                 return (
                   <Pressable
                     key={opt.key}
                     onPress={() => setPaymentMethod(opt.key)}
-                    className={`flex-1 py-3 px-2 rounded-xl border items-center justify-center ${
-                      isSelected
-                        ? `${opt.bg} ${opt.activeBorder} shadow-sm`
-                        : 'bg-slate-50 border-slate-200'
-                    }`}
+                    style={[
+                      styles.methodBtn,
+                      isSelected && {
+                        backgroundColor: opt.bg,
+                        borderColor: opt.activeBorder,
+                      },
+                    ]}
                   >
-                    <Text className="text-lg mb-1">{opt.icon}</Text>
+                    <Text style={{ fontSize: 18, marginBottom: 4 }}>{opt.icon}</Text>
                     <Text
-                      className={`text-xs font-extrabold text-center ${
-                        isSelected ? opt.activeText : 'text-slate-600'
-                      }`}
+                      style={[
+                        styles.methodText,
+                        { color: isSelected ? opt.activeText : '#475569' },
+                        isSelected && { fontWeight: '800' },
+                      ]}
                     >
                       {opt.label}
                     </Text>
@@ -160,39 +169,34 @@ export function SettleDubeModal({
           </View>
 
           {/* Receipt / Cashier Note */}
-          <View className="mt-4">
-            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-              Settlement Note (Optional)
-            </Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.fieldLabel}>Settlement Note (Optional)</Text>
             <TextInput
               value={notes}
               onChangeText={setNotes}
               placeholder="e.g. Paid in full at Bole counter"
               placeholderTextColor="#94A3B8"
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-900"
+              style={styles.standardInput}
             />
           </View>
 
           {/* Action Buttons */}
-          <View className="mt-6 flex-row gap-3">
-            <Pressable
-              onPress={handleClose}
-              className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white items-center justify-center active:opacity-70"
-            >
-              <Text className="text-sm font-bold text-slate-700">Cancel</Text>
+          <View style={styles.actionsRow}>
+            <Pressable onPress={handleClose} style={styles.cancelBtn}>
+              <Text style={styles.cancelBtnText}>Cancel</Text>
             </Pressable>
 
             <Pressable
               onPress={handleConfirm}
               disabled={isSubmitting}
-              className="flex-2 py-3.5 px-6 rounded-xl bg-[#065F46] border border-emerald-800 items-center justify-center flex-row gap-2 active:opacity-80"
+              style={styles.submitBtn}
             >
               {isSubmitting ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
                 <>
                   <CheckCircleIcon size={16} color="#FFFFFF" />
-                  <Text className="text-sm font-black text-white">Confirm Settlement</Text>
+                  <Text style={styles.submitBtnText}>Confirm Settlement</Text>
                 </>
               )}
             </Pressable>
@@ -230,5 +234,161 @@ const styles = StyleSheet.create({
     backgroundColor: '#CBD5E1',
     alignSelf: 'center',
     marginBottom: 12,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  headerTitleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    color: '#065F46',
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  overviewCard: {
+    marginTop: 14,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  customerName: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  customerPhone: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  dueDateText: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 4,
+  },
+  balanceLabel: {
+    fontSize: 10,
+    color: '#92400E',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  balanceValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: '#B45309',
+    marginTop: 2,
+  },
+  formGroup: {
+    marginTop: 14,
+  },
+  fieldLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  methodsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  methodBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  methodText: {
+    fontSize: 11,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  standardInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: '#0F172A',
+  },
+  actionsRow: {
+    marginTop: 20,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  submitBtn: {
+    flex: 2,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#065F46',
+    borderWidth: 1,
+    borderColor: '#064E3B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  submitBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 });

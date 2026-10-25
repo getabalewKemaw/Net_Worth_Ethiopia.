@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, Alert, ActivityIndicator, StyleSheet } from 'react-native';
 import { useStaffStore } from '@/store/staff-store';
 import { authClient } from '@/lib/auth-client';
 import { router } from 'expo-router';
@@ -59,30 +59,30 @@ export function StaffHeader({ onRefresh }: StaffHeaderProps) {
   };
 
   return (
-    <View className="bg-white px-4 pt-2 pb-3 border-b border-slate-200">
-      <View className="flex-row items-center justify-between">
+    <View style={styles.container}>
+      <View style={styles.row}>
         {/* Branch Lock Identifier */}
-        <View className="flex-1 mr-2">
-          <Text className="text-[11px] font-bold text-[#065F46] uppercase tracking-widest" numberOfLines={1}>
+        <View style={styles.branchLockContainer}>
+          <Text style={styles.businessName} numberOfLines={1}>
             {assignedBusinessName || 'NetWorth POS'}
           </Text>
-          <View className="flex-row items-center mt-0.5">
-            <Text className="text-base font-extrabold text-slate-900 mr-1.5" numberOfLines={1}>
+          <View style={styles.branchRow}>
+            <Text style={styles.branchName} numberOfLines={1}>
               {assignedBranchName || 'Branch Counter'}
             </Text>
-            <View className="bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 flex-row items-center">
-              <Text className="text-[10px] text-emerald-800 font-bold">🔒 LOCKED</Text>
+            <View style={styles.lockedPill}>
+              <Text style={styles.lockedText}>🔒 LOCKED</Text>
             </View>
           </View>
         </View>
 
         {/* Cashier Chip & Actions */}
-        <View className="flex-row items-center gap-2">
+        <View style={styles.actionsRow}>
           {/* Refresh Action */}
           <Pressable
             onPress={handleManualRefresh}
             disabled={isRefreshing}
-            className="w-8 h-8 rounded-full bg-slate-100 items-center justify-center border border-slate-200 active:opacity-70"
+            style={styles.iconBtn}
             hitSlop={6}
           >
             {isRefreshing ? (
@@ -93,8 +93,8 @@ export function StaffHeader({ onRefresh }: StaffHeaderProps) {
           </Pressable>
 
           {/* Cashier profile attribution chip */}
-          <View className="bg-slate-100 px-2.5 py-1.5 rounded-full border border-slate-200 flex-row items-center">
-            <Text className="text-xs font-semibold text-slate-700">
+          <View style={styles.cashierChip}>
+            <Text style={styles.cashierText}>
               👤 {staffProfile?.name || 'Sales Staff'}
             </Text>
           </View>
@@ -102,7 +102,7 @@ export function StaffHeader({ onRefresh }: StaffHeaderProps) {
           {/* Logout Action */}
           <Pressable
             onPress={handleLogout}
-            className="w-8 h-8 rounded-full bg-red-50 items-center justify-center border border-red-200 active:opacity-70"
+            style={[styles.iconBtn, styles.logoutBtn]}
             hitSlop={6}
           >
             <LogOutIcon size={14} color="#EF4444" />
@@ -112,3 +112,90 @@ export function StaffHeader({ onRefresh }: StaffHeaderProps) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  branchLockContainer: {
+    flex: 1,
+    marginRight: 8,
+  },
+  businessName: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#065F46',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+  },
+  branchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  branchName: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginRight: 6,
+  },
+  lockedPill: {
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  lockedText: {
+    fontSize: 10,
+    color: '#065F46',
+    fontWeight: '800',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  iconBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  logoutBtn: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+  },
+  cashierChip: {
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cashierText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#334155',
+  },
+});

@@ -104,28 +104,26 @@ export function AddStaffExpenseModal({
           <View style={styles.handleBar} />
 
           {/* Modal Header */}
-          <View className="flex-row items-center justify-between pb-3 border-b border-slate-100">
-            <View className="flex-row items-center gap-2">
-              <View className="w-8 h-8 rounded-full bg-red-50 items-center justify-center border border-red-200">
-                <Text className="text-base">💸</Text>
+          <View style={styles.headerRow}>
+            <View style={styles.headerTitleLeft}>
+              <View style={styles.iconCircle}>
+                <Text style={{ fontSize: 16 }}>💸</Text>
               </View>
               <View>
-                <Text className="text-lg font-extrabold text-slate-900">Record Petty Expense</Text>
-                <Text className="text-xs text-red-700 font-semibold">Deducted from Drawer Cash · Branch Locked</Text>
+                <Text style={styles.headerTitle}>Record Petty Expense</Text>
+                <Text style={styles.headerSubtitle}>Deducted from Drawer Cash · Branch Locked</Text>
               </View>
             </View>
-            <Pressable onPress={handleClose} hitSlop={8} className="p-1">
+            <Pressable onPress={handleClose} hitSlop={8} style={{ padding: 4 }}>
               <XIcon size={20} color="#64748B" />
             </Pressable>
           </View>
 
           {/* Amount Input */}
-          <View className="mt-4">
-            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-              Expense Amount (ETB) *
-            </Text>
-            <View className="flex-row items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2">
-              <Text className="text-lg font-extrabold text-red-600 mr-2">ETB</Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.fieldLabel}>Expense Amount (ETB) *</Text>
+            <View style={styles.amountContainer}>
+              <Text style={styles.etbPrefix}>ETB</Text>
               <TextInput
                 value={amount}
                 onChangeText={setAmount}
@@ -133,47 +131,43 @@ export function AddStaffExpenseModal({
                 placeholderTextColor="#94A3B8"
                 keyboardType="numeric"
                 autoFocus
-                className="flex-1 text-xl font-black text-slate-900"
+                style={styles.amountInput}
               />
             </View>
           </View>
 
           {/* Description */}
-          <View className="mt-3.5">
-            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-              Description *
-            </Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.fieldLabel}>Description *</Text>
             <TextInput
               value={description}
               onChangeText={setDescription}
               placeholder="e.g. Packaging bags, Cleaning supplies, Transport"
               placeholderTextColor="#94A3B8"
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900"
+              style={styles.standardInput}
             />
           </View>
 
           {/* Category Chips */}
-          <View className="mt-3.5">
-            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">
-              Expense Category
-            </Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row gap-2">
+          <View style={styles.formGroup}>
+            <Text style={styles.fieldLabel}>Expense Category</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
               {EXPENSE_CATEGORIES.map((cat) => {
                 const isSelected = category === cat;
                 return (
                   <Pressable
                     key={cat}
                     onPress={() => setCategory(cat)}
-                    className={`py-1.5 px-3 rounded-xl border mr-2 ${
-                      isSelected
-                        ? 'bg-red-50 border-red-500'
-                        : 'bg-slate-50 border-slate-200'
-                    }`}
+                    style={[
+                      styles.categoryChip,
+                      isSelected && styles.categoryChipActive,
+                    ]}
                   >
                     <Text
-                      className={`text-xs font-bold ${
-                        isSelected ? 'text-red-700' : 'text-slate-600'
-                      }`}
+                      style={[
+                        styles.categoryChipText,
+                        isSelected && styles.categoryChipTextActive,
+                      ]}
                     >
                       {cat}
                     </Text>
@@ -184,39 +178,34 @@ export function AddStaffExpenseModal({
           </View>
 
           {/* Notes */}
-          <View className="mt-3.5">
-            <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-              Note (Optional)
-            </Text>
+          <View style={styles.formGroup}>
+            <Text style={styles.fieldLabel}>Note (Optional)</Text>
             <TextInput
               value={notes}
               onChangeText={setNotes}
               placeholder="e.g. Approved by shop supervisor"
               placeholderTextColor="#94A3B8"
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900"
+              style={styles.standardInput}
             />
           </View>
 
           {/* Action Buttons */}
-          <View className="mt-6 flex-row gap-3">
-            <Pressable
-              onPress={handleClose}
-              className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white items-center justify-center active:opacity-70"
-            >
-              <Text className="text-sm font-bold text-slate-700">Cancel</Text>
+          <View style={styles.actionsRow}>
+            <Pressable onPress={handleClose} style={styles.cancelBtn}>
+              <Text style={styles.cancelBtnText}>Cancel</Text>
             </Pressable>
 
             <Pressable
               onPress={handleSubmit}
               disabled={isSubmitting}
-              className="flex-2 py-3.5 px-6 rounded-xl bg-red-600 border border-red-700 items-center justify-center flex-row gap-2 active:opacity-80"
+              style={styles.submitBtn}
             >
               {isSubmitting ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
                 <>
                   <CheckCircleIcon size={16} color="#FFFFFF" />
-                  <Text className="text-sm font-black text-white">Record Expense</Text>
+                  <Text style={styles.submitBtnText}>Record Expense</Text>
                 </>
               )}
             </Pressable>
@@ -254,5 +243,147 @@ const styles = StyleSheet.create({
     backgroundColor: '#CBD5E1',
     alignSelf: 'center',
     marginBottom: 12,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  headerTitleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FECACA',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    color: '#DC2626',
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  formGroup: {
+    marginTop: 14,
+  },
+  fieldLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  amountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  etbPrefix: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#DC2626',
+    marginRight: 8,
+  },
+  amountInput: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#0F172A',
+    paddingVertical: 0,
+  },
+  standardInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: '#0F172A',
+  },
+  categoryChip: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+  },
+  categoryChipActive: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#EF4444',
+  },
+  categoryChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  categoryChipTextActive: {
+    color: '#B91C1C',
+    fontWeight: '800',
+  },
+  actionsRow: {
+    marginTop: 20,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  submitBtn: {
+    flex: 2,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#DC2626',
+    borderWidth: 1,
+    borderColor: '#B91C1C',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  submitBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 });

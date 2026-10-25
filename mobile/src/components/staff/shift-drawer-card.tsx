@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useStaffStore } from '@/store/staff-store';
 
 export function ShiftDrawerCard() {
@@ -14,82 +14,62 @@ export function ShiftDrawerCard() {
   const expenses = shiftMetrics?.expenseVolume ?? 0;
 
   return (
-    <View className="mx-4 mt-3 rounded-2xl bg-white border border-slate-200 p-4 shadow-sm">
+    <View style={styles.card}>
       {/* Header */}
-      <View className="flex-row items-center justify-between pb-2 border-b border-slate-100">
+      <View style={styles.headerRow}>
         <View>
-          <Text className="text-[11px] font-extrabold text-[#065F46] uppercase tracking-wider">
-            Today's Shift Drawer
-          </Text>
-          <Text className="text-xs text-slate-500 mt-0.5">
+          <Text style={styles.title}>Today's Shift Drawer</Text>
+          <Text style={styles.subtitle}>
             {assignedBranchName ? `${assignedBranchName} Counter` : 'Shift Reconciliation'}
           </Text>
         </View>
 
-        <View className="items-end">
-          <Text className="text-[10px] text-slate-500 uppercase font-semibold">
-            Shift Volume
-          </Text>
-          <Text className="text-sm font-extrabold text-slate-900">
+        <View style={styles.volumeRight}>
+          <Text style={styles.volumeLabel}>Shift Volume</Text>
+          <Text style={styles.volumeValue}>
             {totalVolume.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
           </Text>
         </View>
       </View>
 
       {/* Primary Drawer Cash Callout */}
-      <View className="mt-3 bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex-row items-center justify-between">
-        <View className="flex-row items-center">
-          <View className="w-9 h-9 rounded-lg bg-emerald-100 border border-emerald-200 items-center justify-center mr-3">
-            <Text className="text-lg">💵</Text>
+      <View style={styles.cashBox}>
+        <View style={styles.cashLeft}>
+          <View style={styles.cashIconBg}>
+            <Text style={{ fontSize: 18 }}>💵</Text>
           </View>
           <View>
-            <Text className="text-xs font-bold text-emerald-900 uppercase tracking-wide">
-              Physical Cash in Drawer
-            </Text>
-            <Text className="text-[11px] text-emerald-700">
-              Handover count at shift close
-            </Text>
+            <Text style={styles.cashTitle}>Physical Cash in Drawer</Text>
+            <Text style={styles.cashSubtitle}>Handover count at shift close</Text>
           </View>
         </View>
-        <Text className="text-lg font-black text-emerald-800">
+        <Text style={styles.cashAmount}>
           {cashInDrawer.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
         </Text>
       </View>
 
       {/* Digital Mobile Money & Debt Recovery Breakdown */}
-      <View className="grid grid-cols-3 flex-row gap-2 mt-2.5">
+      <View style={styles.channelsRow}>
         {/* Telebirr */}
-        <View className="flex-1 bg-violet-50 border border-violet-200 rounded-xl p-2.5">
-          <View className="flex-row items-center justify-between mb-1">
-            <Text className="text-[10px] font-bold text-violet-700 uppercase">
-              📱 Telebirr
-            </Text>
-          </View>
-          <Text className="text-xs font-black text-violet-900" numberOfLines={1}>
+        <View style={[styles.channelChip, styles.telebirrChip]}>
+          <Text style={[styles.channelLabel, { color: '#6D28D9' }]}>📱 Telebirr</Text>
+          <Text style={[styles.channelValue, { color: '#4C1D95' }]} numberOfLines={1}>
             {telebirr.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} ETB
           </Text>
         </View>
 
         {/* CBE Birr */}
-        <View className="flex-1 bg-blue-50 border border-blue-200 rounded-xl p-2.5">
-          <View className="flex-row items-center justify-between mb-1">
-            <Text className="text-[10px] font-bold text-blue-700 uppercase">
-              🏦 CBE Birr
-            </Text>
-          </View>
-          <Text className="text-xs font-black text-blue-900" numberOfLines={1}>
+        <View style={[styles.channelChip, styles.cbeChip]}>
+          <Text style={[styles.channelLabel, { color: '#1D4ED8' }]}>🏦 CBE Birr</Text>
+          <Text style={[styles.channelValue, { color: '#1E3A8A' }]} numberOfLines={1}>
             {cbeBirr.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} ETB
           </Text>
         </View>
 
         {/* Dube Settled */}
-        <View className="flex-1 bg-amber-50 border border-amber-200 rounded-xl p-2.5">
-          <View className="flex-row items-center justify-between mb-1">
-            <Text className="text-[10px] font-bold text-amber-700 uppercase">
-              👥 Dube Settled
-            </Text>
-          </View>
-          <Text className="text-xs font-black text-amber-900" numberOfLines={1}>
+        <View style={[styles.channelChip, styles.dubeChip]}>
+          <Text style={[styles.channelLabel, { color: '#B45309' }]}>👥 Dube Settled</Text>
+          <Text style={[styles.channelValue, { color: '#78350F' }]} numberOfLines={1}>
             {dubeSettled.toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 2 })} ETB
           </Text>
         </View>
@@ -97,11 +77,9 @@ export function ShiftDrawerCard() {
 
       {/* Expenses Drawer Deduction Notice */}
       {expenses > 0 && (
-        <View className="mt-2.5 pt-2 border-t border-slate-100 flex-row items-center justify-between">
-          <Text className="text-[11px] text-slate-500">
-            💸 Petty Expenses Paid:
-          </Text>
-          <Text className="text-[11px] font-bold text-red-600">
+        <View style={styles.expenseDeductionRow}>
+          <Text style={styles.expenseDeductionLabel}>💸 Petty Expenses Paid:</Text>
+          <Text style={styles.expenseDeductionAmount}>
             -{expenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ETB
           </Text>
         </View>
@@ -109,3 +87,150 @@ export function ShiftDrawerCard() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  card: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  title: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#065F46',
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  subtitle: {
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  volumeRight: {
+    alignItems: 'flex-end',
+  },
+  volumeLabel: {
+    fontSize: 10,
+    color: '#64748B',
+    textTransform: 'uppercase',
+    fontWeight: '600',
+  },
+  volumeValue: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginTop: 1,
+  },
+  cashBox: {
+    marginTop: 12,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    borderRadius: 12,
+    padding: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cashLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cashIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+    backgroundColor: '#D1FAE5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  cashTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#064E3B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  cashSubtitle: {
+    fontSize: 11,
+    color: '#047857',
+  },
+  cashAmount: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#065F46',
+  },
+  channelsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+  channelChip: {
+    flex: 1,
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+  },
+  telebirrChip: {
+    backgroundColor: '#F5F3FF',
+    borderColor: '#DDD6FE',
+  },
+  cbeChip: {
+    backgroundColor: '#EFF6FF',
+    borderColor: '#BFDBFE',
+  },
+  dubeChip: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+  },
+  channelLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  channelValue: {
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  expenseDeductionRow: {
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  expenseDeductionLabel: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '500',
+  },
+  expenseDeductionAmount: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#DC2626',
+  },
+});

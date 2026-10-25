@@ -117,92 +117,84 @@ export function IssueDubeModal({ visible, onClose, onSuccess }: IssueDubeModalPr
           <View style={styles.handleBar} />
 
           {/* Modal Header */}
-          <View className="flex-row items-center justify-between pb-3 border-b border-slate-100">
-            <View className="flex-row items-center gap-2">
-              <View className="w-8 h-8 rounded-full bg-amber-50 items-center justify-center border border-amber-200">
-                <Text className="text-base">📝</Text>
+          <View style={styles.headerRow}>
+            <View style={styles.headerTitleLeft}>
+              <View style={styles.iconCircle}>
+                <Text style={{ fontSize: 16 }}>📝</Text>
               </View>
               <View>
-                <Text className="text-lg font-extrabold text-slate-900">Issue Customer Dube</Text>
-                <Text className="text-xs text-amber-800 font-semibold">Store Credit Notebook · Branch Locked</Text>
+                <Text style={styles.headerTitle}>Issue Customer Dube</Text>
+                <Text style={styles.headerSubtitle}>Store Credit Notebook · Branch Locked</Text>
               </View>
             </View>
-            <Pressable onPress={handleClose} hitSlop={8} className="p-1">
+            <Pressable onPress={handleClose} hitSlop={8} style={{ padding: 4 }}>
               <XIcon size={20} color="#64748B" />
             </Pressable>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false} className="mt-3">
+          <ScrollView showsVerticalScrollIndicator={false} style={{ marginTop: 12 }}>
             {/* Customer Details */}
-            <View className="flex-row gap-2">
-              <View className="flex-1">
-                <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-                  Customer Name *
-                </Text>
+            <View style={styles.inputsRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.fieldLabel}>Customer Name *</Text>
                 <TextInput
                   value={customerName}
                   onChangeText={setCustomerName}
                   placeholder="e.g. Almaz Kebede"
                   placeholderTextColor="#94A3B8"
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900"
+                  style={styles.standardInput}
                 />
               </View>
 
-              <View className="flex-1">
-                <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-                  Phone (Optional)
-                </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.fieldLabel}>Phone (Optional)</Text>
                 <TextInput
                   value={customerPhone}
                   onChangeText={setCustomerPhone}
                   placeholder="0911234567"
                   placeholderTextColor="#94A3B8"
                   keyboardType="phone-pad"
-                  className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900"
+                  style={styles.standardInput}
                 />
               </View>
             </View>
 
             {/* Credit Amount */}
-            <View className="mt-3.5">
-              <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-                Credit Amount (ETB) *
-              </Text>
-              <View className="flex-row items-center bg-slate-50 border border-slate-200 rounded-xl px-4 py-2">
-                <Text className="text-lg font-extrabold text-amber-700 mr-2">ETB</Text>
+            <View style={styles.formGroup}>
+              <Text style={styles.fieldLabel}>Credit Amount (ETB) *</Text>
+              <View style={styles.amountContainer}>
+                <Text style={styles.etbPrefix}>ETB</Text>
                 <TextInput
                   value={amount}
                   onChangeText={setAmount}
                   placeholder="0.00"
                   placeholderTextColor="#94A3B8"
                   keyboardType="numeric"
-                  className="flex-1 text-xl font-black text-slate-900"
+                  style={styles.amountInput}
                 />
               </View>
             </View>
 
             {/* Promised Due Date Presets */}
-            <View className="mt-3.5">
-              <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-                Promised Due Date
-              </Text>
-              <View className="flex-row gap-2">
+            <View style={styles.formGroup}>
+              <Text style={styles.fieldLabel}>Promised Due Date</Text>
+              <View style={styles.presetsRow}>
                 {DUE_PRESETS.map((preset) => {
                   const isSelected = selectedDays === preset.days;
                   return (
                     <Pressable
                       key={preset.days}
                       onPress={() => handleSelectDays(preset.days)}
-                      className={`flex-1 py-2 px-1 rounded-xl border items-center justify-center ${
-                        isSelected
-                          ? 'bg-amber-50 border-amber-500'
-                          : 'bg-slate-50 border-slate-200'
-                      }`}
+                      style={[
+                        styles.presetChip,
+                        isSelected && styles.presetChipActive,
+                      ]}
                     >
                       <Text
-                        className={`text-xs font-extrabold ${
-                          isSelected ? 'text-amber-900' : 'text-slate-600'
-                        }`}
+                        style={[
+                          styles.presetChipText,
+                          isSelected && styles.presetChipTextActive,
+                        ]}
                       >
                         {preset.label}
                       </Text>
@@ -210,46 +202,39 @@ export function IssueDubeModal({ visible, onClose, onSuccess }: IssueDubeModalPr
                   );
                 })}
               </View>
-              <Text className="text-[11px] text-slate-500 mt-1.5">
-                Due: {dueDate}
-              </Text>
+              <Text style={styles.dueDateHelperText}>Due: {dueDate}</Text>
             </View>
 
             {/* Item / Items Description */}
-            <View className="mt-3.5">
-              <Text className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1.5">
-                Items Taken / Note
-              </Text>
+            <View style={styles.formGroup}>
+              <Text style={styles.fieldLabel}>Items Taken / Note</Text>
               <TextInput
                 value={description}
                 onChangeText={setDescription}
                 placeholder="e.g. 2 cartons of cooking oil, 1 bag sugar"
                 placeholderTextColor="#94A3B8"
-                className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm text-slate-900"
+                style={styles.standardInput}
               />
             </View>
           </ScrollView>
 
           {/* Action Buttons */}
-          <View className="mt-5 flex-row gap-3">
-            <Pressable
-              onPress={handleClose}
-              className="flex-1 py-3.5 rounded-xl border border-slate-200 bg-white items-center justify-center active:opacity-70"
-            >
-              <Text className="text-sm font-bold text-slate-700">Cancel</Text>
+          <View style={styles.actionsRow}>
+            <Pressable onPress={handleClose} style={styles.cancelBtn}>
+              <Text style={styles.cancelBtnText}>Cancel</Text>
             </Pressable>
 
             <Pressable
               onPress={handleSubmit}
               disabled={isSubmitting}
-              className="flex-2 py-3.5 px-6 rounded-xl bg-[#065F46] border border-emerald-800 items-center justify-center flex-row gap-2 active:opacity-80"
+              style={styles.submitBtn}
             >
               {isSubmitting ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
                 <>
                   <CheckCircleIcon size={16} color="#FFFFFF" />
-                  <Text className="text-sm font-black text-white">Record Dube</Text>
+                  <Text style={styles.submitBtnText}>Record Dube</Text>
                 </>
               )}
             </Pressable>
@@ -288,5 +273,163 @@ const styles = StyleSheet.create({
     backgroundColor: '#CBD5E1',
     alignSelf: 'center',
     marginBottom: 12,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  headerTitleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  iconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  headerSubtitle: {
+    fontSize: 11,
+    color: '#92400E',
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  inputsRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  formGroup: {
+    marginTop: 12,
+  },
+  fieldLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  standardInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: '#0F172A',
+  },
+  amountContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  etbPrefix: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#B45309',
+    marginRight: 8,
+  },
+  amountInput: {
+    flex: 1,
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#0F172A',
+    paddingVertical: 0,
+  },
+  presetsRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  presetChip: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  presetChipActive: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#F59E0B',
+  },
+  presetChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  presetChipTextActive: {
+    color: '#78350F',
+    fontWeight: '800',
+  },
+  dueDateHelperText: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 6,
+    fontWeight: '500',
+  },
+  actionsRow: {
+    marginTop: 18,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  submitBtn: {
+    flex: 2,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    backgroundColor: '#065F46',
+    borderWidth: 1,
+    borderColor: '#064E3B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  submitBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 });
