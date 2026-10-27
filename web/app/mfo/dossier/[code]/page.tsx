@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, use } from "react";
+import { useEffect, use, Suspense } from "react";
 import { useRouter } from "next/navigation";
 
 interface PageProps {
   params: Promise<{ code: string }>;
 }
 
-export default function LegacyDossierRedirect({ params }: PageProps) {
+function LegacyDossierContent({ params }: PageProps) {
   const resolvedParams = use(params);
   const router = useRouter();
 
@@ -23,3 +23,18 @@ export default function LegacyDossierRedirect({ params }: PageProps) {
     </div>
   );
 }
+
+export default function LegacyDossierRedirect({ params }: PageProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center text-xs text-slate-500 font-medium">
+          Redirecting to verified dossier...
+        </div>
+      }
+    >
+      <LegacyDossierContent params={params} />
+    </Suspense>
+  );
+}
+
