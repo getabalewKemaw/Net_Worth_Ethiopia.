@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# NetWorth Ethiopia — Web Platform
 
-## Getting Started
+The web portal for the NetWorth Ethiopia ecosystem, built with Next.js 16 (App Router), React 19, Tailwind CSS v4, and D3.js.
 
-First, run the development server:
+It hosts two primary interfaces:
+1. **Central Telemetry & Operations Console (`/admin`)**: Real-time administrative oversight, platform GTV telemetry, settlement method breakdowns, and merchant rosters.
+2. **Public Loan Underwriting Dossiers (`/dossier/[token]`)**: Time-bounded, read-only financial health and credit readiness reports for partner commercial bank and microfinance loan officers.
+
+For full system architecture, backend integration, mobile client documentation, and local setup instructions, see the root repository documentation:
+
+- [Root Repository README](../README.md)
+- [Admin Portal & Telemetry Guide](../docs/ADMIN_PORTAL_GUIDE.md)
+
+---
+
+## Local Development
 
 ```bash
+# Install dependencies
+npm install
+
+# Start development server on port 3001
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Production build
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Requests to `/api/*` are automatically proxied to the Express backend on `http://localhost:3000` via `next.config.ts`.
